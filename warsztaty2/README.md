@@ -23,5 +23,8 @@ omówić: metastasis, PN, tumor stage, PT (+ zrobić krzywe przeżycia na zajęc
 
 ## knitr - podstawy
 
+Przykład: https://rawgit.com/pbiecek/WarsztatyBadawcze/master/warsztaty2/spotkanie_02.html
+
 [następne spotkanie?]
+
 
