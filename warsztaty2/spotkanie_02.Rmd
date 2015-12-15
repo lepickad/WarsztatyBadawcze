@@ -1,0 +1,44 @@
+---
+title: "Spotkanie 2"
+author: "Przemyslaw Biecek"
+date: "16 December 2015"
+output: html_document
+---
+
+W tym przykładowym raporcie zobaczymy czy przeżycia pacjentów o różnym stadium nowotworu znacząco się różnią. 
+
+Uwzględnimy klasyfikację TNM (https://pl.wikipedia.org/wiki/Klasyfikacja_TNM) i płeć pacjenta oraz kraj w którym zbierano próbki.
+
+```{r, message=FALSE, warning=FALSE}
+library(RTCGA.clinical)
+library(ggplot2)
+library(survMisc)
+data("BRCA.clinical")
+
+clinic <- data.frame(time1=as.numeric(as.character(BRCA.clinical$patient.days_to_death)),
+      time2=as.numeric(as.character(BRCA.clinical$patient.days_to_last_followup)),
+     status = BRCA.clinical$patient.vital_status,
+     tumor = substr(BRCA.clinical$patient.stage_event.tnm_categories.pathologic_categories.pathologic_t, 1, 2),
+     gender = BRCA.clinical$patient.gender,
+     country = BRCA.clinical$patient.clinical_cqcf.country,
+     barcode = BRCA.clinical$patient.bcr_patient_barcode)
+
+clinic$time <- ifelse(is.na(clinic$time1), clinic$time2, clinic$time1)
+
+ob1 <- survfit(Surv(time, status == "dead")~tumor, data=clinic)
+autoplot(ob1)$plot + ylim(0,1)
+
+ob1 <- survfit(Surv(time, status == "dead")~gender, data=clinic)
+autoplot(ob1)$plot + ylim(0,1)
+```
+
+Analizę w rozbiciu na kraj wykonajmy tylko dla krajów o dużej liczbie próbek.
+
+```{r, warning=FALSE, message=FALSE}
+clinic2 <- clinic[clinic$country %in% c("germany", "poland", "russia", "ukraine", "united states", "vietnam"),]
+ob1 <- survfit(Surv(time, status == "dead")~country, data=clinic2)
+autoplot(ob1)$plot + ylim(0,1)
+
+round(100*prop.table(table(clinic2$country, clinic2$tumor),1),1)
+
+```
