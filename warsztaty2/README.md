@@ -12,6 +12,7 @@ omówić: metastasis, PN, tumor stage, PT (+ zrobić krzywe przeżycia na zajęc
 * http://www.cancer.uzh.ch/research/Three/webtool.html
 * http://130.60.240.74:3838/megatev2/
 * http://130.60.240.74:3838/GBM/
+* http://kmplot.com/analysis/
 
 ## Shiny - podstawy
 
