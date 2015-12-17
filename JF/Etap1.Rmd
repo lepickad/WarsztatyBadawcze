@@ -1,0 +1,103 @@
+---
+title: "Etap1"
+author: "Katarzyna Fąk Justyna Jankowiak"
+date: "16.12.2015"
+output:
+  html_document:
+    theme: united
+    highlight: tango
+---
+
+```{r, echo=FALSE, message=FALSE}
+library(knitr)
+library(RTCGA.methylation)
+```
+
+## Wstęp
+Na początek wykorzystałyśmy zbiory `RTCGA.methylation` do znalezienia istotnych markerów w każdym z typu raka. Do dyspozycji miałyśmy dane z następujących 16 nowotworów:
+
+```{r, echo=T}
+# list.files("~/WarsztatyBadawcze/JF/data.methylation")
+all <- data(package='RTCGA.methylation')
+all$result[,"Item"]
+```
+
+Z tych zbiorów pracowałyśmy na wszystkich, które miały powyżej stu obserwacji - warunku tego nie spełniły zbiory: 
+
+* `KIRP.methylation` (84/4),
+* `STES.methylation` (292/4),
+* `STAD.methylation` (292/4),
+* `READ.methylation` (292/4)
+
+## Zawartość 
+
+* Pliki:
+
+    - `dict.rda` - słownik wysp i nazw genów
+    - `dict.R` - funkcja do stworzenia słownika
+    - `etap1.R` - skrypt do liczenia p-wartości oraz funcja do rysowania krzywych przeżycia dla 100 markerów.
+  
+* Foldery:
+
+    - `pvalues` - wszystkie p-wartości wyliczone dla każdego nowotworu (w plikach .rda)
+    - `survival_curves.methylation` - krzywe przeżycia dla stu najistotniejszych markerów z każdego z nowotworów.
+
+## Metoda
+
+Na każdym zbiorze zdanych wyszukiwałyśmy istotne dla niego markery spośród wszystkich ~27k. W przypadku metylacji markerem jest zmienna `Composite Element REF` postaci np. `cg00000292`. 
+
+Następnie łączyłyśmy dane o przeżywalności pacjentów z informacjami o aktywności każdego z markerów i funckją `survdiff` wybierałyśmy te markery, które niosą istotne różnice w przeżywalności. Dla stu najbardziej istotnych sporządziłyśmy krzywe przeżycia. Pełny skrypt w pliku [etap1.R](etap1.R).
+
+
+## Częstość występowania markerów w każdym z nowotworów
+
+> Wszystkie p-wartości dla każdego z nowotworów znajdują się w podfolderze `/JF/pvalues`. Wczytamy je do jednej listy:
+
+```{r, echo=TRUE, cache=TRUE}
+lf <- list.files("~/WarsztatyBadawcze/JF/pvalues/")
+nowotwory <- sapply(lf, function(x) substring(x, 1, nchar(x)-4))
+# budowanie listy wszystkich p-wartości.
+for(i in 1:length(lf)){
+  load(file.path("~/WarsztatyBadawcze/JF/pvalues/", lf[i]))
+  l=l$pvalues[l$pvalues<0.05]
+  l=l[8:length(l)]
+  assign(nowotwory[i],l)
+}
+pvalues <- sapply(nowotwory,get)  # żądana lista.
+```
+
+> Unikalne istotne markery:
+
+```{r, cache=TRUE}
+markers <- unique(unlist(sapply(pvalues, function(x) names(x))))
+```
+
+> Zliczamy liczbę nowotworów, w których wystąpił każdy z istotnych markerów
+
+```{r, cache=TRUE}
+counts = sapply(markers, function(m)
+  sum(sapply(pvalues, function(x) m%in%names(x))))
+```
+
+> Przypisujemy każdej wyspie najbliżej występujący gen:
+
+```{r, cache=TRUE}
+load("~/WarsztatyBadawcze/JF/dict.rda")
+
+counts <- sort(counts, decreasing = T)
+counts_df <- data.frame(REF=names(counts), n=counts)
+rownames(counts_df) <- NULL
+df <- merge(counts_df, dict, by='REF')
+```
+
+```{r}
+head(df[order(-df$n),c('REF','Gene_names','n')],20)
+```
+
+> Ile było markerów, które były istotne w 1,2,3... oraz ośmiu nowotworach?
+
+```{r}
+table(counts)
+```
+
+
