@@ -1,0 +1,417 @@
+---
+title: "Czêœæ 1"
+output: pdf_document
+author: Agata Starzyk, Marta Czerwiñska
+---
+Z dostêpnych 33 ró¿nych rodzajów raka, wybra³yœmy piêæ z najwiêksz¹ liczb¹ danych. Poni¿ej znajduje siê podsumowanie danych. 
+```{r,echo=FALSE}
+library(survival)
+```
+
+![alt text](C:/Users/Marta/Desktop/Warsztaty/tabelka.png)
+
+Wybranymi przez nas danymi s¹: GBMLGG, KIPAN, KIRC, STES, COADREAD, które odpowiednio oznaczaj¹ glejak wielopostaciowy mózgu ni¿szej klasy, kohortowy rak nerki, rak ¿o³¹dka i prze³yku, rak chromofobowy nerki, gruczolakorak jelita grubego.
+
+Aby zacz¹æ czêœæ analitycznym, musia³yœmy z³¹czyæ dane dotycz¹ce ekspresji ró¿nych bia³ek z danymi dotycz¹cymi pacjentów z zaobserwowanymi odpowiednio rodzajami raka. Dane dotycz¹ce pacjentów znajduj¹ siê w tabelkach z koñcówk¹ clinical, zaœ z bia³kiem z koñcówk¹ RPPA.
+
+Doda³yœmy zmienn¹ time oznaczaj¹ca czas do ostatniej wizyty lub do œmierci oraz zmienn¹ status oznaczaj¹c¹ status zajœcia zdarzenia. 
+
+```{r}
+load("C:/Users/Marta/Desktop/Warsztaty/COADREAD.RPPA.rda")
+load("C:/Users/Marta/Desktop/Warsztaty/COADREAD.clinical.rda")
+COADREAD.RPPA$bcr_patient_barcode <- tolower(substr(COADREAD.RPPA$bcr_patient_barcode, 1, 12))
+
+dane <- data.frame(COADREAD.clinical$patient.bcr_patient_barcode
+                   ,COADREAD.clinical$patient.days_to_death
+                   ,COADREAD.clinical$patient.days_to_last_followup
+                   ,time = ifelse(is.na(COADREAD.clinical$patient.days_to_death)
+                   ,COADREAD.clinical$patient.days_to_last_followup
+                   ,COADREAD.clinical$patient.days_to_death)
+                   ,status=ifelse(is.na(COADREAD.clinical$patient.days_to_death),'alive', 'dead'))
+dane$time <- as.numeric(as.character(dane$time))
+allCOADREAD <- merge(dane,COADREAD.RPPA
+                     ,by.x = "COADREAD.clinical.patient.bcr_patient_barcode"
+                     , by.y = "bcr_patient_barcode")
+colnames(allCOADREAD)[which(names(allCOADREAD) == 
+                              "COADREAD.clinical.patient.bcr_patient_barcode")] <- "barcode"
+colnames(allCOADREAD)[which(names(allCOADREAD) == 
+                              "COADREAD.clinical.patient.days_to_death")] <- "patient.days_to_death"
+
+```
+
+Powy¿sz¹ czynnoœæ powtórzy³yœmy dla ka¿dego rodzaju raka.
+
+Nastêpnie dla ka¿dego zbioru danych policzy³yœmy p wartoœæ ka¿dego bia³ka. Dane obliczenia znajduj¹ siê poni¿ej:
+
+```{r, echo=TRUE, warning=FALSE}
+n <- dim(allCOADREAD)[2]
+m <-  dim(allCOADREAD)[1]
+pwartosc <- numeric(n-6)
+for (i in 6:n)
+{
+  val <- colnames(allCOADREAD)[i]
+  allCOADREAD[,val] <- as.numeric(as.character(allCOADREAD[,val]))
+  allCOADREAD[,"patient.days_to_death"] <- as.numeric(as.character(allCOADREAD$patient.days_to_death))
+  
+  if (sum(is.na(allCOADREAD[,val])) > m/2){
+    pwartosc[i-6] <- NA
+    next
+  }
+  else{
+    med <- median(allCOADREAD[,val],na.rm=TRUE)
+    if(med != all(allCOADREAD$val) || is.na(allCOADREAD$val)){
+      a <- survdiff(Surv(time,status == "dead")~ (allCOADREAD[,val]>med), data=allCOADREAD)
+      pwartosc[i-6] <- 1-pchisq(a$chisq,1)
+    }
+    else
+    {
+      pwartosc[i-6] <- 1
+    }
+  }
+  
+}
+
+```
+
+Z powy¿szych obliczonych p-value wybieramy piêæ najmniejszych, innymi s³owy wybieramy piêæ najbardziej istotnych bia³ek dla danego typu raka. Wybrane bia³ka to Akt, B-Raf, CD31, Chk1, Myosin-lla. Poni¿ej
+zamieszczamy wykresy krzwych prze¿ycia dla wybranych bia³ek.
+
+```{r fig.width=14, fig.height=3.5, warning=FALSE,results="hold"}
+a <- which(pwartosc %in% sort(pwartosc)[1:5])
+nazwy <- as.vector(colnames(allCOADREAD)[6:n])
+wybrane <-nazwy[a]
+
+i=1
+for (i in 1:5)
+{
+  val <- wybrane[i]
+  allCOADREAD[,val] <- as.numeric(as.character(allCOADREAD[,val]))
+  allCOADREAD[,"patient.days_to_death"] <- as.numeric(as.character(allCOADREAD$patient.days_to_death))
+  med <- median(allCOADREAD[,val],na.rm=TRUE)
+  x <- survfit(Surv(time,status == "dead")~ (allCOADREAD[,val]>med), data=allCOADREAD)
+  library(ggplot2)
+  library(survMisc)
+  w <- autoplot(x,legend=FALSE, title = paste("Krzywe prze¿ycia dla bia³ka",val))
+  ggsave(file = paste0("Bia³ko.", val, ".png"), plot = w$plot)
+  print(w$plot)
+}
+```
+
+
+Analogicznie przeprowadzi³yœmy analizê dla glejaka wielopostaciowego mózgu ni¿szej klasy. Wybra³yœmy 
+nastêpuj¹ce rodzaje bia³ek: 14-3-3_zeta, ARID1A, Bap1-c-4, SCD, TSC1. Poni¿ej zamieszamy wykresy krzywych 
+prze¿ycia dla wybranych bia³ek.
+
+```{r fig.width=14, fig.height=3.5, warning=FALSE,results="hold",echo=FALSE}
+load("C:/Users/Marta/Desktop/Warsztaty/GBMLGG.RPPA.rda")
+load("C:/Users/Marta/Desktop/Warsztaty/GBMLGG.clinical.rda")
+GBMLGG.RPPA$bcr_patient_barcode <- tolower(substr(GBMLGG.RPPA$bcr_patient_barcode, 1, 12))
+
+dane <- data.frame(GBMLGG.clinical$patient.bcr_patient_barcode
+                   ,GBMLGG.clinical$patient.days_to_death
+                   ,GBMLGG.clinical$patient.days_to_last_followup
+                   ,time = ifelse(is.na(GBMLGG.clinical$patient.days_to_death)
+                   ,GBMLGG.clinical$patient.days_to_last_followup
+                   ,GBMLGG.clinical$patient.days_to_death)
+                   ,status=ifelse(is.na(GBMLGG.clinical$patient.days_to_death),'alive', 'dead'))
+dane$time <- as.numeric(as.character(dane$time))
+allGBMLGG <- merge(dane,GBMLGG.RPPA
+                     ,by.x = "GBMLGG.clinical.patient.bcr_patient_barcode"
+                     , by.y = "bcr_patient_barcode")
+colnames(allGBMLGG)[which(names(allGBMLGG) == 
+                              "GBMLGG.clinical.patient.bcr_patient_barcode")] <- "barcode"
+colnames(allGBMLGG)[which(names(allGBMLGG) == 
+                              "GBMLGG.clinical.patient.days_to_death")] <- "patient.days_to_death"
+
+
+
+n <- dim(allGBMLGG)[2]
+m <-  dim(allGBMLGG)[1]
+pwartosc <- numeric(n-6)
+for (i in 6:n)
+{
+  val <- colnames(allGBMLGG)[i]
+  allGBMLGG[,val] <- as.numeric(as.character(allGBMLGG[,val]))
+  allGBMLGG[,"patient.days_to_death"] <- as.numeric(as.character(allGBMLGG$patient.days_to_death))
+  
+  if (sum(is.na(allGBMLGG[,val])) > m/2){
+    pwartosc[i-6] <- NA
+    next
+  }
+  else{
+    med <- median(allGBMLGG[,val],na.rm=TRUE)
+    if(med != all(allGBMLGG$val) || is.na(allGBMLGG$val)){
+      a <- survdiff(Surv(time,status == "dead")~ (allGBMLGG[,val]>med), data=allGBMLGG)
+      pwartosc[i-6] <- 1-pchisq(a$chisq,1)
+    }
+    else
+    {
+      pwartosc[i-6] <- 1
+    }
+  }
+  
+}
+
+
+a <- which(pwartosc %in% sort(pwartosc)[1:5])
+nazwy <- as.vector(colnames(allGBMLGG)[6:n])
+wybrane <-nazwy[a]
+
+i=1
+for (i in 1:5)
+{
+  val <- wybrane[i]
+  allGBMLGG[,val] <- as.numeric(as.character(allGBMLGG[,val]))
+  allGBMLGG[,"patient.days_to_death"] <- as.numeric(as.character(allGBMLGG$patient.days_to_death))
+  med <- median(allGBMLGG[,val],na.rm=TRUE)
+  x <- survfit(Surv(time,status == "dead")~ (allGBMLGG[,val]>med), data=allGBMLGG)
+  library(ggplot2)
+  library(survMisc)
+  w <- autoplot(x,legend=FALSE, title = paste("Krzywe prze¿ycia dla bia³ka",val))
+  ggsave(file = paste0("Bia³ko.", val, ".png"), plot = w$plot)
+  print(w$plot)
+}
+
+
+```
+
+
+
+
+```{r, warning=FALSE,results="hold",echo=FALSE}
+load("C:/Users/Marta/Desktop/Warsztaty/KIRC.RPPA.rda")
+load("C:/Users/Marta/Desktop/Warsztaty/KIRC.clinical.rda")
+KIRC.RPPA$bcr_patient_barcode <- tolower(substr(KIRC.RPPA$bcr_patient_barcode, 1, 12))
+
+dane <- data.frame(KIRC.clinical$patient.bcr_patient_barcode
+                   ,KIRC.clinical$patient.days_to_death
+                   ,KIRC.clinical$patient.days_to_last_followup
+                   ,time = ifelse(is.na(KIRC.clinical$patient.days_to_death)
+                   ,KIRC.clinical$patient.days_to_last_followup
+                   ,KIRC.clinical$patient.days_to_death)
+                   ,status=ifelse(is.na(KIRC.clinical$patient.days_to_death),'alive', 'dead'))
+dane$time <- as.numeric(as.character(dane$time))
+allKIRC <- merge(dane,KIRC.RPPA
+                     ,by.x = "KIRC.clinical.patient.bcr_patient_barcode"
+                     , by.y = "bcr_patient_barcode")
+colnames(allKIRC)[which(names(allKIRC) == 
+                              "KIRC.clinical.patient.bcr_patient_barcode")] <- "barcode"
+colnames(allKIRC)[which(names(allKIRC) == 
+                              "KIRC.clinical.patient.days_to_death")] <- "patient.days_to_death"
+
+
+
+n <- dim(allKIRC)[2]
+m <-  dim(allKIRC)[1]
+pwartosc <- numeric(n-6)
+for (i in 6:n)
+{
+  val <- colnames(allKIRC)[i]
+  allKIRC[,val] <- as.numeric(as.character(allKIRC[,val]))
+  allKIRC[,"patient.days_to_death"] <- as.numeric(as.character(allKIRC$patient.days_to_death))
+  
+  if (sum(is.na(allKIRC[,val])) > m/2){
+    pwartosc[i-6] <- NA
+    next
+  }
+  else{
+    med <- median(allKIRC[,val],na.rm=TRUE)
+    if(med != all(allKIRC$val) || is.na(allKIRC$val)){
+      a <- survdiff(Surv(time,status == "dead")~ (allKIRC[,val]>med), data=allKIRC)
+      pwartosc[i-6] <- 1-pchisq(a$chisq,1)
+    }
+    else
+    {
+      pwartosc[i-6] <- 1
+    }
+  }
+  
+}
+```
+
+Bia³ka, które wybra³yœmy dla raka ¿o³¹dka i prze³yku to: G6PD, HER3, MEK1-pS217-S221, Oxphos-complex-V_subunitb, cIAP.
+Krzywe KM wygl¹daj¹ nastêpuj¹co:
+
+```{r fig.width=14, fig.height=3.5, warning=FALSE,results="hold",echo=FALSE}
+a <- which(pwartosc %in% sort(pwartosc)[1:5])
+nazwy <- as.vector(colnames(allKIRC)[6:n])
+wybrane <-nazwy[a]
+
+i=1
+for (i in 1:5)
+{
+  val <- wybrane[i]
+  allKIRC[,val] <- as.numeric(as.character(allKIRC[,val]))
+  allKIRC[,"patient.days_to_death"] <- as.numeric(as.character(allKIRC$patient.days_to_death))
+  med <- median(allKIRC[,val],na.rm=TRUE)
+  x <- survfit(Surv(time,status == "dead")~ (allKIRC[,val]>med), data=allKIRC)
+  library(ggplot2)
+  library(survMisc)
+  w <- autoplot(x,legend=FALSE, title = paste("Krzywe prze¿ycia dla bia³ka",val))
+  ggsave(file = paste0("Bia³ko.", val, ".png"), plot = w$plot)
+  print(w$plot)
+}
+
+
+```
+
+
+
+```{r, warning=FALSE,results="hold",echo=FALSE}
+load("C:/Users/Marta/Desktop/Warsztaty/KIPAN.RPPA.rda")
+load("C:/Users/Marta/Desktop/Warsztaty/KIPAN.clinical.rda")
+KIPAN.RPPA$bcr_patient_barcode <- tolower(substr(KIPAN.RPPA$bcr_patient_barcode, 1, 12))
+
+dane <- data.frame(KIPAN.clinical$patient.bcr_patient_barcode
+                   ,KIPAN.clinical$patient.days_to_death
+                   ,KIPAN.clinical$patient.days_to_last_followup
+                   ,time = ifelse(is.na(KIPAN.clinical$patient.days_to_death)
+                   ,KIPAN.clinical$patient.days_to_last_followup
+                   ,KIPAN.clinical$patient.days_to_death)
+                   ,status=ifelse(is.na(KIPAN.clinical$patient.days_to_death),'alive', 'dead'))
+dane$time <- as.numeric(as.character(dane$time))
+allKIPAN <- merge(dane,KIPAN.RPPA
+                     ,by.x = "KIPAN.clinical.patient.bcr_patient_barcode"
+                     , by.y = "bcr_patient_barcode")
+colnames(allKIPAN)[which(names(allKIPAN) == 
+                              "KIPAN.clinical.patient.bcr_patient_barcode")] <- "barcode"
+colnames(allKIPAN)[which(names(allKIPAN) == 
+                              "KIPAN.clinical.patient.days_to_death")] <- "patient.days_to_death"
+
+
+
+n <- dim(allKIPAN)[2]
+m <-  dim(allKIPAN)[1]
+pwartosc <- numeric(n-6)
+for (i in 6:n)
+{
+  val <- colnames(allKIPAN)[i]
+  allKIPAN[,val] <- as.numeric(as.character(allKIPAN[,val]))
+  allKIPAN[,"patient.days_to_death"] <- as.numeric(as.character(allKIPAN$patient.days_to_death))
+  
+  if (sum(is.na(allKIPAN[,val])) > m/2){
+    pwartosc[i-6] <- NA
+    next
+  }
+  else{
+    med <- median(allKIPAN[,val],na.rm=TRUE)
+    if(med != all(allKIPAN$val) || is.na(allKIPAN$val)){
+      a <- survdiff(Surv(time,status == "dead")~ (allKIPAN[,val]>med), data=allKIPAN)
+      pwartosc[i-6] <- 1-pchisq(a$chisq,1)
+    }
+    else
+    {
+      pwartosc[i-6] <- 1
+    }
+  }
+  
+}
+```
+
+
+Kohortowy rak nerki: G6PD, MEK1-pS217-S221, TAZ, Tuberin, cIAP
+```{r fig.width=14, fig.height=3.5, warning=FALSE,results="hold",echo=FALSE}
+a <- which(pwartosc %in% sort(pwartosc)[1:5])
+nazwy <- as.vector(colnames(allKIPAN)[6:n])
+wybrane <-nazwy[a]
+
+i=1
+for (i in 1:5)
+{
+  val <- wybrane[i]
+  allKIPAN[,val] <- as.numeric(as.character(allKIPAN[,val]))
+  allKIPAN[,"patient.days_to_death"] <- as.numeric(as.character(allKIPAN$patient.days_to_death))
+  med <- median(allKIPAN[,val],na.rm=TRUE)
+  x <- survfit(Surv(time,status == "dead")~ (allKIPAN[,val]>med), data=allKIPAN)
+  library(ggplot2)
+  library(survMisc)
+  w <- autoplot(x,legend=FALSE, title = paste("Krzywe prze¿ycia dla bia³ka",val))
+  ggsave(file = paste0("Bia³ko.", val, ".png"), plot = w$plot)
+  print(w$plot)
+}
+
+
+```
+
+
+```{r, warning=FALSE,results="hold",echo=FALSE}
+load("C:/Users/Marta/Desktop/Warsztaty/STES.RPPA.rda")
+load("C:/Users/Marta/Desktop/Warsztaty/STES.clinical.rda")
+STES.RPPA$bcr_patient_barcode <- tolower(substr(STES.RPPA$bcr_patient_barcode, 1, 12))
+
+dane <- data.frame(STES.clinical$patient.bcr_patient_barcode
+                   ,STES.clinical$patient.days_to_death
+                   ,STES.clinical$patient.days_to_last_followup
+                   ,time = ifelse(is.na(STES.clinical$patient.days_to_death)
+                   ,STES.clinical$patient.days_to_last_followup
+                   ,STES.clinical$patient.days_to_death)
+                   ,status=ifelse(is.na(STES.clinical$patient.days_to_death),'alive', 'dead'))
+dane$time <- as.numeric(as.character(dane$time))
+allSTES <- merge(dane,STES.RPPA
+                     ,by.x = "STES.clinical.patient.bcr_patient_barcode"
+                     , by.y = "bcr_patient_barcode")
+colnames(allSTES)[which(names(allSTES) == 
+                              "STES.clinical.patient.bcr_patient_barcode")] <- "barcode"
+colnames(allSTES)[which(names(allSTES) == 
+                              "STES.clinical.patient.days_to_death")] <- "patient.days_to_death"
+```
+
+Dla raka chromofobowego nerki:
+bia³ka: HER2-pY1248, HER2-pY1289, PDK1, Rsc-pY416, p21,
+krzywe KM:
+```{r fig.width=14, fig.height=3.5, warning=FALSE,results="hold",echo=FALSE}
+n <- dim(allSTES)[2]
+m <-  dim(allSTES)[1]
+pwartosc <- numeric(n-6)
+for (i in 6:n)
+{
+  val <- colnames(allSTES)[i]
+  allSTES[,val] <- as.numeric(as.character(allSTES[,val]))
+  allSTES[,"patient.days_to_death"] <- as.numeric(as.character(allSTES$patient.days_to_death))
+  
+  if (sum(is.na(allSTES[,val])) > m/2){
+    pwartosc[i-6] <- NA
+    next
+  }
+  else{
+    med <- median(allSTES[,val],na.rm=TRUE)
+    if(med != all(allSTES$val) || is.na(allSTES$val)){
+      a <- survdiff(Surv(time,status == "dead")~ (allSTES[,val]>med), data=allSTES)
+      pwartosc[i-6] <- 1-pchisq(a$chisq,1)
+    }
+    else
+    {
+      pwartosc[i-6] <- 1
+    }
+  }
+  
+}
+
+
+a <- which(pwartosc %in% sort(pwartosc)[1:5])
+nazwy <- as.vector(colnames(allSTES)[6:n])
+wybrane <-nazwy[a]
+
+i=1
+for (i in 1:5)
+{
+  val <- wybrane[i]
+  allSTES[,val] <- as.numeric(as.character(allSTES[,val]))
+  allSTES[,"patient.days_to_death"] <- as.numeric(as.character(allSTES$patient.days_to_death))
+  med <- median(allSTES[,val],na.rm=TRUE)
+  x <- survfit(Surv(time,status == "dead")~ (allSTES[,val]>med), data=allSTES)
+  library(ggplot2)
+  library(survMisc)
+  w <- autoplot(x,legend=FALSE, title = paste("Krzywe prze¿ycia dla bia³ka",val))
+  ggsave(file = paste0("Bia³ko.", val, ".png"), plot = w$plot)
+  print(w$plot)
+}
+
+
+```
+
+Z przeprowadzonej przez nas analizy wynika, ¿e najbardziej istotne i powtarzaj¹ce siê dla ró¿nych typów bia³ka to:
+1. Myosin-IIa dla glejaka wielopostaciowyego mózgu ni¿szej klasy i gruczolakoraka jelita grubego;
+2. G6PD dla kohortowego rak nerki  oraz dla raka ¿o³¹dka i prze³yku;
+3. MEK1_pS217_S221 dla kohortowego rak nerki  oraz dla raka ¿o³¹dka i prze³yku;
+4. cIAP dla kohortowego rak nerki  oraz dla raka ¿o³¹dka i prze³yku.
