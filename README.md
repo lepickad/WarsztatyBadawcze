@@ -76,11 +76,15 @@ Ocena będzie składała się z trzech części:
 ## Terminy spotkań
 
 10:00 - 10:20 p. Sudoł, p. Pytlak
+
 10:20 - 10:40 p. Wyszyńska, p. Rudaś
+
 10:40 - 11:00 p. Jankowiak, p. Fąk
 
 13:00 - 13:20 p. Momotko, p. Śpiewak, p. Waśniewski
+
 13:20 - 13:40 p. Czerwińska, p. Stażyk
+
 13:40 - 14:00 p. Gargas, p. Bielat, p. Dobkowska
 
 
