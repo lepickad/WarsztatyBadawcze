@@ -19,7 +19,7 @@ clinic <- data.frame(time1=as.numeric(as.character(BRCA.clinical$patient.days_to
       time2=as.numeric(as.character(BRCA.clinical$patient.days_to_last_followup)),
      status = BRCA.clinical$patient.vital_status,
      tumor = substr(BRCA.clinical$patient.stage_event.tnm_categories.pathologic_categories.pathologic_t, 1, 2),
-     gender = BRCA.clinical$patient.gender,
+   gender = BRCA.clinical$patient.gender,
      country = BRCA.clinical$patient.clinical_cqcf.country,
      barcode = BRCA.clinical$patient.bcr_patient_barcode)
 
