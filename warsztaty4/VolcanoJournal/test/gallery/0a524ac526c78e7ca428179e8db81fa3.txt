@@ -1,0 +1,7 @@
+  time1 time2 status tumor gender       country      barcode time
+1    NA  3767  alive    tx female united states tcga-3c-aaau 3767
+2    NA  3801  alive    t2 female united states tcga-3c-aali 3801
+3    NA  1228  alive    t2 female united states tcga-3c-aalj 1228
+4    NA  1217  alive    t1 female united states tcga-3c-aalk 1217
+5    NA   158  alive    t2 female        russia tcga-4h-aaak  158
+6    NA  1477  alive    t2 female        brazil tcga-5l-aat0 1477

@@ -1,0 +1,7 @@
+  time1 time2 status tumor time
+1    NA  3767  alive    tx 3767
+2    NA  3801  alive    t2 3801
+3    NA  1228  alive    t2 1228
+4    NA  1217  alive    t1 1217
+5    NA   158  alive    t2  158
+6    NA  1477  alive    t2 1477
