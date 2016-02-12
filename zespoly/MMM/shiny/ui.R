@@ -53,13 +53,18 @@ shinyUI(fluidPage(
       HTML('<font size="2"><br><b>Details:</b></br> 
            The application was built with database from
            <a href = "https://github.com/RTCGA">RTCGA</a> and 
-           click <a href = "https://github.com/RTCGA">here</a>
+           click <a href = "https://github.com/pbiecek/WarsztatyBadawcze/blob/master/zespoly/MMM/report/Report_%20MMM.pdf">here</a>
            to see more details about this application.'),
       br(),
       HTML('<font size="2"><br><b>Authors:</b></br> 
            <a href="mailto:momotkoe@student.mini.pw.edu.pl">Emilia Momotko</a>, 
            <a href="mailto:spiewakm2@student.mini.pw.edu.pl">Martyna Śpiewak</a>, 
-           <a href="mailto:wasniewskim@student.mini.pw.edu.pl">Mikołaj Waśniewski</a> <br> </font>')
+           <a href="mailto:wasniewskim@student.mini.pw.edu.pl">Mikołaj Waśniewski</a> <br> </font>'),
+      br(),
+      HTML('The application was created 
+           during Scientific workshops at
+          <a href = "http://www.mini.pw.edu.pl/tikiwiki/">Faculty of Mathematics and Information Science</a>,
+           <a href = "https://www.pw.edu.pl/">Warsaw University of Technology.</a>')
       ),
     
     mainPanel(
@@ -78,7 +83,7 @@ shinyUI(fluidPage(
                              br(),
                              h5("Example:"),
                              tags$div(style="display: table; width: 100%", tags$div(style="display: table-row;", tags$div(style="width: 45%; display:table-cell", img(src = "KM1.png", height = 300, width = 500)), tags$div(style="width: 60%; vertical-align: middle; display:table-cell","The examplary plot presents the survival curves for two groups of patients: those with the value of marker greater the median belong to the first group (",tags$b("higher"),")
-                                                                                       and others were assigned to the second group (",tags$b("lower"),"). Here, we want to examine the ACSM3 marker and his impact on survival for patients with OV cancer. The X-axis shows the time (in months) and the Y-axis presents the probability of survival.
+                                                                                                                                                                                                                             and others were assigned to the second group (",tags$b("lower"),"). Here, we want to examine the ACSM3 marker and his impact on survival for patients with OV cancer. The X-axis shows the time (in months) and the Y-axis presents the probability of survival.
                                                                                                                                                                                                                              The additional vertical line marks the time selected in the prompt nr 3 (slider). The main objective of this plot is to show potential differences in survival times between two groups,
                                                                                                                                                                                                                              so the ",tags$b("p-value")," is also included (this value is coloured in red, so the chosen marker is significant prognostic factor for OV cancer). Moreover, the ", tags$b("odds ratio"), " between lower and higher group in selected point of time can also be the point of the interest (labeled as OR)."))),
                              br(),
@@ -87,9 +92,9 @@ shinyUI(fluidPage(
                              br(),
                              h5("Example:"),
                              tags$div(style="display: table; width: 100%", tags$div(style="display: table-row;", tags$div(style="width: 45%; display:table-cell", img(src = "V1.png", height = 100, width = 500)), tags$div(style="width: 60%; vertical-align: middle; display:table-cell","The violin plots picture the distribution of the marker values in patients for different types of cancer. As you can see median and quantiles are also considered. All violin plots are organized horizontally,
-                                                                                      with the same x-axis in order to ease the comparison of the behaviour of selected marker across all cancers"))),
+                                                                                                                                                                                                                            with the same x-axis in order to ease the comparison of the behaviour of selected marker across all cancers"))),
                              br(),br(),
-                             tags$li("The last tab contains the ", tags$b("table")," with the relevant data. By clicking the button ",  tags$b("Download"), " you can transfer this data into your disk and then perform another analysis. On the bottom of the page, you will find the link which transfer you to the Wikipedia where information about chosen marker are included."),
+                             tags$li("The last tab contains the ", tags$b("table")," with the relevant data. By clicking the button ",  tags$b("Download"), " you can transfer this data into your disk and then perform another analysis. On the top of the page (just above the Download button), you will find the link which transfer you to the Wikipedia where information about chosen marker are included."),
                              br(),
                              br(),
                              br()
@@ -111,18 +116,20 @@ shinyUI(fluidPage(
                                     br(),
                                     h5("Violin plots will provide you with information about the distribution of marker values across specified cancers. Additional box plots enrich the density graphs by
                                        including details about the median and quantiles.")
-                             )
-                           ),
+                                    )
+                             ),
                            plotOutput("marker_box_plot", height = 600)),
                   tabPanel("Data",fluidRow(
                     column(12,
                            h2("mRNA.data"),
-                           h5("The table with source data is also available for downloading. Be aware that this set is limited to the marker and cancers chosen in the prompts."),
-                           br(),
-                           br()
-                           )
-                    ),
-                  
+                           h5("The table with source data is also available for downloading. Be aware that this set is limited to the marker and cancers chosen in the prompts.")
+                    )
+                  ),
+                  fluidRow(value = "data22", column(12, htmlOutput("text"))
+                           
+                  ),
+                  br(),
+                  br(),
                   fluidRow(
                     column(2,
                            downloadButton('downloadData', 'Download')),
@@ -138,14 +145,12 @@ shinyUI(fluidPage(
                            DT::dataTableOutput("table")
                   ),
                   br(),
-                  fluidRow(value = "data22",
-                           htmlOutput("text")
-                  ),
+
                   br(),
                   br()
                   ))
       #tabPanel("Median", tableOutput("median"))
-                  )
+                             )
+                           )
       )
-                  )
   )
