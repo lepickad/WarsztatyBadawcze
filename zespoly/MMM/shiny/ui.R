@@ -53,7 +53,7 @@ shinyUI(fluidPage(
       HTML('<font size="2"><br><b>Details:</b></br> 
            The application was built with database from
            <a href = "https://github.com/RTCGA">RTCGA</a> and 
-           click <a href = "https://github.com/pbiecek/WarsztatyBadawcze/blob/master/zespoly/MMM/report/Report_%20MMM.pdf">here</a>
+           click <a href = "https://github.com/pbiecek/WarsztatyBadawcze/blob/master/zespoly/MMM/report/Report_MMM.pdf">here</a>
            to see more details about this application.'),
       br(),
       HTML('<font size="2"><br><b>Authors:</b></br> 
@@ -63,7 +63,7 @@ shinyUI(fluidPage(
       br(),
       HTML('The application was created 
            during Scientific workshops at
-          <a href = "http://www.mini.pw.edu.pl/tikiwiki/">Faculty of Mathematics and Information Science</a>,
+           <a href = "http://www.mini.pw.edu.pl/tikiwiki/">Faculty of Mathematics and Information Science</a>,
            <a href = "https://www.pw.edu.pl/">Warsaw University of Technology.</a>')
       ),
     
@@ -145,7 +145,7 @@ shinyUI(fluidPage(
                            DT::dataTableOutput("table")
                   ),
                   br(),
-
+                  
                   br(),
                   br()
                   ))
@@ -153,4 +153,4 @@ shinyUI(fluidPage(
                              )
                            )
       )
-  )
+    )
