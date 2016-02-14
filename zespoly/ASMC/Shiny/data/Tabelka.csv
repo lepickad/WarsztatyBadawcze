@@ -1,0 +1,36 @@
+;abbreviation ;full name;number of observation 
+1;ACC;Adrenocortical carcinoma;46
+2;BLCA;Bladder urothelial carcinoma;344
+3;BRCA;Kidney renal clear cell carcinoma;410
+4;CESC;Cervical and endocervical cancersHead and Neck squamous cell carcinoma;173
+5;CHOL;Cholangiocarcinoma;30
+6;COAD;Colon adenocarcinoma;362
+7;COADREAD;Colorectal adenocarcinoma;493
+8;DLBC;Lymphoid Neoplasm Diffuse Large B-cell Lymphoma;33
+9;ESCA;Esophageal carcinoma;126
+10;GBM;Glioblastoma multiforme;244
+11;GBMLGG;Glioma ;679
+12;HNSC;Head and Neck squamous cell carcinoma;212
+13;KICH;Kidney Chromophobe;63
+14;KIPAN;Pan-kidney cohort (KICH+KIRC+KIRP);757
+15;KIRC;Kidney renal clear cell carcinoma;478
+16;KIRP;Kidney renal papillary cell carcinoma;216
+17;LGG;Brain Lower Grade Glioma;435
+18;LUAD;Lung adenocarcinoma;365
+19;LUSC;Lung squamous cell carcinoma;328
+20;MESO;Mesothelioma;63
+21;OV;Ovarian serous cystadenocarcinoma;436
+22;PAAD;Pancreatic adenocarcinoma;123
+23;PCPG;Pheochromocytoma and Paraganglioma;82
+24;PRAD;Prostate adenocarcinoma;352
+25;READ;Rectum adenocarcinoma;131
+26;SARC;Sarcoma;226
+27;SKCM;Skin Cutaneous Melanoma;206
+28;STAD;Stomach adenocarcinoma;357
+29;STES;Stomach and Esophageal carcinoma;483
+30;TGCT;Testicular Germ Cell Tumors;122
+31;THCA;Thyroid carcinoma;224
+32;THYM;Thymoma;90
+33;UCEC;Uterine Corpus Endometrial Carcinoma;440
+34;UCS;Uterine Carcinosarcoma;48
+35;UVM;Uveal Melanoma;12

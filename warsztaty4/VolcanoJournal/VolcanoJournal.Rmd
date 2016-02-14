@@ -96,6 +96,9 @@ Zdalne repozytorium
 ```{r, message=FALSE, eval=FALSE}
 library(archivist)
 archivist::aread("pbiecek/graphGallery/2a6e492cb6982f230e48cf46023e2e4f")
+
+archivist::aread("pbiecek/graphGallery/2a6e492cb6982f230e48cf46023e2e4f")
+
 ```
 
 Pakiet
@@ -119,6 +122,8 @@ saveToRepo(ob2)
 loadFromLocalRepo("42ebb8db81d506e94e7a2878f423ded5", value = TRUE)
 
 wykresy <- searchInLocalRepo(pattern = "class:gg")
+
+loadFromLocalRepo("16e7cb41e0056cb297bff6890c12776d", value = TRUE)
 
 ```
 
