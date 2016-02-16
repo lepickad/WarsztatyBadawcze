@@ -43,7 +43,7 @@ shinyUI(fluidPage(
                   c(), multiple = TRUE),
       actionButton("ok", "\nGo!", icon=icon('bicycle')),
       hr(),
-      h4(icon('cogs'), 'Futher options:'), 
+      h4(icon('cogs'), 'Further options:'), 
       ############# SURVIVAL CURVES PANEL ############# 
       conditionalPanel(condition = "input.tabs1 == 'sc'",
         radioButtons('co', 'Strata cut-off:',
