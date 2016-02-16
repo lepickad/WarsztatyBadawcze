@@ -9,7 +9,10 @@ shinyUI(navbarPage("Methylation profile and survival analysis",
                                   h2("Methylation profile", align = "center"),
                                   h3("Adrianna Sudol & Pawel Pytlak", align = "center"),
                                   br(),
-                                  h4("Dear user! Enjoy our application!")
+                                  h4("Faculty of Mathematics and Information Science", align  = "center"), 
+                                  h4("Warsaw University of Technology", align = "center"),
+                                  br(),
+                                  h4("Dear user! Enjoy our application!", align = "center")
                                   ),
                                
                                mainPanel(
@@ -46,21 +49,6 @@ shinyUI(navbarPage("Methylation profile and survival analysis",
                    tabPanel("Survival curves",
                             sidebarLayout(
                                sidebarPanel(
-                                  
-#                                   p("The plot in the upper right-hand side depicts the 
-#                                     Kaplan-Meier survival curves for the chosen probe and 
-#                                     the selected cancer type. The green and orange curves 
-#                                     refer to the patients with a methylation profile 
-#                                     consecutively above and below the chosen threshold. 
-#                                     "),
-#                                   
-#                                   p("The table in the lower right-hand side shows the basic 
-#                                    information concerning the log-rank test used to compare 
-#                                    the survival probability in the two groups, e.g. the 
-#                                    number of patients in each group (marked as ", 
-#                                     span(em("N")), ")."),
-#                                   
-#                                   br(),
                                   
                                  selectInput("marker2", 
                                               label = "Choose a probe to analyse:",
@@ -99,19 +87,12 @@ shinyUI(navbarPage("Methylation profile and survival analysis",
                                    the survival probability in the two groups, e.g. the 
                                    number of patients in each group (marked as ", 
                                    span(em("N")), ").")
-                                 
-#                                   width = 5
-                                 
-                                  
-                                  ),
+                              ),
                                mainPanel(
                                   
                                   plotOutput("km"), 
                                   br(),
-                                  verbatimTextOutput("survtest")
-#                                   width = 7
-                                  
-                               )
+                                  verbatimTextOutput("survtest"))
                             ) 
                             
                    ),
@@ -168,9 +149,7 @@ shinyUI(navbarPage("Methylation profile and survival analysis",
                                     types for which the given probes are significant. The full 
                                     names of cancer types are presented below."),
                                   
-#                                   verbatimTextOutput("cancer_names")
-                                  
-                                  br(),
+                                 br(),
                                   
                                   p(span(strong("BRCA: ")), "Breast Invasive Carcinoma",                                                              
                                     span(strong("COAD: ")), "Colon Adenocarcinoma",                                                                 
@@ -230,31 +209,7 @@ shinyUI(navbarPage("Methylation profile and survival analysis",
                                            "after certain cancer names in the input below indicates the 
                                             significance of the chosen probe for these cancers."),
                                   
-                                  uiOutput("dynamic2")
-                                  
-#                                   p("The panels beside present different types of statistical 
-#                                       plots showing the distribution of methylation for a given 
-#                                       probe and given cancer types chosen in the inputs above.")
-                                  
-#                                   p(span(strong("cumulated histogram: ")), 
-#                                     "a histogram of methylation for the selected probe is shown, 
-#                                         jointly for the selected cancer types (by default all cancer 
-#                                         types are chosen)"),
-                                  
-#                                   p(span(strong("comparison histogram: ")), 
-#                                     "a histogram of methylation for the chosen probe is depicted, 
-#                                         by type of cancer selected, i.e. each colour in the bin shows the 
-#                                         frequency of occurrence of patients with a given methylation 
-#                                         degree and with a given cancer type (by default all cancer 
-#                                         types are chosen)"),
-                                  
-#                                   p(span(strong("comparison boxplots: ")), 
-#                                     "methylation boxplots for the selected probe and selected cancer 
-#                                      types are shown (by default all cancer types are chosen)")
-                                 
-
-
-                               ),
+                                  uiOutput("dynamic2")),
                                
                                mainPanel(
                                   h3(strong("Distribution of methylation for a given probe")),
