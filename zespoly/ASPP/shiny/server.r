@@ -1,4 +1,3 @@
-#library(survMisc)
 library(ggplot2)
 library(stringi)
 library(xtable)
@@ -14,6 +13,9 @@ options(scipen=999)
 shinyServer(
    function(input, output) {
       
+      #SURVIVAL PLOT AND LOG-RANK TEST RESULTS 
+      
+      #creating dynamic input values  
       markerName2 <- reactive({unlist(stri_extract_all_regex(input$marker2, "^.+(?=_)"))})
       signifCancers2 <- reactive({stri_trans_toupper(
          as.character(signif_probes$cancer[signif_probes$probe==markerName2()]))})
@@ -29,18 +31,18 @@ shinyServer(
       
       quantile=stats::quantile
       
+      
+      #dynamic input values 
       output$dynamic1 <- renderUI({
          selectInput("cancer2", label = "Choose a cancer to analyse:", 
                      choices = joint2(), selected = joint2()[1])
       })
       
+      #creating survival plots
       output$km <- renderPlot({
          extracted <- unlist(stri_extract_all_regex(input$cancer2, "(?<=\\().*?(?=\\))"))
          if(is.null(input$cancer2)){
             return(plot.new())
-#          } else if(!(input$cancer2 %in% signifCancers2())){
-#          } else if(!(extracted %in% signifCancers2())){
-#             return(plot.new())
          } else {
             cancerSet <- get(stri_trans_tolower(extracted))
             n <- which(colnames(cancerSet)==markerName2())
@@ -54,27 +56,18 @@ shinyServer(
             test <- survival::survfit(survival::Surv(inyears, status=="dead")~(methylation>threshold), data=cancerSet)
             test2 <- survival::survdiff(survival::Surv(inyears, status=="dead")~(methylation>threshold), data=cancerSet)
             pvalue <- 1 - pchisq(test2$chi, 1)
-            #survMisc::autoplot(test, title = "Kaplan-Meier curves", nodeLabels=c("below", "over"), plotTable=TRUE)
-#             survMisc::autoplot(test)$plot  + ylim(0,1) + xlim(0,19) + 
-#                ylab("survival probability") + xlab("time (in years)") + 
-#                ggtitle(paste("p-value: ", pvalue))
             survMisc::autoplot(test, legLabs = c("lower methylation", "higher methylation"), 
                                legTitle = "population")$plot + ylim(0,1) + xlim(0,19) + 
                ylab("survival probability") + xlab("time (in years)") + 
                ggtitle(paste("p-value: ", pvalue))
-            #          ggsurv(test) + ylim(0,1) + xlim(0,19) + 
-            #             ylab("survival probability") + xlab("time (in years)") + 
-            #             scale_colour_discrete(name="Population", labels=c("below", "under"))   
          }      
 })
       
+      #creating the log-rank test
       output$survtest <- renderPrint({
          extracted <- unlist(stri_extract_all_regex(input$cancer2, "(?<=\\().*?(?=\\))"))
          if(is.null(input$cancer2)){
             return(plot.new())
-#          } else if(!(input$cancer2 %in% signifCancers2())){
-#          } else if(!(extracted %in% signifCancers2())){
-#             return(plot.new())
          } else {
             cancerSet <- get(stri_trans_tolower(extracted))
             n <- which(colnames(cancerSet)==markerName2())
@@ -89,20 +82,13 @@ shinyServer(
             names(test3$n)[1] <- "lower methylation"
             names(test3$n)[2] <- "higher methylation"
             test3
-            #print(dimnames(test3$obs))
-            #print(str(test3))
-            #data.frame(test3$n, test3$obs, test3$exp, test3$var)
          }
       })
       
-
-#       markerName <- reactive({unlist(stri_extract_all_regex(input$marker, "^.+(?=_)"))})
-#       signifCancers <- reactive({stri_trans_toupper(
-#          as.character(signif_probes$cancer[signif_probes$probe==markerName()]))})
-# #       chosen <- reactive({signifCancers()[signifCancers() %in% input$cancer==TRUE]})
-#       fullNames <- reactive({cancer_names$full_name[cancer_names$abbreviation %in% signifCancers()]})
-#       joint <- reactive({stri_paste(fullNames2(), stri_paste("(", signifCancers2(), ")"), sep = " ")})
       
+      #DISTRIBUTION OF METHYLATION      
+
+      #creating dynamic input values
       markerName <- reactive({unlist(stri_extract_all_regex(input$marker, "^.+(?=_)"))})
       signifCancers <- reactive({stri_trans_toupper(
          as.character(signif_probes$cancer[signif_probes$probe==markerName()]))})
@@ -116,7 +102,8 @@ shinyServer(
       jointr <- reactive({stri_paste(fullNamesr(), stri_paste("(", restCancers(), ")"), sep = " ")})
       joint <- reactive({c(joints(), jointr())})
       
-
+      
+      #dynamic input values
       output$dynamic2 <- renderUI({
          selectInput("cancer", label = "Choose cancer types to analyse:", 
                      choices = joint(), 
@@ -125,6 +112,7 @@ shinyServer(
       })
 
       
+      #creating a cumulated histogram
       output$histogram <- renderPlot({
          if (length(input$cancer)==0){
             return(NULL)
@@ -138,6 +126,7 @@ shinyServer(
          }
       })
       
+      #creating a comparison histogram
       output$compHistograms <- renderPlot({
          if (length(input$cancer)==0){
             return(NULL)
@@ -150,6 +139,7 @@ shinyServer(
          }
       })
       
+      #creating comparison boxplots
       output$compBoxplots <- renderPlot({
          if (length(input$cancer)==0){
             return(NULL)
@@ -164,6 +154,10 @@ shinyServer(
          }
       })
       
+         
+      #SIGNIFICANT PROBES
+      
+      #creating significant probes
       extractedNames <- reactive({unlist(stri_extract_all_regex(input$cancer_table, "(?<=\\().*?(?=\\))"))})
       signifMarkers <- reactive({signif_probes$probe[signif_probes$cancer==stri_trans_tolower(extractedNames())]})
 
@@ -172,6 +166,9 @@ shinyServer(
            })
       
       
+      #COMMON PROBES
+
+      #common probes for 1 cancer type
       output$intersect1 <- renderPrint({
          signif1 <- as.character(significant1)[1:min(length(significant1),input$cmarkers_displayed)]
          cancers1 <- lapply(signif1, 
@@ -181,7 +178,8 @@ shinyServer(
                                collapse=", "))
          stri_paste(signif1, cancers1, sep = ": ")
       })
-
+      
+      #common probes for 2 cancer types
       output$intersect2 <- renderPrint({
          signif2 <- as.character(significant2)[1:min(length(significant2),input$cmarkers_displayed)]
          cancers2 <- lapply(signif2, 
@@ -192,6 +190,7 @@ shinyServer(
          stri_paste(signif2, cancers2, sep = ": ")
       })
       
+      #common probes for 3 cancer types
       output$intersect3 <- renderPrint({
         signif3 <- as.character(significant3)[1:min(length(significant3),input$cmarkers_displayed)]
         cancers3 <- lapply(signif3, 
@@ -202,6 +201,7 @@ shinyServer(
         stri_paste(signif3, cancers3, sep = ": ")
       })
       
+      #common probes for 4 cancer types
       output$intersect4 <- renderPrint({
         signif4 <- as.character(significant4)[1:min(length(significant4),input$cmarkers_displayed)]
         cancers4 <- lapply(signif4, 
@@ -212,6 +212,7 @@ shinyServer(
         stri_paste(signif4, cancers4, sep = ": ")
       })
       
+      #common probes for 5 cancer types
       output$intersect5 <- renderPrint({
         signif5 <- as.character(significant5)[1:min(length(significant5),input$cmarkers_displayed)]
         cancers5 <- lapply(signif5, 
@@ -222,34 +223,6 @@ shinyServer(
         stri_paste(signif5, cancers5, sep = ": ")
       })
 
-#       output$cancer_names <- renderPrint({
-#          c("BRCA: Breast Invasive Carcinoma", "COAD: Colon Adenocarcinoma",
-#            "COADREAD: Colon Adenocarcinoma and Rectum Adenocarcinoma combined", 
-#            "GBM: Glioblastoma Multiforme", 
-#            "GBMLGG: Glioblastoma Multiforme and Brain Lower Grade Glioma combined", 
-#            "KIPAN: Kidney Renal Clear Cell Carcinoma and Kidney Renal Papillary Cell Carcinoma combined", 
-#            "KIRC: Kidney Renal Clear Cell Carcinoma", 
-#            "KIRP: Kidney Renal Papillary Cell Carcinoma",                                                
-#            "LAML: Acute Myeloid Leukemia",                                                               
-#            "LUAD: Lung Adenocarcinoma", 
-#            "LUSC: Lung Squamous Cell Carcinoma",                                                          
-#            "OV: Ovarian Serous Cystadenocarcinoma", 
-#            "READ: Rectum Adenocarcinoma",                                                                 
-#            "STAD: Stomach Adenocarcinoma",                                                                
-#            "STES: Stomach Adenocarcinoma and Esophageal Carcinoma combined",                             
-#            "UCEC: Uterine Corpus Endometrial Carcinoma")})
-
-      
    }
 )
 
-
-#          cancers2 <- lapply(signif2, function(x) as.character(signif_probes$cancer[signif_probes$probe==x]))
-#          cancersf <- lapply(cancers, function(y) as.factor(y))
-#          stri_paste(1:length(signif2), stri_paste(signif2, cancers2, sep = ": "), sep=") ")
-#          n <- length(signif2)
-#          pasted <- character(n)
-#          for(i in seq_along(signif2)){
-#             pasted[i] <- stri_paste(signif2[i], ": ", stri_paste(cancers2[[i]]), sep=" ")
-#          }
-#          pasted
