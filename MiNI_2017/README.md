@@ -13,7 +13,7 @@ Celem naszych zajęć jest praca nad dwoma kompetencjami, ważnymi w pracy badaw
 - Głęboka praca nad danymi
 - Dyskutowanie uzyskanych rozwiązań
 
-Aby ten cel zrealizować będziemy pracować nad projketem związanym z badaniem PISA 2015,
+Aby ten cel zrealizować będziemy pracować nad projektem związanym z badaniem PISA 2015,
 pytanie badawcze, które nam przyświeca to:
 
   Czy uczniowie mają różne strategie związane z rozwiązywaniem testu (czasem przeznaczonym na różne zadania) i czy te strategie wpływają na końcowy wynik PISA?
@@ -60,7 +60,7 @@ Wyniki jako skrypt knitra z kodem i wynikami prześlij na adres email.
 ## Ocena
 
 ### Zadanie 0 - [PrzygotowanieDanych]
-Aby móc zrealizować poniższe zadania, należy najpierw przygotowac ramkę danych z następującymi kolumnami (wiersz to para zadanie-student):
+Aby móc zrealizować poniższe zadania, należy najpierw przygotować ramkę danych z następującymi kolumnami (wiersz to para zadanie-student):
 
 - CNT - id kraju
 - CNTSCHID - id szkoły
@@ -76,7 +76,7 @@ Aby móc zrealizować poniższe zadania, należy najpierw przygotowac ramkę dan
 - ST016 - odpowiedź na pytanie ST016
 - ST118 - odpowiedź na pytanie ST118
 
-Taka ramka, będzie miała około 40 milionów wierszy. W przypadku problemów z pracą nad wszystkimi danymi, nalezy wybrać ~10 krajów i wykonać taką ramkę dla wybranych krajów.
+Taka ramka, będzie miała około 40 milionów wierszy. W przypadku problemów z pracą nad wszystkimi danymi, należy wybrać ~10 krajów i wykonać taką ramkę dla wybranych krajów.
 
 ### Ważne!!
 
@@ -86,30 +86,32 @@ Dane opisujące zadania są udostępnione w pliku 'Cognitive item data file'. Cz
 - Drugi znak S/M/R opisuje czy zadanie dotyczy czytania (R), matematyki (M) czy nauk przyrodniczych (S). Interesują nas wszystkie
 - Kolejne trzy znaku to numer zadania. Tutaj jest to `909`
 - Szóstym znakiem powinno być zawsze `Q`
-- Kolejne dwa znaki to fragment zadania. Zazwyczaj to kolejne liczby, tutaj to `01`, ale jest też `02` itp. Każdy z framentów jest niezależnie oceniany.
-- Kolejny znak opisuje co jest w danej kolumnie. `S` znaczy score, czyli w tej kolunnie jest informajca czy student rozwiązał to zadanie (Full credit) nie rozwiązał (No credit), rozwiązał częściowo lub nie widział na oczy. `T` oznacza imings, w tej kolumnie jest czas rozwiązywania zadania. `A` oznacza actions, czyli liczbę interakcji z komputerem zanim rozwiązano zadanie. Kozostałe litery sa praktycznie nieciekawe.
+- Kolejne dwa znaki to fragment zadania. Zazwyczaj to kolejne liczby, tutaj to `01`, ale jest też `02` itp. Każdy z fragmentów jest niezależnie oceniany.
+- Kolejny znak opisuje co jest w danej kolumnie. `S` znaczy score, czyli w tej kolumnie jest informacja czy student rozwiązał to zadanie (Full credit) nie rozwiązał (No credit), rozwiązał częściowo lub nie widział na oczy. `T` oznacza timings, w tej kolumnie jest czas rozwiązywania zadania. `A` oznacza actions, czyli liczbę interakcji z komputerem zanim rozwiązano zadanie. Pozostałe litery są praktycznie nieciekawe.
 
 Czyli kolumny `CM909Q01S` i `CM909Q02S` opisują wyniki dwóch kolejnych podpunktów zadania `909` z matematyki, robionego na komputerze. Kolumny  `CM909Q01T` i `CM909Q02T` opisują czasy rozwiązywania zadań.
 
-### Zadanie na 3
+### Zadanie na 3 [StatystykiKrajow]
 
+W tym zadaniu należy na podstawie tabeli, stworzone w punkcie [PrzygotowanieDanych], przygotować dla każdego zadania statystyki jeżeli chodzi o wyniki i czas rozwiązywania w podziale na kraje.
 
+Wynikiem tego zadania jest plik knitrowy (html) z kodem R oraz statystykami czasów rozwiązywania i wyników rozwiązywania w podziale na kraje.
 
-### Zadanie na 3,5
+### Zadanie na 3,5 [Pozycja]
 
+W tym zadaniu, należy uwzględnić kolejność rozwiązywania zadań. Statystyki z punktu [StatystykiKrajow] należy wyznaczyć osobno dla zadań prezentowanych na pozycji 1/2/3/4. Należy sprawdzić jak zachowują się profile odpowiedzi/czasu na odpowiedzi w zależności od kolejności rozwiązywania zadań.
 
+### Zadanie na 4 [Segmentacja]
 
-### Zadanie na 4
+W tym zadaniu, należy na podstawie danych z zadania [PrzygotowanieDanych], zadania [StatystykiKrajow] i zadania [Pozycja] opracować podział strategii uczniów na od 4 do 9 nazwanych i zdefiniowanych segmentów. Przykłady segmentów - uczniowie poświęcający dużo czasu na początku testu a później szybko rozwiązujący zadania; uczniowie poświęcający dużo czasu na zadania, którzy nie zdążą rozwiązać całego testu; uczniowie którzy poświęcają mało czasu na zadania których nie potrafią rozwiązać a więcej czasu na te które potrafią rozwiązać.
 
+Należy następnie porównać kraje/szkoły pod kątem występowania poszczególnych strategii.
 
+### Zadanie na 4,5 [EfektStrategii]
 
-### Zadanie na 4,5
+Należy odpowiedzieć na pytanie, czy różnice w stosowanych strategiach mają wpływ na końcowy wynik osiągnięty w badaniu PISA.
+Oraz jak wyglądałby końcowy ranking PISA gdyby usunąć wpływ stosowanej strategii.
 
+### Zadanie na 5 [RaportBadawczy]
 
-
-### Zadanie na 5
-
-
-
-
-
+Należy przygotować raport w języku angielskim podsumowujący przeprowadzone badanie, razem z odniesieniami do literatury na tematy podobnych badań, z podsumowaniem uzyskanych wyników i dyskusją końcową.
