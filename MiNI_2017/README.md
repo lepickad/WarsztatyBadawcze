@@ -16,7 +16,7 @@ Celem naszych zajęć jest praca nad dwoma kompetencjami, ważnymi w pracy badaw
 Aby ten cel zrealizować będziemy pracować nad projektem związanym z badaniem PISA 2015,
 pytanie badawcze, które nam przyświeca to:
 
-  Czy uczniowie mają różne strategie związane z rozwiązywaniem testu (czasem przeznaczonym na różne zadania) i czy te strategie wpływają na końcowy wynik PISA?
+  *Czy uczniowie mają różne strategie związane z rozwiązywaniem testu (czasem przeznaczonym na różne zadania) i czy te strategie wpływają na końcowy wynik PISA?*
 
 ## Na start
 
@@ -37,6 +37,10 @@ Każdy zespół powinien wybrać jedną osobę, kapitana, przez którego prowadz
 
 Dane PISA 2015 są dostępne na stronie http://www.oecd.org/pisa/data/2015database/. Krótka instrukcja jak wczytać te dane znajduje się tutaj
 http://smarterpoland.pl/index.php/2016/12/pisa-2015-how-to-readprocessplot-the-data-with-r/
+
+W pliku https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/materialy/sheet_structure.xlsx znajduje się struktura kolejności zadań dla czterech głównych klastrów.
+Kolejność klastrów przyrodniczych w połączeniu z ''magiczną liczbą'' jest opisana w pliku https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/materialy/science_cluster_encoding.xlsx. Przydział do klastrów jest w pliku https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/materialy/science_cluster_combination.xlsx.
+
 
 
 ## Metodologia do omówienia
