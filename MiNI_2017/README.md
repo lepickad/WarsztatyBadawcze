@@ -61,9 +61,44 @@ Aby móc zrealizować poniższe zadania, należy najpierw przygotowac ramkę dan
 - result - czy student rozwiązał zadanie czy nie?
 - n.actions - ile akcji wykonał aby rozwiązać zadanie
 - timing - ile czasu trwało rozwiązanie tego zadania
+- position - pozycja, na której znajdowało się zadanie w danym kwestionariuszu
 - ST016 - odpowiedź na pytanie ST016
 - ST118 - odpowiedź na pytanie ST118
 
 Taka ramka, będzie miała około 40 milionów wierszy. W przypadku problemów z pracą nad wszystkimi danymi, nalezy wybrać ~10 krajów i wykonać taką ramkę dla wybranych krajów.
+
+### Ważne!!
+
+Dane opisujące zadania są udostępnione w pliku 'Cognitive item data file'. Cześć zadań jest przeprowadzana na papierze (te nas nie interesują), część na komputerze. Nazwa przykładowej kolumny wygląda tak: `CM909Q01S`. Jak ją czytać?
+
+- Pierwszy znak to C/P/D i opisuje czy zadanie było na papierze czy komputerze. Wartości C i D oznaczają zadania na komputerze, Wartość P oznacza zadanie papierowe (ignorujemy).
+- Drugi znak S/M/R opisuje czy zadanie dotyczy czytania (R), matematyki (M) czy nauk przyrodniczych (S). Interesują nas wszystkie
+- Kolejne trzy znaku to numer zadania. Tutaj jest to `909`
+- Szóstym znakiem powinno być zawsze `Q`
+- Kolejne dwa znaki to fragment zadania. Zazwyczaj to kolejne liczby, tutaj to `01`, ale jest też `02` itp. Każdy z framentów jest niezależnie oceniany.
+- Kolejny znak opisuje co jest w danej kolumnie. `S` znaczy score, czyli w tej kolunnie jest informajca czy student rozwiązał to zadanie (Full credit) nie rozwiązał (No credit), rozwiązał częściowo lub nie widział na oczy. `T` oznacza imings, w tej kolumnie jest czas rozwiązywania zadania. `A` oznacza actions, czyli liczbę interakcji z komputerem zanim rozwiązano zadanie. Kozostałe litery sa praktycznie nieciekawe.
+
+Czyli kolumny `CM909Q01S` i `CM909Q02S` opisują wyniki dwóch kolejnych podpunktów zadania `909` z matematyki, robionego na komputerze. Kolumny  `CM909Q01T` i `CM909Q02T` opisują czasy rozwiązywania zadań.
+
+### Zadanie na 3
+
+
+
+### Zadanie na 3,5
+
+
+
+### Zadanie na 4
+
+
+
+### Zadanie na 4,5
+
+
+
+### Zadanie na 5
+
+
+
 
 
