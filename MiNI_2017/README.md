@@ -24,6 +24,10 @@ pytanie badawcze, które nam przyświeca to:
 * Manual omawiający jak należy analizować dane z badania PISA https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/materialy/SPSS_Analysis_Manual.pdf
 * Omowienie części wyników z badania PISA 2015 https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/materialy/PISA_2015_results.pdf
 
+Dane PISA 2015 są dostępne na stronie http://www.oecd.org/pisa/data/2015database/. Krótka instrukcja jak wczytać te dane znajduje się tutaj
+http://smarterpoland.pl/index.php/2016/12/pisa-2015-how-to-readprocessplot-the-data-with-r/
+
+
 ## Metodologia do omówienia
 
 Na podstawie https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/materialy/SPSS_Analysis_Manual.pdf
@@ -43,4 +47,23 @@ Wyniki jako skrypt knitra z kodem i wynikami prześlij na adres email.
 
 
 ## Ocena
+
+### Zadanie 0
+Aby móc zrealizować poniższe zadania, należy najpierw przygotowac ramkę danych z następującymi kolumnami (wiersz to para zadanie-student):
+
+- CNT - id kraju
+- CNTSCHID - id szkoły
+- CNTSTUID - id studenta
+- BOOKID - id kwestionariusza
+- CBASCI - magiczna liczba dla permutacji zadań przyrodniczych
+- item - nazwa zadania
+- item_short - skrótowa nazwa zadania
+- result - czy student rozwiązał zadanie czy nie?
+- n.actions - ile akcji wykonał aby rozwiązać zadanie
+- timing - ile czasu trwało rozwiązanie tego zadania
+- ST016 - odpowiedź na pytanie ST016
+- ST118 - odpowiedź na pytanie ST118
+
+
+
 
