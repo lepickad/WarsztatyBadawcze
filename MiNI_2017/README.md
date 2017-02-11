@@ -18,6 +18,17 @@ pytanie badawcze, które nam przyświeca to:
 
   Czy uczniowie mają różne strategie związane z rozwiązywaniem testu (czasem przeznaczonym na różne zadania) i czy te strategie wpływają na końcowy wynik PISA?
 
+## Na start
+
+Wszystkie wyniki należy zgłaszać przez GitHuba https://github.com/pbiecek/WarsztatyBadawcze/tree/master/MiNI_2017/projekty.
+
+Postęp prac można śledzić na https://waffle.io/pbiecek/WarsztatyBadawcze. Zespół przed oddaniem kolejnego etapu, powinien zgłosić nowy issue a w nazwie podać nazwę etapu i nazwę zespołu.
+
+Wszyscy członkowie zespołu otrzymują tą samą ocenę.
+
+Każdy zespół powinien wybrać jedną osobę, kapitana, przez którego prowadzona będzie komunikacja.
+
+
 ## Dane i materiały
 
 * Przykładowy kwestionariusz https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/materialy/EnglishStudentQuestionnaire.pdf
@@ -48,7 +59,7 @@ Wyniki jako skrypt knitra z kodem i wynikami prześlij na adres email.
 
 ## Ocena
 
-### Zadanie 0
+### Zadanie 0 - [PrzygotowanieDanych]
 Aby móc zrealizować poniższe zadania, należy najpierw przygotowac ramkę danych z następującymi kolumnami (wiersz to para zadanie-student):
 
 - CNT - id kraju
