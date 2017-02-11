@@ -64,6 +64,6 @@ Aby móc zrealizować poniższe zadania, należy najpierw przygotowac ramkę dan
 - ST016 - odpowiedź na pytanie ST016
 - ST118 - odpowiedź na pytanie ST118
 
-
+Taka ramka, będzie miała około 40 milionów wierszy. W przypadku problemów z pracą nad wszystkimi danymi, nalezy wybrać ~10 krajów i wykonać taką ramkę dla wybranych krajów.
 
 
