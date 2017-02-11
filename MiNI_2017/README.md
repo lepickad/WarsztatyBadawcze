@@ -35,5 +35,12 @@ Na podstawie https://github.com/pbiecek/WarsztatyBadawcze/blob/master/MiNI_2017/
 * Jak liczyć błędy standardowe? (rozdział 7)
 * Jak liczyć błędy standardowe dla miar PV? (rozdział 8)
 
+## Pre
+
+Pakiet BetaBit jest dostępny na CRAN (https://cran.r-project.org/web/packages/BetaBit/index.html). 
+Zainstaluj go, a następnie rozwiąż możliwie wiele zagadek z zadań `proton`, `frequon` i `pearson`.
+Wyniki jako skrypt knitra z kodem i wynikami prześlij na adres email.
+
+
 ## Ocena
 
