@@ -28,6 +28,14 @@ Wszyscy członkowie zespołu otrzymują tą samą ocenę.
 
 Każdy zespół powinien wybrać jedną osobę, kapitana, przez którego prowadzona będzie komunikacja.
 
+## Plan spotkań
+
+* 2017-03-03 Omówienie problemu do rozwiązania
+* 2017-03-10 Przedstawienie metodologii analizy danych PISA
+* 2017-03-17 Indywidualne spotkania
+* 2017-03-31 Prezentacja obecnego stanu rozwiązań
+* 2017-04-07 Indywidualne spotkania
+* 2017-04-21 Prezentacje uzyskanych rozwiązań
 
 ## Dane i materiały
 
