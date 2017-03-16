@@ -1,0 +1,66 @@
+---
+title: "Zadanie3"
+author: "A.Brodecka, M.Stolarczyk"
+date: "13 marca 2017"
+output: html_document
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = FALSE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(stringr)
+
+data <- readRDS('zadanie0_wynik.rds')
+```
+
+
+```{r, results='asis'}
+
+data %>% filter(result %in% c('Full credit')) -> items
+items <- unique(items$item)
+
+for (it in items){
+
+cat(paste0('Pytanie: \n ', it))
+   
+  
+data %>% filter(item == it) %>% 
+  select(CNT, timing) %>%
+  group_by(CNT) %>% summarise(TimeAvg = mean(timing, na.rm = TRUE),
+                              TimeMin = min(timing, na.rm = TRUE),
+                              TimeMax = max(timing, na.rm = TRUE),
+                              TimeMed = median(timing, na.rm = TRUE)) %>%
+  mutate(CNT = str_trim(CNT)) %>%
+  as.data.frame() -> time
+  
+data %>% filter(item == it) %>%  
+  select(CNT, result) %>%
+  group_by(CNT, result) %>% summarise(value = n()) %>% 
+  as.data.frame( )%>% spread(result, value) %>% 
+  mutate(FreqFull = round(`Full credit`/rowSums(.[-1]), 2),
+         CNT = str_trim(CNT)) %>%
+  left_join(time, by = c('CNT' = 'CNT'))-> odp
+
+colnames(odp)[colnames(odp) == '<NA>'] <- 'NaValues'
+
+to_print <- rbind(
+  odp %>% arrange(desc(FreqFull)) %>% head(5),
+  odp %>% arrange(-desc(FreqFull)) %>% head(5)
+)
+
+if (!('POL' %in% str_trim(to_print[,1]))) {
+  try(to_print <- rbind(odp %>% filter(CNT == 'POL'), to_print))
+}
+
+cat("\n")
+print(kable(to_print))
+cat("\n")
+ 
+}
+```
+
