@@ -1,0 +1,92 @@
+---
+title: "Warsztaty badawcze - zadanie 3"
+author: "Magdalena Mazurek, Piotr Smuda, Bartosz Topolski"
+output: html_document
+---
+
+<br>
+
+# Wczytanie danych
+
+```{r, message = FALSE, warning = FALSE, cache = TRUE, cache.lazy = FALSE}
+library(dplyr)
+library(DT)
+
+load("../data/processed_data/dane_pisa_merged_final.RDA")
+
+# Wybór krajów do ustalenia ilości obiektów do wyświetlenia
+countries <- unique(dane_pisa_merged_final$CNT)
+n <- length(countries)
+
+# Zamiana na factor do lepszego wyszukiwania w tabelkach
+dane_pisa_merged_final$item_short <- as.factor(dane_pisa_merged_final$item_short)
+dane_pisa_merged_final$CNT <- as.factor(dane_pisa_merged_final$CNT)
+```
+
+<br>
+
+# Czas rozwiązywania zadań
+
+```{r, cache = TRUE}
+result_timing <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
+   summarise(min = min(timing, na.rm = TRUE),
+          q1 = quantile(timing, 0.25, na.rm = TRUE),
+          median = median(timing, na.rm = TRUE),
+          mean = round(mean(timing, na.rm = TRUE), 2),
+          q3 = quantile(timing, 0.75, na.rm = TRUE),
+          max = max(timing, na.rm = TRUE))
+
+datatable(result_timing, 
+          filter = "top", 
+          rownames = FALSE,
+          options = list(
+            searching = FALSE,
+            pageLength = 10,
+            lengthMenu = c(10, seq(n, 5*n, n)),
+            autoWidth = TRUE,
+            columnDefs = list(list(width = '120px', targets = 0))))
+```
+
+<br>
+
+# Rodzaje zakończenia rozwiązywania zadań
+
+```{r, cache = TRUE}
+result_result <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
+   summarise(full_credit = sum(ifelse(is.na(result), 0, result == 1)),
+             no_credit = sum(ifelse(is.na(result), 0, result == 0)),
+             other = sum(is.na(result)))
+
+datatable(result_result, 
+          filter = "top", 
+          rownames = FALSE,
+          options = list(
+            searching = FALSE,
+            pageLength = 10,
+            lengthMenu = c(10, seq(n, 5*n, n)),
+            autoWidth = TRUE))
+```
+
+<br>
+
+# Liczba akcji potrzebnych do rozwiązania zadań
+
+```{r, cache = TRUE}
+result_n_actions <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
+   summarise(min = min(n.actions, na.rm = TRUE),
+             q1 = quantile(n.actions, 0.25, na.rm = TRUE),
+             median = median(n.actions, na.rm = TRUE),
+             mean = round(mean(n.actions, na.rm = TRUE), 2),
+             q3 = quantile(n.actions, 0.75, na.rm = TRUE),
+             max = max(n.actions, na.rm = TRUE))
+
+datatable(result_n_actions, 
+          filter = "top", 
+          rownames = FALSE,
+          options = list(
+            searching = FALSE,
+            pageLength = 10,
+            lengthMenu = c(10, seq(n, 5*n, n)),
+            autoWidth = TRUE,
+            columnDefs = list(list(width = '120px', targets = 0))))
+```
