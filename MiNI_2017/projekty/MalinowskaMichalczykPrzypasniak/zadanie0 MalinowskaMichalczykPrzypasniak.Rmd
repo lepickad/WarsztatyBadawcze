@@ -27,10 +27,10 @@ cog<-readRDS("cog.rds", refhook = NULL)
 ```
 Przygotowanie klastrów dla matematyki i czytania
 ```{r}
-M0<-vector("list",6) # dla matematyki
- R0<-vector("list",6) # dla czytania
+M0<-vector("list",12) # dla matematyki
+ R0<-vector("list",12) # dla czytania
  
- for (i in 55:60){ # formularze o numeriach od 55 do 60
+ for (i in 55:66){ # formularze o numeriach od 55 do 66
     d1<-cog[which(cog$BOOKID==paste("Form",i,"(CBA)")), ]
  
     #### MATEMATYKA ######
@@ -62,7 +62,7 @@ read<-NULL
 klaster<-data.frame(0,ncol=2) # ramka danych z nazwami zadań z matematyki i czytania z przypisanymi klastrami
 colnames(klaster)<-c("item","clus")
 
-for(i in 1:6){
+for(i in 1:12){
    klaster<-rbind(klaster,data.frame(item=M0[[i]],clus=rep(paste('M0',i,sep=""),length(M0[[i]]))))
    klaster<-rbind(klaster,data.frame(item=R0[[i]],clus=rep(paste('R0',i,sep=""),length(R0[[i]]))))
    colnames(klaster)<-c("item","clus")
