@@ -25,74 +25,87 @@ country<-c("Australia","Austria","Belgium","Brazil","Estonia",'Finland',"Germany
 #cog2015<-NULL
 cog<-readRDS("cog.rds", refhook = NULL)
 ```
+
+# MATEMATYKA I CZYTANIE
 Przygotowanie klastrów dla matematyki i czytania
 ```{r}
-M0<-vector("list",12) # dla matematyki
- R0<-vector("list",12) # dla czytania
+# Chcemy każdemu zadaniu przypisać klaster, w którym się znajduje.
+# W formularzach 55:60 znajdują się tylko pojedyncze klastry  
+# dla matematyki oraz dla czytania, 
+# co pozwala na ich podstawie przyporządkować poszczególne zadania do klastrów.
+
+booklety <-55:60
+n_booklet <-length(booklety)
+M0 <-vector("list",n_booklet) # dla matematyki
+R0 <-vector("list",n_booklet) # dla czytania
  
- for (i in 55:66){ # formularze o numeriach od 55 do 66
-    d1<-cog[which(cog$BOOKID==paste("Form",i,"(CBA)")), ]
+ for (i in booklety){ 
+    
+    d1 <-cog[which(cog$BOOKID==paste("Form",i,"(CBA)")), ]
  
     #### MATEMATYKA ######
-    mat<-unlist(stri_extract_all_regex(colnames(d1),"[CD][M][0-9][0-9][0-9]Q[0-9][0-9]T$"))
-   mat<-d1[,!is.na(mat)] # czasy zadań z matematyki
+    mat <-unlist(stri_extract_all_regex(colnames(d1),"[CD][M][0-9][0-9][0-9]Q[0-9][0-9]T$"))
+    mat <-d1[,!is.na(mat)] # czasy zadań z matematyki
  
-    dane2a<- mat[,apply(mat, 2, function(kol){!all(is.na(kol))})]
-    M0[[i-54]]<-names(dane2a)
+    dane2a <- mat[,apply(mat, 2, function(kol){!all(is.na(kol))})]
+    j<-i-booklety[1]+1
+    M0[[j]] <-names(dane2a)
  
     #### CZYTANIE ######
-    read<-unlist(stri_extract_all_regex(colnames(d1),"[CD][R][0-9][0-9][0-9]Q[0-9][0-9]T$"))
-    read<-d1[,!is.na(read)] #czasy zadań z czytania
+    read <-unlist(stri_extract_all_regex(colnames(d1),"[CD][R][0-9][0-9][0-9]Q[0-9][0-9]T$"))
+    read <-d1[,!is.na(read)] #czasy zadań z czytania
     
-    dane2b<- read[,apply(read, 2, function(kol){!all(is.na(kol))})]
-    R0[[i-54]]<-names(dane2b) 
+    dane2b <- read[,apply(read, 2, function(kol){!all(is.na(kol))})]
+    R0[[j]] <-names(dane2b) 
  
 }
 M0[1:2]
 R0[1:2]
+
 #kasujemy niepotrzebne ramki danych
-d1<-NULL
-dane2a<-NULL
-dane2b<-NULL
-mat<-NULL
-read<-NULL
+d1 <-NULL
+dane2a <-NULL
+dane2b <-NULL
+mat <-NULL
+read <-NULL
 
 ###############################################
 
-klaster<-data.frame(0,ncol=2) # ramka danych z nazwami zadań z matematyki i czytania z przypisanymi klastrami
-colnames(klaster)<-c("item","clus")
+klaster <-data.frame(0,ncol=2) # ramka danych z nazwami zadań z matematyki i czytania z przypisanymi klastrami
+colnames(klaster) <-c("item","clus")
 
-for(i in 1:12){
-   klaster<-rbind(klaster,data.frame(item=M0[[i]],clus=rep(paste('M0',i,sep=""),length(M0[[i]]))))
-   klaster<-rbind(klaster,data.frame(item=R0[[i]],clus=rep(paste('R0',i,sep=""),length(R0[[i]]))))
-   colnames(klaster)<-c("item","clus")
+for(i in 1:n_booklet){
+   klaster <-rbind(klaster,data.frame(item=M0[[i]],clus=rep(paste('M0',i,sep=""),length(M0[[i]]))))
+   klaster <-rbind(klaster,data.frame(item=R0[[i]],clus=rep(paste('R0',i,sep=""),length(R0[[i]]))))
+   colnames(klaster) <-c("item","clus")
 }
-klaster<-klaster[-1,]
+klaster <-klaster[-1,]
 klaster$item <- stri_sub(klaster$item, 1, -2)
 head(klaster,6)
 ```
  PLIK:    sheet_structure.xlsx   
 ```{r}
-structure<-read.xlsx("sheet_structure.xlsx")
-colnames(structure)[1]<-'BOOKID2'
-structure_transpose<-melt(structure, id=c("BOOKID2")) # transponujemy 
-structure_transpose[2]<-as.numeric(stri_extract_last_regex(structure_transpose[,2],"[0-9]+"))
-colnames(structure_transpose)[2]<-'position'
-colnames(structure_transpose)[3]<-'clus'
+structure <-read.xlsx("sheet_structure.xlsx")
+colnames(structure)[1] <-'BOOKID2'
+structure_transpose <-melt(structure, id=c("BOOKID2")) # transponujemy 
+structure_transpose[2] <-as.numeric(stri_extract_last_regex(structure_transpose[,2],"[0-9]+"))
+colnames(structure_transpose)[2] <-'position'
+colnames(structure_transpose)[3] <-'clus'
 head(structure_transpose,3)
-structure_transpose<-structure_transpose %>% filter(BOOKID2<=66 & clus!='S ') 
-#usuwamy te wiersze gdzie BOOKID>66
-structure_transpose$clus<-str_trim(as.character(structure_transpose$clus))
-structure_transpose$clus[which(structure_transpose$clus=="R06ab")]<-'R06'
-structure_transpose$clus[which(structure_transpose$clus=="M06ab")]<-'M06'
-## structure_transpose$position<-as.numeric(substring(structure_transpose$position,9,9))
+#usuwamy te wiersze gdzie BOOKID>66 :
+structure_transpose <- structure_transpose %>% filter(BOOKID2<=66 & clus!='S ') 
+
+structure_transpose$clus <-str_trim(as.character(structure_transpose$clus))
+structure_transpose$clus[which(structure_transpose$clus=="R06ab")] <-'R06'
+structure_transpose$clus[which(structure_transpose$clus=="M06ab")] <-'M06'
+#structure_transpose$position<-as.numeric(substring(structure_transpose$position,9,9))
 head(structure_transpose,5)
 structure<-NULL
 ```
 Czas
 ```{r}
-name_time<-unlist(stri_extract_all_regex(colnames(cog),"[CD][RM][0-9][0-9][0-9]Q[0-9][0-9]T$"))
-name_time<-name_time[!is.na(name_time)] # nazwy kolumn z czasem do poszczególnych zadań
+name_time <-unlist(stri_extract_all_regex(colnames(cog),"[CD][RM][0-9][0-9][0-9]Q[0-9][0-9]T$"))
+name_time <-name_time[!is.na(name_time)] # nazwy kolumn z czasem do poszczególnych zadań
 
 table_with_time <- melt(data.frame(CNT=cog$CNT,CNTSCHID=cog$CNTSCHID,CNTSTUID=cog$CNTSTUID,
                                    BOOKID=cog$BOOKID,CBASCI=cog$CBASCI, cog[,name_time]), 
@@ -110,10 +123,10 @@ name_score <-name_score[!is.na(name_score)]
 table_with_score <-melt(data.frame(CNT=cog$CNT,CNTSCHID=cog$CNTSCHID,CNTSTUID=cog$CNTSTUID,
                                    BOOKID=cog$BOOKID, CBASCI=cog$CBASCI,cog[,name_score]), 
                         id=c("CNT","CNTSCHID","CNTSTUID","BOOKID","CBASCI"))
-# transponujemy, tak aby w jednej kolumnie mieć nazwy zadań, a w drugiej wyniki dla poszczególnych zadąń
+# transponujemy, tak aby w jednej kolumnie mieć nazwy zadań, a w drugiej wyniki dla poszczególnych zadań
 colnames(table_with_score)[c(6,7)] <-c("item2","result")
 table_with_score$item <- stri_sub(table_with_score$item2, 1, -2)
-table_with_score$item2<-NULL
+table_with_score$item2 <-NULL
 head(table_with_score,5)
 ```
 Action
@@ -132,127 +145,130 @@ head(table_with_action,5)
 Łączymy tabele ze scorem, liczbą akcji i czasem dla matematyki i czytania.
 ```{r}
 
-table_time_score<-left_join(table_with_time,table_with_score,
+table_time_score <-left_join(table_with_time,table_with_score,
                             by=c("CNT","CNTSCHID","CNTSTUID","BOOKID","CBASCI","item"))
-table_all_rm<-left_join(table_time_score,table_with_action,
+table_all_rm <-left_join(table_time_score,table_with_action,
                         by=c("CNT","CNTSCHID","CNTSTUID","BOOKID","CBASCI","item"))
 
 table_all_rm <- table_all_rm %>% 
    filter(!is.na(result) | !is.na(timing) | !is.na(n.actions))
-table_all_rm$BOOKID2<-as.numeric(stri_extract_last_regex(table_all_rm$BOOKID,"[0-9]+"))
+table_all_rm$BOOKID2 <-as.numeric(stri_extract_last_regex(table_all_rm$BOOKID,"[0-9]+"))
 
 #usuwamy niepotrzebne tabele:
-table_with_time<-NULL
-table_with_score<-NULL
-table_with_action<-NULL
-table_time_score<-NULL
+table_with_time <-NULL
+table_with_score <-NULL
+table_with_action <-NULL
+table_time_score <-NULL
 ```
 Dołączenie pozycji zadania:
 ```{r}
-table_rm_tmp<-left_join(table_all_rm,klaster, by=c("item"))
-table_rm<-left_join(table_rm_tmp,structure_transpose, by=c("BOOKID2","clus"))
+table_rm_tmp <-left_join(table_all_rm,klaster, by=c("item"))
+table_rm <-left_join(table_rm_tmp,structure_transpose, by=c("BOOKID2","clus"))
 table_rm <- table_rm %>% filter( !is.na(position) )
 head(table_rm ,5)
 
-table_all_rm<-NULL
-table_rm_tmp<-NULL
-klaster<-NULL
+table_all_rm <-NULL
+table_rm_tmp <-NULL
+klaster <-NULL
 ```
-SCIENCE - uwzględniamy każdą pozycję z każdego zadania z nauk przyrodniczych
+
+#SCIENCE 
+
+uwzględniamy każdą pozycję z każdego zadania z nauk przyrodniczych
 ```{r}
-select_col<-unlist(stri_extract_all_regex(colnames(cog),"[CD][S][0-9][0-9][0-9]Q[0-9][0-9]T$"))
-select_col<-select_col[!is.na(select_col)] # czasy zasań tylko dla science
-clus<-melt(data.frame(BOOKID=cog$BOOKID,CBASCI=cog$CBASCI, cog[,select_col]), id=c("BOOKID","CBASCI"))
+select_col <-unlist(stri_extract_all_regex(colnames(cog),"[CD][S][0-9][0-9][0-9]Q[0-9][0-9]T$"))
+select_col <-select_col[!is.na(select_col)] # czasy zasań tylko dla science
+clus <-melt(data.frame(BOOKID=cog$BOOKID,CBASCI=cog$CBASCI, cog[,select_col]), id=c("BOOKID","CBASCI"))
 # transponujemy, aby w jednej kolumnie były czasy zadań
-colnames(clus)[3]<-'item'
-colnames(clus)[4]<-'timing'
-clus<-clus[which(!is.na(clus$timing)),]
-clus$CBASCI_SHORT<-as.numeric(stri_extract_last_regex(clus$CBASCI,"[0-9]")) #liczba magiczna
-clus$BOOKID2<-as.numeric(stri_extract_last_regex(clus$BOOKID,"[0-9]+"))
-clus<-clus[which(clus$BOOKID2<=66),] #tylko te wiersze z nr. formularza <=66
+colnames(clus)[3] <-'item'
+colnames(clus)[4] <-'timing'
+clus <-clus[which(!is.na(clus$timing)),]
+clus$CBASCI_SHORT <-as.numeric(stri_extract_last_regex(clus$CBASCI,"[0-9]")) #liczba magiczna
+clus$BOOKID2 <-as.numeric(stri_extract_last_regex(clus$BOOKID,"[0-9]+"))
+clus <-clus[which(clus$BOOKID2<=66),] #tylko te wiersze z nr. formularza <=66
 head(clus)
 ```
-Czytanie i łączenie plików xls.
+Czytanie i łączenie plików .xlsx.
 ```{r}
-structure<-read.xlsx("sheet_structure.xlsx")
+structure <- read.xlsx("sheet_structure.xlsx")
 
-colnames(structure)[1]<-'BOOKID2'
-structure_transpose<-melt(structure, id=c("BOOKID2"))
-structure_transpose[2]<-as.numeric(stri_extract_last_regex(structure_transpose[,2],"[0-9]+"))
-colnames(structure_transpose)[2]<-'position'
-colnames(structure_transpose)[3]<-'clus'
+colnames(structure)[1] <-'BOOKID2'
+structure_transpose <-melt(structure, id=c("BOOKID2"))
+structure_transpose[2] <-as.numeric(stri_extract_last_regex(structure_transpose[,2],"[0-9]+"))
+colnames(structure_transpose)[2] <-'position'
+colnames(structure_transpose)[3] <-'clus'
 #wybieramy tylko wiersze w ktorych clus='S' (omijamy R** i M**)
-structure_transpose<-structure_transpose[which(as.character(structure_transpose$clus)=="S "),]
+structure_transpose <-structure_transpose[which(as.character(structure_transpose$clus)=="S "),]
 
 head(structure_transpose,3)
 ###
-science_cluster_combination<-read.xlsx("science_cluster_combination.xlsx")
+science_cluster_combination <- read.xlsx("science_cluster_combination.xlsx")
 
-colnames(science_cluster_combination)[2]<-"S1"
-colnames(science_cluster_combination)[3]<-"S2"
+colnames(science_cluster_combination)[2] <-"S1"
+colnames(science_cluster_combination)[3] <-"S2"
 
 head(science_cluster_combination,3)
 ###
-science_cluster_encoding<-read.xlsx("science_cluster_encoding.xlsx")
+science_cluster_encoding <-read.xlsx("science_cluster_encoding.xlsx")
 
-science_cluster_encoding_transpose<-melt(science_cluster_encoding, id=c("Base"))
-colnames(science_cluster_encoding_transpose)[2]<-'CBASCI_SHORT'
-colnames(science_cluster_encoding_transpose)[3]<-'N'
-colnames(science_cluster_encoding_transpose)[1]<-'BOOKID2'
-science_cluster_encoding_transpose$CBASCI_SHORT<-as.numeric(science_cluster_encoding_transpose$CBASCI_SHORT)
+science_cluster_encoding_transpose <-melt(science_cluster_encoding, id=c("Base"))
+colnames(science_cluster_encoding_transpose)[2] <-'CBASCI_SHORT'
+colnames(science_cluster_encoding_transpose)[3] <-'N'
+colnames(science_cluster_encoding_transpose)[1] <-'BOOKID2'
+science_cluster_encoding_transpose$CBASCI_SHORT <-as.numeric(science_cluster_encoding_transpose$CBASCI_SHORT)
 
 head(science_cluster_encoding_transpose,3)
 ### LACZENIE ###
-with_N<-left_join(clus,science_cluster_encoding_transpose, by=c("BOOKID2", "CBASCI_SHORT"))
+with_N <-left_join(clus,science_cluster_encoding_transpose, by=c("BOOKID2", "CBASCI_SHORT"))
 head(with_N,3)
-with_N_S1_S2<-left_join(with_N,science_cluster_combination, by=c("N"))
+with_N_S1_S2 <-left_join(with_N,science_cluster_combination, by=c("N"))
 head(with_N_S1_S2,3)
-with_position<-left_join(with_N_S1_S2,structure_transpose, by=c("BOOKID2"))
+with_position <-left_join(with_N_S1_S2,structure_transpose, by=c("BOOKID2"))
 head(with_position,3)
 ```
 ```{r}
 
-even_index<-seq(2,nrow(with_position),by=2)
+even_index <-seq(2,nrow(with_position),by=2)
 #chcemy mieć w jednej kolumnie nazy klastrów
-with_position[even_index,"clus2"]<- with_position[even_index,"S2"]
-with_position[-even_index,"clus2"]<- with_position[-even_index,"S1"]
-with_position$clus<-NULL
-colnames(with_position)[11]<-"clus"
+with_position[even_index,"clus2"] <- with_position[even_index,"S2"]
+with_position[-even_index,"clus2"] <- with_position[-even_index,"S1"]
+with_position$clus <-NULL
+colnames(with_position)[11] <-"clus"
 head(with_position,4)
 #wybieramy dla każdego zadania odpowiadający mu klaster, 
 #czyli najczęściej występujący dla danego zadania
-tmp<-with_position %>% group_by(item) %>% select(item,S1,S2,clus) 
-tmp2<-tmp %>% group_by(item) %>% mutate(S=names(sort(table( clus),decreasing = TRUE)[1])) 
-tmp2<-unique(tmp2[,c("item","S")])
-names(tmp2)[2]<-"clus"
+tmp <-with_position %>% group_by(item) %>% select(item,S1,S2,clus) 
+tmp2 <-tmp %>% group_by(item) %>% mutate(S=names(sort(table( clus),decreasing = TRUE)[1])) 
+tmp2 <-unique(tmp2[,c("item","S")])
+names(tmp2)[2] <-"clus"
 
 
-science_position<-left_join(unique(with_position[,c(3,6,10,11)]),tmp2,by=c("item"))
-science_position<-science_position %>% filter(clus.x==clus.y)
-science_position$clus.x<-NULL
-colnames(science_position)[4]<-"clus"
+science_position <-left_join(unique(with_position[,c(3,6,10,11)]),tmp2,by=c("item"))
+science_position <-science_position %>% filter(clus.x==clus.y)
+science_position$clus.x <-NULL
+colnames(science_position)[4] <-"clus"
 science_position$item <- stri_sub(science_position$item, 1, -2)
 ```
 Usuwamy niepotrzebne tabele:
 ```{r}
-with_N_S1_S2<-NULL
-with_N<-NULL
-science_cluster_combination<-NULL
-science_cluster_encoding_transpose<-NULL
-structure<-NULL
-with_position<-NULL
-tmp<-NULL
-structure_transpose<-NULL
+with_N_S1_S2 <-NULL
+with_N <-NULL
+science_cluster_combination <-NULL
+science_cluster_encoding_transpose <-NULL
+structure <-NULL
+with_position <-NULL
+tmp <-NULL
+structure_transpose <-NULL
 science_cluster_encoding <- NULL
-clus<-NULL
-tmp2<-NULL
+clus <-NULL
+tmp2 <-NULL
 ```
 Łączymy pozycję z czasem, wynikiem i liczbą akcji:
 
 a) Czas
 ```{r}
-name_time<-unlist(stri_extract_all_regex(colnames(cog),"[CD][S][0-9][0-9][0-9]Q[0-9][0-9]T$"))
-name_time<-name_time[!is.na(name_time)]
+name_time <-unlist(stri_extract_all_regex(colnames(cog),"[CD][S][0-9][0-9][0-9]Q[0-9][0-9]T$"))
+name_time <-name_time[!is.na(name_time)]
 
 table_with_time <- melt(data.frame(CNT=cog$CNT,CNTSCHID=cog$CNTSCHID,CNTSTUID=cog$CNTSTUID,
                                    BOOKID=cog$BOOKID,CBASCI=cog$CBASCI, cog[,name_time]), 
@@ -274,7 +290,7 @@ table_with_score <-melt(data.frame(CNT=cog$CNT,CNTSCHID=cog$CNTSCHID,CNTSTUID=co
 )
 colnames(table_with_score)[c(6,7)] <-c("item2","result")
 table_with_score$item <- stri_sub(table_with_score$item2, 1, -2)
-table_with_score$item2<-NULL
+table_with_score$item2 <-NULL
 head(table_with_score,4)
 ```
 c) Liczba akcji
@@ -291,9 +307,9 @@ head(table_with_action,4)
 ```
 Łączenie tabel.
 ```{r}
-table_time_score<-left_join(table_with_time,table_with_score,
+table_time_score <-left_join(table_with_time,table_with_score,
                             by=c("CNT","CNTSCHID","CNTSTUID","BOOKID","CBASCI","item"))
-table_all_science<-left_join(table_time_score,table_with_action,
+table_all_science <-left_join(table_time_score,table_with_action,
                              by=c("CNT","CNTSCHID","CNTSTUID","BOOKID","CBASCI","item"))
 
 table_all_science <- table_all_science %>% 
@@ -305,57 +321,63 @@ Usuwamy niepotrzebne tabele.
 ```{r}
 table_with_time <- NULL
 table_with_action <-NULL
-table_with_score<-NULL
-table_time_score<-NULL
+table_with_score <-NULL
+table_time_score <-NULL
 ```
 Dodajemy pozostałe zadania i usuwamy niepotrzebne ramki danych.
 ```{r}
-table_science<-left_join(table_all_science,science_position, by=c("BOOKID2","item"))
+table_science <- left_join(table_all_science,science_position, by=c("BOOKID2","item"))
 table_science <- table_science %>% filter( !is.na(position) )
 head(table_science,4)
 table_all_science<-NULL
 science_position<-NULL
 ```
-Łączymy tabele dla matematyki i czytania z tabelą dla nauk przyrodniczych.
+
+# ŁĄCZENIE W JEDNĄ TABELĘ
+
+Łączymy tabelę dla matematyki i czytania z tabelą dla nauk przyrodniczych.
+
 ```{r}
 
-table_rms<-rbind(table_rm,table_science)
+table_rms <-rbind(table_rm,table_science)
 
-table_rms$item_short<-unlist(stri_extract_all_regex(table_rms$item,"[MRS][0-9][0-9][0-9]Q[0-9][0-9]"))
-table_rms$clus_short<-unlist(stri_extract_all_regex(table_rms$clus,"[RMS]"))
+table_rms$item_short <-unlist(stri_extract_all_regex(table_rms$item,"[MRS][0-9][0-9][0-9]Q[0-9][0-9]"))
+table_rms$clus_short <-unlist(stri_extract_all_regex(table_rms$clus,"[RMS]"))
 head(table_rms,4)
 table(table_rms$position) # na każdej pozycji jest mniej więcej 1/4 obserwacji
 ```
-Dołączamy dwa zadania ze zbioru stud oraz wagi
+Dołączamy dwa zadania oraz wagi ze zbioru CY6_MS_CMB_STU_QQQ.sav
 ```{r}
 #stud2015 <- read.spss("CY6_MS_CMB_STU_QQQ.sav", use.value.labels = TRUE, to.data.frame = TRUE)
-# country<-c("Australia","Austria","Belgium","Brazil","Estonia",'Finland',"Germany","Greece","Poland","Portugal")
+# country <- c("Australia","Austria","Belgium","Brazil","Estonia",'Finland',"Germany","Greece","Poland","Portugal")
 # 
-# stud<-stud2015[which(stud2015$CNTRYID==country),]
+# stud <- stud2015[which(stud2015$CNTRYID==country),]
 # 
 # saveRDS(stud, file = "stud.rds", ascii = FALSE, version = NULL,
 #         compress = TRUE, refhook = NULL)
-stud<-readRDS("stud.rds", refhook = NULL)
+stud <- readRDS("stud.rds", refhook = NULL)
 
-stud_select_col<-data.frame(CNT=stud$CNT,CNTSCHID=stud$CNTSCHID,CNTSTUID=stud$CNTSTUID,
+stud_select_col <- data.frame(CNT=stud$CNT,CNTSCHID=stud$CNTSCHID,CNTSTUID=stud$CNTSTUID,
                             BOOKID=stud$BOOKID,CBASCI=stud$CBASCI,ST004D01T=stud$ST004D01T,
                             ST118Q01=stud$ST118Q01NA,ST118Q02=stud$ST118Q02NA,
                             ST118Q03=stud$ST118Q03NA,ST118Q04=stud$ST118Q04NA,ST118Q05=stud$ST118Q05NA,
                             W_FSTUWT=stud$W_FSTUWT)
 
-stud<-NULL
-stud_select_col<-stud_select_col %>% 
+stud <-NULL
+stud_select_col <- stud_select_col %>% 
    filter(!is.na(ST118Q01) & !is.na(ST118Q02) & !is.na(ST118Q03)
           & !is.na(ST118Q04)  &!is.na(ST118Q05))
 head(stud_select_col,4)
 #łączymy tabele:
-tmp<-left_join(table_rms,stud_select_col,by=c("CNT","CNTSCHID","CNTSTUID",
+tmp <- left_join(table_rms,stud_select_col,by=c("CNT","CNTSCHID","CNTSTUID",
                                               "BOOKID","CBASCI"))
-table_rms<-tmp
-tmp<-NULL
-table_rms$result<-as.character(table_rms$result)
-table_rms$result_num<-ifelse(table_rms$result=="No credit",1,ifelse(table_rms$result=="Partial credit",2,
-                                              ifelse(table_rms$result=="Full credit",3,NA)))
+table_rms <- tmp
+tmp <- NULL
+table_rms$CNT <- stri_trim(as.character(table_rms$CNT))
+table_rms$result <- stri_trim(as.character(table_rms$result))
+table_rms$result_num <-ifelse(table_rms$result=="No credit",1,ifelse(table_rms$result=="Partial credit",2,
+                              ifelse(table_rms$result=="Full credit",3,NA)))
+
 ```
 
 Wynikowa tabela to:  table_rms.
