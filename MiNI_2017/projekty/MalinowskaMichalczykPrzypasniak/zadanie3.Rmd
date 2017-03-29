@@ -1,0 +1,337 @@
+---
+title: "zadanie 3"
+author: "S. Michalczyk M. Malinowska O. Przypaœniak"
+date: "27 marca 2017"
+output: html_document
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library("dplyr")
+library("tidyr")
+library("xlsx")
+require("rJava")
+library("plotly")
+```
+
+## 1. STATYSTYKI WYNIKÓW DLA POSZCZEGÓLNYCH ZADAÑ
+
+```{r}
+# wczytanie danych:
+dane <- readRDS("table_rms.rds")
+
+```
+
+## a) podzia³ na kraje
+
+```{r}   
+statistics <- dane %>% group_by(item,CNT) %>% 
+   filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+         !is.na(n.actions) & !is.na(result_num) ) %>% 
+   summarise(
+      MinTime=min(timing),
+      WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+      MeadianTime=median(timing),
+      MaxTime=max(timing),
+      MinN.Actions=min(n.actions),
+      WMeaN.Actions=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2),
+      MeadiaN.Actions=median(n.actions),
+      MaxN.Actions=max(n.actions),
+      WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+      MedianResult=median(result_num),
+      Number=n()
+   )
+
+head(statistics,5)
+
+# liczba uzyskanych obserwacji dla poszczególnych poziomów zmiennej result
+# w podziale na zadania i kraje
+results_number <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+               !is.na(n.actions) & !is.na(result_num) ) %>%  
+         group_by(item, CNT, result) %>% 
+         summarise(value = n()) %>% 
+         as.data.frame( ) %>% spread(result, value) %>%
+         complete(item, fill = list("Full credit"=0, 
+                                    "No credit"=0, 
+                                    "Partial credit"= 0) )
+head(results_number,10)
+
+# po³¹czenie obu powy¿szych tabelek
+statistics <- left_join(statistics,results_number,by=c("item","CNT"))
+
+statistics[1:5,]
+
+# zapisuje wynik w pliku statistics.xlsx
+write.xlsx(as.data.frame(statistics), file="statistics.xlsx",
+           col.names = TRUE, row.names = FALSE)
+```
+           
+
+
+## b) podzia³ na kraje i na p³eæ
+
+```{r}
+statistics_by_sex <- dane %>% group_by(item,CNT,ST004D01T) %>% 
+   filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+             !is.na(n.actions) & !is.na(result_num) ) %>% 
+   summarise(MinTime=min(timing),
+             WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+             MeadianTime=median(timing),
+             MaxTime=max(timing),
+             MinN.Actions=min(n.actions),
+             WMeaN.Actions=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2),
+             MeadiaN.Actions=median(n.actions),
+             MaxN.Actions=max(n.actions),
+             WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+             Number=n())
+
+head(statistics_by_sex,5)
+
+results_number2 <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                           !is.na(n.actions) & !is.na(result_num) ) %>%  
+   group_by(item, CNT,ST004D01T,result) %>% 
+   summarise(value = n()) %>% 
+   as.data.frame( ) %>% spread(result, value) %>%
+   complete(item, fill = list("Full credit"=0, 
+                              "No credit"=0, 
+                              "Partial credit"= 0) )
+head(results_number2,10)
+
+statistics_by_sex <- left_join(statistics_by_sex,results_number2,by=c("item","CNT","ST004D01T"))
+statistics_by_sex[1:5,]
+
+write.xlsx(as.data.frame(statistics_by_sex), file="statistics_by_sex.xlsx",
+           col.names = TRUE, row.names = FALSE)
+```
+
+## 2. statystyki dla krajów - podzia³ na matematykê, czytanie i nauki przyrodnicze
+```{r}
+statistics_clus <- dane %>% group_by(CNT,clus_short) %>% 
+   filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+             !is.na(n.actions) & !is.na(result_num) ) %>% 
+   summarise(
+      MinTime=min(timing),
+      WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+      MeadianTime=median(timing),
+      MaxTime=max(timing),
+      MinN.Actions=min(n.actions),
+      WMeaN.Actions=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2),
+      MeadiaN.Actions=median(n.actions),
+      MaxN.Actions=max(n.actions),
+      WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+      MedianResult=median(result_num),
+      Number=n()
+   )
+
+head(statistics_clus,6)
+results_number_clus <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                                     !is.na(n.actions) & !is.na(result_num) ) %>%  
+   group_by( CNT,clus_short, result) %>% 
+   summarise(value = n()) %>% 
+   as.data.frame( ) %>% spread(result, value) %>%
+   complete(CNT, fill = list("Full credit"=0, 
+                              "No credit"=0, 
+                              "Partial credit"= 0) )
+head(results_number_clus,6)
+statistics_clus <- left_join(statistics_clus,results_number_clus,by=c("CNT","clus_short"))
+statistics_clus[1:6,]
+write.xlsx(as.data.frame(statistics_clus), file="statistics_clus.xlsx",
+           col.names = TRUE, row.names = FALSE)
+```
+
+## 3. WIZUALIZACJA
+
+### 3.1 result vs time w podziale na clus (matematyka, czytanie, nauki przyrodnicze)
+```{r}
+plot1_data <- data.frame(CNT=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="R"),1]),
+                         RR=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="R"),11]),
+                         RT=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="R"),4]),
+                         MR=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="M"),11]),
+                         MT=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="M"),4]),
+                         SR=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="S"),11]),
+                         ST=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="S"),4]))
+colnames(plot1_data) <- c("CNT","RR","RT","MR","MT","SR","ST")
+
+p1 <- plot_ly(plot1_data, 
+              x=plot1_data$RT,
+              y=plot1_data$RR, 
+              name="Reading",
+              type = "scatter", 
+              mode = "markers", 
+              marker = list(size = 9, sizemode = 'diameter', color = "green"),
+              hoverinfo = 'text',
+              text = ~paste(CNT)) %>%
+  add_trace(x=plot1_data$MT,
+            y=plot1_data$MR,
+            name = "Math",
+            marker = list(color = "blue"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  add_trace(x=plot1_data$ST,
+            y=plot1_data$SR,
+            name = "Science",
+            marker = list(color = "violet"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  layout(
+    title = "Results vs Time",
+    xaxis = list(title = "Time"),
+    yaxis = list(title = "Result"),
+    margin = list(l = 65)
+  )
+p1
+```
+
+### 3.2 porównanie wyników - ch³opcy vs dziewczêta w podziale na clus (matematyka, czytanie, nauki przyrodnicze) i kraje
+
+```{r}
+statistics_by_sex2 <- dane %>% group_by(CNT,ST004D01T,clus_short) %>% 
+  filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+           !is.na(n.actions) & !is.na(result_num) ) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+            Number=n())
+
+results_number2a <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                                     !is.na(n.actions) & !is.na(result_num) ) %>%  
+  group_by(CNT,ST004D01T,clus_short,result) %>% 
+  summarise(value = n()) %>% 
+  as.data.frame( ) %>% spread(result, value) %>%
+  complete(CNT, fill = list("Full credit"=0, 
+                             "No credit"=0, 
+                             "Partial credit"= 0) )
+
+statistics_by_sex2 <- left_join(statistics_by_sex2,results_number2a,by=c("CNT","ST004D01T", "clus_short"))
+statistics_by_sex2[1:5,]
+write.xlsx(as.data.frame(statistics_by_sex2), file="statistics_by_sex2.xlsx",
+           col.names = TRUE, row.names = FALSE)
+
+plot2_data <- data.frame(CNT=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Male"),1]),
+                         RRM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Male"),5]),
+                         RRF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Female"),5]),
+                         RTM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Male"),4]),
+                         RTF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Female"),4]),
+                         MRM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Male"),5]),
+                         MRF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Female"),5]),
+                         MTM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Male"),4]),
+                         MTF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Female"),4]),
+                         SRM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Male"),5]),
+                         SRF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Female"),5]),
+                         STM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Male"),4]),
+                         STF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Female"),4]))
+colnames(plot2_data) <- c("CNT","RRM","RRF","RTM","RTF","MRM","MRF","MTM","MTF","SRM","SRF","STM","STF")
+
+
+p2 <- plot_ly(plot2_data, x=seq(from=1.25, to=1.78, length.out=10), y=seq(from=1.25, to=1.78, length.out=10),
+              type="scatter", mode = "lines", name = "y=x") %>%
+  add_trace(x = plot2_data$RRF, y = plot2_data$RRM,
+            name="Reading",
+            mode = "markers", 
+            marker = list(size = 9, sizemode = 'diameter', color = "green"),
+            hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  add_trace(x = plot2_data$MRF, y = plot2_data$MRM,
+            name = "Math",
+            marker = list(size = 9, sizemode = 'diameter', color = "blue"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  add_trace(x = plot2_data$SRF, y = plot2_data$SRM,
+            name = "Science",
+            marker = list(size = 9, sizemode = 'diameter', color = "violet"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  layout(
+    title = "Gender disparity",
+    xaxis = list(title = "Female"),
+    yaxis = list(title = "Male"),
+    margin = list(l = 65)
+  )
+
+p2
+```
+
+### 3.3 wykresy wyników dla poszczególnych krajów
+
+```{r,warning=FALSE}
+statistics3 <- dane %>% group_by(CNT,item,clus_short) %>% 
+  filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+           !is.na(n.actions) & !is.na(result_num) ) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+            Number=n())
+
+results3 <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                                      !is.na(n.actions) & !is.na(result_num) ) %>%  
+  group_by(CNT,item,clus_short,result) %>% 
+  summarise(value = n()) %>% 
+  as.data.frame( ) %>% spread(result, value) %>%
+  complete(CNT, fill = list("Full credit"=0, 
+                            "No credit"=0, 
+                            "Partial credit"= 0) )
+
+statistics3 <- left_join(statistics3,results3,by=c("CNT","item", "clus_short"))
+head(statistics3,5)
+
+# caly wykres+dane do niego w fukcji plot_for_country
+
+plot_for_country <- function(i){
+  x <- unique(statistics$CNT)[i]
+  data <- as.data.frame(statistics3[which(statistics3$CNT==x),])
+  
+  max_length <- max(length(which(data$clus_short=="R")), length(which(data$clus_short=="M")), length(which(data$clus_short=="S")))
+  
+  plot_data <- data.frame( RR=numeric(max_length),
+                           RT=numeric(max_length),
+                           MR=numeric(max_length),
+                           MT=numeric(max_length),
+                           SR=numeric(max_length),
+                           ST=numeric(max_length)
+                           )
+  
+  plot_data$RR<-c(as.numeric(data[which(data$clus_short=="R"),5]), rep(NA,max_length-length(which(data$clus_short=="R"))))
+  plot_data$RT<-c(as.numeric(data[which(data$clus_short=="R"),4]), rep(NA,max_length-length(which(data$clus_short=="R"))))
+  plot_data$MR<-c(as.numeric(data[which(data$clus_short=="M"),5]), rep(NA,max_length-length(which(data$clus_short=="M"))))
+  plot_data$MT<-c(as.numeric(data[which(data$clus_short=="M"),4]), rep(NA,max_length-length(which(data$clus_short=="M"))))
+  plot_data$SR<-c(as.numeric(data[which(data$clus_short=="S"),5]), rep(NA,max_length-length(which(data$clus_short=="S"))))
+  plot_data$ST<-c(as.numeric(data[which(data$clus_short=="S"),4]), rep(NA,max_length-length(which(data$clus_short=="S"))))
+  plot_data$Ritem<-c(as.character(data[which(data$clus_short=="R"),2]), rep(NA,max_length-length(which(data$clus_short=="R"))))
+  plot_data$Mitem<-c(as.character(data[which(data$clus_short=="M"),2]), rep(NA,max_length-length(which(data$clus_short=="M"))))
+  plot_data$Sitem<-c(as.character(data[which(data$clus_short=="S"),2]), rep(NA,max_length-length(which(data$clus_short=="S"))))
+  
+  
+  p <- plot_ly(plot_data,
+                x=plot_data$RT,
+                y=plot_data$RR, 
+                name="Reading",
+                type = "scatter", 
+                mode = "markers", 
+                marker = list(size = 9, sizemode = 'diameter', color = "green"),
+                hoverinfo = 'text',
+                text = ~paste(Ritem)) %>%
+    add_trace(x=plot_data$MT,
+              y=plot_data$MR,
+              name = "Math",
+              marker = list(color = "blue"),
+              mode = "markers",
+              text = ~paste(Mitem))%>%
+    add_trace(x=plot_data$ST,
+              y=plot_data$SR,
+              name = "Science",
+              marker = list(color = "violet"),
+              mode = "markers",
+              text = ~paste(Sitem)) %>%
+              
+    layout(
+      title = paste("Results vs Time for",x),
+      xaxis = list(title = "Time"),
+      yaxis = list(title = "Result"),
+      margin = list(l = 65)
+    )
+  p
+}
+
+
+plot_for_country(9)
+
+```
+
+
