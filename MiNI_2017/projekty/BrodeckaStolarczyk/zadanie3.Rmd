@@ -1,66 +1,197 @@
 ---
 title: "Zadanie3"
 author: "A.Brodecka, M.Stolarczyk"
-date: "13 marca 2017"
+date: "26 marca 2017"
 output: html_document
 ---
 
-```{r, echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = FALSE)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width =  15, message =  FALSE, warning =  FALSE, comment = FALSE)
 ```
+
+
 
 ```{r}
+setwd('C:/Users/ola/Desktop/wb')
+
+
 library(dplyr)
+library(ggplot2)
 library(tidyr)
 library(knitr)
-library(stringr)
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+data <- readRDS('PodstawoweStatystyki.rds')
 
-data <- readRDS('zadanie0_wynik.rds')
+
+```
+
+## Analiza:
+
+* Krok 0: Budujemy statystyki wa¿one dla ka¿dego pytania w podziale na kraje. (zbiór PodstawoweStatystyki.rds)
+
+* Budujemy dendogram dla kazdej kategorii, który porównuje wa¿on¹ medianê czasów rozwi¹zañ dla ka¿dego pytania i proporcjê dobrze rozwi¹zanych zadañ w podziale na kraje.
+
+* U¿ywamy tylko kolumn bez braków danych.
+
+
+## Matematyka:
+
+
+```{r}
+
+mat <- data %>% filter(substr(item, 2,2) == "M") %>% select(item, TimeMed, CNT, FreqFull) 
+
+mat %>% select(item, TimeMed, CNT)  %>% spread(item, TimeMed) -> mat_clust
+mat %>% select(item,  FreqFull, CNT)  %>% mutate(FreqFull = 10000 * FreqFull) %>% spread(item,  FreqFull) -> mat_clust_prop
+
+colnames(mat_clust_prop)[-1] <- paste0('Freq',colnames(mat_clust_prop)[-1])
+
+mat_clust <- mat_clust %>% left_join(mat_clust_prop)
+
+mat_clust <- mat_clust[ , colSums(is.na(mat_clust)) == 0]
+rownames(mat_clust) <- mat_clust[,1]
+
+
+```
+
+Ramka danych do klasteryzacji:
+
+```{r}
+kable(head(mat_clust))
+
+hc = hclust(dist(mat_clust[,-1]))
+klasy <- data.frame(class = cutree(hc, k = 4), CNT = names(cutree(hc, k = 5)))
+mat <- mat %>% left_join(klasy)
+
+
+mat$CNT <- reorder(mat$CNT, mat$class)
+
+# dendogram:
+source("http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R")
+op = par(bg = "#EFEFEF")
+A2Rplot(hc, k = 4, boxes = FALSE, col.up = "gray50", col.down = c("#FF6B6B", 
+                                                                  "#4ECDC4", "#556270","#E69F00", "#56B4E9" ))
+
+# boxplot
+ggplot(mat, aes(factor(CNT), TimeMed, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette) +
+  theme(legend.position="bottom") + ggtitle('Kategoria matematyka') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+ggplot(mat, aes(factor(CNT), FreqFull, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette) +
+  theme(legend.position="bottom") + ggtitle('Kategoria matematyka') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+```
+
+### Wyniki:
+
+* Honk-kong i Korea s¹ wzglêdem siebie bardzo podobne. Maj¹ podobn¹, nisk¹ medianê czasów rozwi¹zañ oraz 
+du¿¹ proporcjê dobrze rozwi¹zanych zadañ
+
+* Brazylia, Columbia i Meksyk to równie¿ zbli¿one do siebie kraje. Maj¹ one najwy¿sze mediany czasów rozwi¹zañ ale te¿ i najgorszy stopieñ rozwi¹zania
+
+* Mamy dwie grupy 'œredniaków' i do jednej z nich nale¿y Polska (grupa z nieco wiêksz¹ median¹)
+
+## Nauki przyrodnicze:
+
+```{r}
+science <- data %>% filter(substr(item, 2,2) == "S") %>% select(item, TimeMed, CNT,  FreqFull) 
+
+science %>% select(item, TimeMed, CNT)  %>% spread(item, TimeMed) -> science_clust
+science %>% select(item,  FreqFull, CNT)  %>% mutate(FreqFull = 10000 * FreqFull) %>% spread(item,  FreqFull) -> science_clust_prop
+
+colnames(science_clust_prop)[-1] <- paste0('Freq',colnames(science_clust_prop)[-1])
+
+science_clust <- science_clust %>% left_join(science_clust_prop)
+
+science_clust <- science_clust[ , colSums(is.na(science_clust)) == 0]
+rownames(science_clust) <- science_clust[,1]
+hc = hclust(dist(science_clust[,-1]))
+klasy <- data.frame(class = cutree(hc, k = 4), CNT = names(cutree(hc, k = 4)))
+science <- science %>% left_join(klasy)
+
+
+science$CNT <- reorder(science$CNT, science$class)
+
+# dendogram:
+source("http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R")
+op = par(bg = "#EFEFEF")
+A2Rplot(hc, k =4, boxes = FALSE, col.up = "gray50", col.down = c("#FF6B6B", 
+                                                                  "#4ECDC4", "#556270","#E69F00", "#56B4E9" ))
+
+# boxplot
+ggplot(science, aes(factor(CNT), TimeMed, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette) +
+  theme(legend.position="bottom") + ggtitle('Kategoria nauki przyrodnicze') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+ggplot(science, aes(factor(CNT), FreqFull, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette) +
+  theme(legend.position="bottom") + ggtitle('Kategoria nauki przyrodnicze') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+
+
 ```
 
 
-```{r, results='asis'}
+### Wyniki:
 
-data %>% filter(result %in% c('Full credit')) -> items
-items <- unique(items$item)
+* I znów Honk-kong i Korea s¹ wzglêdem siebie bardzo podobne. Maj¹ podobn¹, nisk¹ medianê czasów rozwi¹zañ oraz 
+du¿¹ proporcjê dobrze rozwi¹zanych zadañ
 
-for (it in items){
+* Brazylia, Columbia i Meksyk to równie¿ zbli¿one do siebie kraje. Maj¹ one najwy¿sze mediany czasów rozwi¹zañ ale te¿ i najgorszy stopieñ rozwi¹zania
 
-cat(paste0('Pytanie: \n ', it))
-   
-  
-data %>% filter(item == it) %>% 
-  select(CNT, timing) %>%
-  group_by(CNT) %>% summarise(TimeAvg = mean(timing, na.rm = TRUE),
-                              TimeMin = min(timing, na.rm = TRUE),
-                              TimeMax = max(timing, na.rm = TRUE),
-                              TimeMed = median(timing, na.rm = TRUE)) %>%
-  mutate(CNT = str_trim(CNT)) %>%
-  as.data.frame() -> time
-  
-data %>% filter(item == it) %>%  
-  select(CNT, result) %>%
-  group_by(CNT, result) %>% summarise(value = n()) %>% 
-  as.data.frame( )%>% spread(result, value) %>% 
-  mutate(FreqFull = round(`Full credit`/rowSums(.[-1]), 2),
-         CNT = str_trim(CNT)) %>%
-  left_join(time, by = c('CNT' = 'CNT'))-> odp
+* Najliczniejsza grupa to grupa krajów o nieco wy¿szej medianie i proporcji ni¿ grupa najlepszych krajów. Do tej grupy zaklasyfikowano Polskê i wiele innych krajów europejskich.
 
-colnames(odp)[colnames(odp) == '<NA>'] <- 'NaValues'
 
-to_print <- rbind(
-  odp %>% arrange(desc(FreqFull)) %>% head(5),
-  odp %>% arrange(-desc(FreqFull)) %>% head(5)
-)
+## Czytanie:
 
-if (!('POL' %in% str_trim(to_print[,1]))) {
-  try(to_print <- rbind(odp %>% filter(CNT == 'POL'), to_print))
-}
+```{r}
 
-cat("\n")
-print(kable(to_print))
-cat("\n")
- 
-}
+read <- data %>% filter(substr(item, 2,2) == "R") %>% select(item, TimeMed, CNT,  FreqFull) 
+
+
+read %>% select(item, TimeMed, CNT)  %>% spread(item, TimeMed) -> read_clust
+read %>% select(item,  FreqFull, CNT)  %>% mutate(FreqFull = 10000 * FreqFull) %>% spread(item,  FreqFull) -> read_clust_prop
+
+colnames(read_clust_prop)[-1] <- paste0('Freq',colnames(read_clust_prop)[-1])
+
+read_clust <- read_clust %>% left_join(read_clust_prop)
+
+read_clust <- read_clust[ , colSums(is.na(read_clust)) == 0]
+rownames(read_clust) <- read_clust[,1]
+hc = hclust(dist(read_clust[,-1]))
+klasy <- data.frame(class = cutree(hc, k = 4), CNT = names(cutree(hc, k = 4)))
+read <- read %>% left_join(klasy)
+
+
+read$CNT <- reorder(read$CNT, read$class)
+
+# dendogram:
+source("http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R")
+op = par(bg = "#EFEFEF")
+A2Rplot(hc, k = 4, boxes = FALSE, col.up = "gray50", col.down = c("#FF6B6B", 
+                                                                  "#4ECDC4", "#556270","#E69F00", "#56B4E9" ))
+
+# boxplot
+ggplot(read, aes(factor(CNT), TimeMed, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette) +
+  theme(legend.position="bottom") + ggtitle('Kategoria czytanie') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+ggplot(read, aes(factor(CNT), FreqFull, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette) +
+  theme(legend.position="bottom") + ggtitle('Kategoria czytanie') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
 ```
 
+
+### Wyniki:
+
+* Tutaj ju¿ nie mamy wyraŸnych liderów, czyli wyodrêbionej grupy z niskimi medianami i wysok¹ proporcj¹ dobrze rozwi¹zanych zadañ. Przewaga krajów azjatyckich zanika.
+
+## Wnioski ogólne:
+
+* Na podstawie klusteryzacji bardzo ³atwo mo¿na przeœledziæ zale¿noœci i podobieñstwa miêdzy krajami. Np. ciekawym zjawiskiem jest spojrzenie na Kanadê i USA, te kraje w ka¿dej kategorii znajduj¹ siê bardzo blisko siebie,

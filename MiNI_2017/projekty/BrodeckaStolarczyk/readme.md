@@ -8,4 +8,5 @@
 Plik `zadanie0.html` zawiera raport z Zadania 0.
 
 ## Zadanie 3
-Plik `zadanie3.html` jest rozwiązaniem Zadania na 3 [StatystykiKrajow].
+Plik `zadanie3.html` jest rozwiązaniem Zadania na 3 [StatystykiKrajow]. 
+Pliki `PodstatwoweStatystyki.rds` i `odp.xlsx` zawierają obliczone statystyki.
