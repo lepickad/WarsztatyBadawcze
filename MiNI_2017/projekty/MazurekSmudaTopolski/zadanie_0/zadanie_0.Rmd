@@ -1,0 +1,314 @@
+---
+title: "Zadanie 0"
+author: "M. Mazurek, B. Topolski, P. Smuda"
+date: "March 26, 2017"
+output: html_document
+---
+
+Obróbka danych składała się z dwóch etapów. Pierwszy z nich został dokonany na portalu ... , natomiast druga część odbyła się na własnych komputerach.
+
+Do poniżych zadań skorzystaliśmy z nastepujących pakietów:
+
+* `xlsx`
+* `data.table`
+* `stringi`
+
+## Etap I
+
+Zaczynamy od wczytania pakietów oraz danych:
+
+* `stud2015` - "CY6_MS_CMB_STU_QQQ.sav", które uprzednio zapisaliśmy w formacie _.rda_,
+* `dane_cog` - "CY6_MS_CMB_STU_COG.sav", które zapisaliśmy w formacie _.csv_.
+
+```{r, eval=FALSE}
+library(data.table)
+library(stringi)
+
+#stud2015 <- read.spss("CY6_MS_CMB_STU_QQQ.sav", use.value.labels = TRUE, to.data.frame = TRUE)
+#save(stud2015, file = "stud2015.rda")
+load("stud2015.rda")
+dane <- fread("dane_cog.csv")
+col_nam <- colnames(dane)
+```
+
+Natępnie przkształcamy dane, aby móc skorzystać z pakietu `data.table` oraz wybieramy podzbiór osób, które wypełniały kwestionariusz przy pomocy komputera.
+
+```{r,eval=FALSE}
+stud2015 <- as.data.table(stud2015)
+stud2015 <- stud2015[ADMINMODE=="Computer"]
+dane <- dane[ADMINMODE==2]
+gc()
+```
+
+W celu utworzenia kolumn *result*, *n.actions* oraz *tminig* tworzymy trzy wektory, które zawierają nazwy kolumn z poszczególnymi danymi.
+
+```{r,eval=FALSE}
+ques_timing <- sapply(col_nam[22:length(col_nam)], function(x){
+  computer <- stri_detect_regex(stri_sub(x, from=1, to=1),"C|D")
+  subject <- stri_detect_regex(stri_sub(x, from=2, to=2),"S|M|R")
+  timing <- stri_detect_regex(stri_sub(x, from=-1),"T")
+  quest <- stri_detect_regex(stri_sub(x, from=6, to=6), "Q")
+  tmp <- stri_detect_regex(stri_sub(x, from=-2, to=-2),"[0-9]")
+  return(ifelse(computer & subject & timing & quest & tmp, TRUE, FALSE))
+})
+
+ques_action <- sapply(col_nam[22:length(col_nam)], function(x){
+  computer <- stri_detect_regex(stri_sub(x, from=1, to=1),"C|D")
+  subject <- stri_detect_regex(stri_sub(x, from=2, to=2),"S|M|R")
+  action <- stri_detect_regex(stri_sub(x, from=-1),"A")
+  quest <- stri_detect_regex(stri_sub(x, from=6, to=6), "Q")
+  tmp <- stri_detect_regex(stri_sub(x, from=-2, to=-2),"[0-9]")
+  return(ifelse(computer & subject & action & quest & tmp, TRUE, FALSE))
+})
+
+ques_solve <- sapply(col_nam[22:length(col_nam)], function(x){
+  computer <- stri_detect_regex(stri_sub(x, from=1, to=1),"C|D")
+  subject <- stri_detect_regex(stri_sub(x, from=2, to=2),"S|M|R")
+  action <- stri_detect_regex(stri_sub(x, from=-1),"S|C")
+  quest <- stri_detect_regex(stri_sub(x, from=6, to=6), "Q")
+  tmp <- stri_detect_regex(stri_sub(x, from=-2, to=-2),"[0-9]")
+  return(ifelse(computer & subject & action & quest & tmp, TRUE, FALSE))
+})
+```
+
+W kolejnym kroku tworzymy trzy tabele danych, odpowiadające przyszłym kolumnom *result*, *n.actions* oraz *tminig*.
+
+```{r,eval=FALSE}
+setkey(dane, CNT, CNTSCHID, CNTSTUID)
+gc()
+
+dane_col_action <- dane[, c("CNT", "CNTSCHID","CNTSTUID",
+                               "CBASCI","BOOKID",
+                               names(ques_action[ques_action])), with = FALSE]
+dane_col_time <- dane[, c("CNT", "CNTSCHID","CNTSTUID",
+                                    "CBASCI","BOOKID",
+                                    names(ques_timing[ques_timing])), with = FALSE]
+dane_col_solve <- dane[, c("CNT", "CNTSCHID","CNTSTUID",
+                                     "CBASCI","BOOKID",
+                                     names(ques_solve[ques_solve])), with = FALSE]
+
+rm("dane")
+gc()
+rm("dane")
+gc()
+```
+
+Teraz musimy trzy powyższe tabele danych połaczyć w jedną. Przekształcamy więc je z postaci __szerokiej__ do postaci __długiej__. Następnie łączymy tak otrzymane tabele.
+
+```{r,eval=FALSE}
+dane_all_action = melt.data.table(dane_col_action, 
+                                  id.vars = c("CNT", "CNTSCHID","CNTSTUID", "CBASCI","BOOKID"),
+                                  measure.vars = setdiff(colnames(dane_join_col_action), 
+                                                         c("CNT", "CNTSCHID","CNTSTUID", "CBASCI","BOOKID")),
+                                  variable.name = "task",
+                                  value.name = "n.action")
+dane_all_action$task <- stri_sub(dane_all_action$task, from = 1, to=8)
+
+dane_all_time = melt.data.table(dane_col_time, 
+                                  id.vars = c("CNT", "CNTSCHID","CNTSTUID", "CBASCI","BOOKID"),
+                                  measure.vars = setdiff(colnames(dane_join_col_time),
+                                                         c("CNT", "CNTSCHID","CNTSTUID", "CBASCI","BOOKID")),
+                                  variable.name = "task",
+                                  value.name = "timing")
+                                 
+dane_all_time$task <- stri_sub(dane_all_time$task, from = 1, to=8)
+
+setkey(dane_all_action, CNT, CNTSCHID, CNTSTUID, CBASCI, BOOKID, task)
+setkey(dane_all_time, CNT, CNTSCHID, CNTSTUID, CBASCI, BOOKID, task)
+
+dane_pisa <- merge(dane_all_action, dane_all_time, all = TRUE)
+
+gc()
+rm("dane_all_action")
+rm("dane_all_time")
+gc()
+
+
+dane_all_solve = melt.data.table(dane_col_solve, 
+                                id.vars = c("CNT", "CNTSCHID","CNTSTUID", "CBASCI","BOOKID"),
+                                measure.vars = setdiff(colnames(dane_join_col_solve),
+                                                       c("CNT", "CNTSCHID","CNTSTUID", "CBASCI","BOOKID")),
+                                variable.name = "task",
+                                value.name = "result")
+dane_all_solve$task <- stri_sub(dane_all_solve$task, from = 1, to=8)
+
+setkey(dane_all_solve, CNT, CNTSCHID, CNTSTUID, CBASCI, BOOKID, task)
+
+dane_pisa <- merge(dane_pisa, dane_all_solve, all = TRUE)
+
+gc()
+rm("dane_all_solve")
+```
+
+Na koniec wybieramy te wiersze, które nie zawierają samych braków danych.
+
+```{r,eval=FALSE}
+dane_pisa_filtered = dane_pisa[(!is.na(n.action) | !is.na(timing) | !is.na(result))]
+save(dane_pisa_filtered, file= "dane_pisa_filtered3.RDA")
+```
+
+
+## Etap II
+
+W tym etapie będziemy korzystać z następujących plików, które pozwolą nam utworzyć kolumnę *position*:
+
+* "sheet_structure.xlsx"
+* "science_cluster_encoding.xlsx"
+* "science_cluster_combination.xlsx"
+
+Korzystamy również z tabeli "dane_cluster_all.rda", która zawiera informację o zadaniach w poszczególnych klastrach.
+
+Zaczynamy od wczytania pliku "sheet_structure.xlsx", który przekształcamy do postaci __długiej__.
+
+```{r, eval=FALSE}
+library(xlsx)
+library(data.table)
+library(stringi)
+#library(dplyr)
+
+sheet_structure = as.data.table(read.xlsx("./data/raw_data/sheet_structure.xlsx", startRow = 1, 
+                                          colIndex = 1:5,sheetIndex = 1,
+                                          encoding = "UTF-8"))
+colnames(sheet_structure) = c("BOOKID", as.character(1:4))
+sheet_structure_melt = melt(sheet_structure, 
+     id.vars = "BOOKID", 
+     measure.vars = as.character(1:4), 
+     value.name = "cluster", 
+     variable.name = "position")
+
+sheet_structure_melt[, cluster := stri_trim_both(cluster)]
+sheet_structure_melt[, position := as.numeric(position)]
+```
+
+Następnie wczytujemy dane "dane_cluster_all.rda" oraz plik "science_cluster_encoding.xlsx", który przekształcamy do postaci  __długiej__.
+
+```{r,eval=FALSE}
+load("./data/processed_data/dane_cluster_all.RDA")
+dane_cluster = as.data.table(dane_cluster_all)
+
+science_cluster_encoding = read.xlsx("./data/raw_data/science_cluster_encoding.xlsx", sheetIndex = 1, header = TRUE)
+colnames(science_cluster_encoding)[6:7] = c("X6", "X7")
+science_cluster_encoding_2 = tidyr::gather(science_cluster_encoding, CBASCI, combination, -Base) 
+
+science_cluster_encoding_2$CBASCI = stri_sub(science_cluster_encoding_2$CBASCI, from=2)
+colnames(science_cluster_encoding_2) = c("BOOKID","CBASCI","combination")
+science_cluster_encoding_2$BOOKID = as.numeric(science_cluster_encoding_2$BOOKID)
+science_cluster_encoding_2$CBASCI =  as.numeric(science_cluster_encoding_2$CBASCI)
+science_cluster_encoding_2 = as.data.table(science_cluster_encoding_2)
+```
+
+Analogicznie postępujemy z plikiem "science_cluster_combination.xlsx".
+
+```{r,eval=FALSE}
+science_cluster_combination = read.xlsx("./data/raw_data/science_cluster_combination.xlsx", sheetIndex = 1, header = TRUE)
+colnames(science_cluster_combination) = c("combination", "1", "2")
+science_cluster_combination_2 = tidyr::gather(science_cluster_combination, position_s, cluster, -combination)
+
+science_cluster_combination_2$cluster = stri_replace_first_regex(science_cluster_combination_2$cluster, "(?<=S)0","")
+science_cluster_combination_2 = as.data.table(science_cluster_combination_2)
+```
+
+Wczytujemy dane z pierwszego etapu.
+
+```{r,eval=FALSE}
+load("./data/processed_data/dane_pisa_filtered3.RDA")
+dane_pisa_filtered <- dane_pisa_filtered[dane_pisa_filtered$BOOKID %in% 31:66,]
+setkey(dane_pisa_filtered, BOOKID, task, CBASCI)
+setkey(dane_cluster, task)
+setkey(science_cluster_encoding_2, BOOKID, CBASCI)
+```
+
+Zaczynamy łączyć tabele, na początek przypisujemy klastry.
+
+```{r,eval=FALSE}
+dane_pisa_merged = merge(dane_pisa_filtered, dane_cluster, all.x = TRUE)
+rm(dane_pisa_filtered)
+dane_pisa_merged = as.data.table(dane_pisa_merged)
+```
+
+Kolejno przypisujemy numer otrzymanej kombinacji zadań w kwestionariuszu.
+
+```{r,eval=FALSE}
+setkey(dane_pisa_merged,BOOKID, task, CBASCI)
+dane_pisa_merged_2 = merge(dane_pisa_merged, science_cluster_encoding_2, all.x = TRUE)
+rm(dane_pisa_merged)
+setkey(sheet_structure_melt, BOOKID, cluster)
+```
+
+Przypisujemy do zadań _reading_ oraz _math_ numer pozycji.
+
+```{r,eval=FALSE}
+dane_pisa_merged_3 = merge(dane_pisa_merged_2, sheet_structure_melt, all.x = T, by = c("BOOKID", "cluster"))
+rm(dane_pisa_merged_2)
+setkey(dane_pisa_merged_3, cluster, combination)
+setkey(science_cluster_combination_2, cluster, combination)
+```
+
+Pozstaje dodać informację o pozycji dla zadań _science_.
+
+```{r,eval=FALSE}
+dane_pisa_merged_final = merge(dane_pisa_merged_3, science_cluster_combination_2, all.x = T)
+rm(dane_pisa_merged_3)
+```
+
+Dla numeru bookletu w zbiorze `c(37:42,49:54,61:66)` przesuwamy pozycję dla zadań _science_ o 2. W kolumnie *result* usuwamy błędy w danych oraz dodajemy kolumne ze skróconą nazwą zadania.
+
+```{r,eval=FALSE}
+dane_pisa_merged_final[, position:= as.integer(position)]
+dane_pisa_merged_final[, position_s:= as.integer(position_s)]
+dane_pisa_merged_final[, position_s := ifelse(BOOKID %in% c(37:42,49:54,61:66), position_s + 2, position_s)]
+dane_pisa_merged_final[, position:= ifelse(is.na(position), position_s, position)]
+dane_pisa_merged_final = dane_pisa_merged_final[, -c("combination", "position_s"), with = FALSE]
+dane_pisa_merged_final[, result := ifelse(result %in% c(0,1), result, NA)]
+dane_pisa_merged_final[, n.actions := as.integer(n.action)]
+dane_pisa_merged_final[, n.action := NULL]
+setnames(dane_pisa_merged_final, "task", "item")
+dane_pisa_merged_final[, item_short := stri_sub(item, from  = 2)]
+```
+
+Do otrzymanej tabeli musimy dołączyc infomację o zadaniu `ST004` i `ST118` oraz kolumnę z wagami. W tym celu załączamy dane `stud2015.rda`
+
+```{r,eval=FALSE}
+load("./data/raw_data/stud2015.rda")
+stud2015 <- as.data.table(stud2015)
+stud2015 <- stud2015[ADMINMODE=="Computer"]
+stud2015_2 <- stud2015[, c("CNTSTUID",
+                           "ST004D01T","ST118Q01NA","ST118Q02NA",
+                           "ST118Q03NA","ST118Q04NA","ST118Q05NA", "W_FSTUWT"), with = FALSE]
+
+stud2015_2$W_FSTUWT = as.numeric(stud2015_2$W_FSTUWT)
+stud2015_2$ST004D01T = as.character(stud2015_2$ST004D01T)
+stud2015_2$ST118Q01NA = as.character(stud2015_2$ST118Q01NA)
+stud2015_2$ST118Q02NA = as.character(stud2015_2$ST118Q02NA)
+stud2015_2$ST118Q03NA = as.character(stud2015_2$ST118Q03NA)
+stud2015_2$ST118Q04NA = as.character(stud2015_2$ST118Q04NA)
+stud2015_2$ST118Q05NA = as.character(stud2015_2$ST118Q05NA)
+```
+
+Na koniec łączymy tabele i zapisujemy otrzymaną tabele danych.
+
+```{r,eval=FALSE}
+dane_pisa_merged_final <- dane_pisa_merged_final[, c("CNT", "CNTSCHID", "CNTSTUID", "BOOKID", 
+                                                     "CBASCI", "item", "item_short", "result",    
+                                                     "n.actions", "timing", "position", "cluster")]
+
+dane_pisa_merged_final <- dplyr::left_join(dane_pisa_merged_final, stud2015_2, by = "CNTSTUID")
+save(dane_pisa_merged_final, file = "./data/processed_data/dane_pisa_merged_final_26032017.RDA")
+write.csv(dane_pisa_merged_final[1:100,], file = "./data/processed_data/zadanie0_sample_26032017.csv", 
+          row.names = FALSE)
+```
+
+```{r, echo = FALSE}
+pander::pander(head(data.table::fread("../data/processed_data/zadanie0_sample.csv")), split.table = 120)
+```
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(data.table)
+library(stringi)
+library(xlsx)
+library(data.table)
+library(stringi)
+library(dplyr)
+```
+```{r}
+devtools::session_info()
+```

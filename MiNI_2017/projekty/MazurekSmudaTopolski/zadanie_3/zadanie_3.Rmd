@@ -1,6 +1,7 @@
 ---
 title: "Warsztaty badawcze - zadanie 3"
 author: "Magdalena Mazurek, Piotr Smuda, Bartosz Topolski"
+date: "March 30, 2017"
 output: html_document
 ---
 
@@ -10,17 +11,20 @@ output: html_document
 
 ```{r, message = FALSE, warning = FALSE, cache = TRUE, cache.lazy = FALSE}
 library(dplyr)
-library(DT)
+library(isotone)
+library(knitr)
+library(stringi)
+library(ggplot2)
 
-load("../data/processed_data/dane_pisa_merged_final.RDA")
+load("../data/processed_data/dane_pisa_merged_final_26032017.RDA")
 
-# Wybór krajów do ustalenia ilości obiektów do wyświetlenia
-countries <- unique(dane_pisa_merged_final$CNT)
-n <- length(countries)
+# Wybór krajów
+chosen_countries <- c("POL", "KOR", "USA", "DEU", "GBR")
+n <- length(chosen_countries)
 
-# Zamiana na factor do lepszego wyszukiwania w tabelkach
-dane_pisa_merged_final$item_short <- as.factor(dane_pisa_merged_final$item_short)
-dane_pisa_merged_final$CNT <- as.factor(dane_pisa_merged_final$CNT)
+# Pozbycie się braków danych
+dane_pisa_merged_final <- dane_pisa_merged_final %>% 
+  filter(!is.na(timing) & !is.na(n.actions) & !is.na(result))
 ```
 
 <br>
@@ -31,20 +35,16 @@ dane_pisa_merged_final$CNT <- as.factor(dane_pisa_merged_final$CNT)
 result_timing <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
    summarise(min = min(timing, na.rm = TRUE),
           q1 = quantile(timing, 0.25, na.rm = TRUE),
-          median = median(timing, na.rm = TRUE),
-          mean = round(mean(timing, na.rm = TRUE), 2),
+          weighted_median = round(weighted.median(timing, W_FSTUWT), 2),
+          weighted_mean = round(weighted.mean(timing, W_FSTUWT, na.rm = TRUE), 2),
           q3 = quantile(timing, 0.75, na.rm = TRUE),
           max = max(timing, na.rm = TRUE))
 
-datatable(result_timing, 
-          filter = "top", 
-          rownames = FALSE,
-          options = list(
-            searching = FALSE,
-            pageLength = 10,
-            lengthMenu = c(10, seq(n, 5*n, n)),
-            autoWidth = TRUE,
-            columnDefs = list(list(width = '120px', targets = 0))))
+write.csv(result_timing, file = "../data/processed_data/result_timing.csv", row.names = FALSE)
+
+result_timing_subset <- result_timing %>% filter(CNT %in% chosen_countries)
+
+kable(head(result_timing_subset, 5))
 ```
 
 <br>
@@ -57,14 +57,11 @@ result_result <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>%
              no_credit = sum(ifelse(is.na(result), 0, result == 0)),
              other = sum(is.na(result)))
 
-datatable(result_result, 
-          filter = "top", 
-          rownames = FALSE,
-          options = list(
-            searching = FALSE,
-            pageLength = 10,
-            lengthMenu = c(10, seq(n, 5*n, n)),
-            autoWidth = TRUE))
+write.csv(result_result, file = "../data/processed_data/result_result.csv", row.names = FALSE)
+
+result_result_subset <- result_result %>% filter(CNT %in% chosen_countries)
+
+kable(head(result_result_subset, 5))
 ```
 
 <br>
@@ -75,18 +72,102 @@ datatable(result_result,
 result_n_actions <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
    summarise(min = min(n.actions, na.rm = TRUE),
              q1 = quantile(n.actions, 0.25, na.rm = TRUE),
-             median = median(n.actions, na.rm = TRUE),
-             mean = round(mean(n.actions, na.rm = TRUE), 2),
+             weighted_median = round(weighted.median(n.actions, W_FSTUWT), 2),
+             weighted_mean = round(weighted.mean(n.actions, W_FSTUWT, na.rm = TRUE), 2),
              q3 = quantile(n.actions, 0.75, na.rm = TRUE),
              max = max(n.actions, na.rm = TRUE))
 
-datatable(result_n_actions, 
-          filter = "top", 
-          rownames = FALSE,
-          options = list(
-            searching = FALSE,
-            pageLength = 10,
-            lengthMenu = c(10, seq(n, 5*n, n)),
-            autoWidth = TRUE,
-            columnDefs = list(list(width = '120px', targets = 0))))
+write.csv(result_n_actions, file = "../data/processed_data/result_n_actions.csv", row.names = FALSE)
+
+result_n_actions_subset <- result_n_actions %>% filter(CNT %in% chosen_countries)
+
+kable(head(result_n_actions_subset, 5))
+```
+
+<br>
+
+# Wizualizacja i analiza
+
+```{r, fig.align = "center"}
+# Obróbka danych
+merged_data <- left_join(result_timing_subset, result_n_actions_subset, by = c("item_short", "CNT"))
+merged_data <- left_join(merged_data, result_result_subset, by = c("item_short", "CNT"))
+merged_data <- merged_data %>% 
+  mutate(credit_percentage = full_credit/(full_credit + no_credit),
+         Zadanie = stri_sub(item_short, 1, 1)) %>%
+  group_by(CNT, Zadanie) %>%
+  mutate(mean_timing = mean(weighted_mean.x),
+         mean_result = mean(credit_percentage)) %>%
+  filter(!(duplicated(CNT) & duplicated(Zadanie))) %>%
+  select(CNT, weighted_mean.x, weighted_mean.y, credit_percentage, 
+         Zadanie, mean_timing, mean_result)
+
+merged_data$CNT[which(merged_data$CNT == "GBR")] <- "Wielka Brytania"
+merged_data$CNT[which(merged_data$CNT == "DEU")] <- "Niemcy"
+merged_data$CNT[which(merged_data$CNT == "KOR")] <- "Korea Południowa"
+merged_data$CNT[which(merged_data$CNT == "POL")] <- "Polska"
+merged_data$CNT[which(merged_data$CNT == "USA")] <- "Stany Zjednoczone"
+
+merged_data$Zadanie[which(merged_data$Zadanie == "M")] <- "Matematyka"
+merged_data$Zadanie[which(merged_data$Zadanie == "R")] <- "Czytanie"
+merged_data$Zadanie[which(merged_data$Zadanie == "S")] <- "Nauki przyrodnicze"
+names(merged_data)[which(names(merged_data) == "CNT")] <- "Kraj"
+merged_data <- merged_data %>% group_by(Kraj) %>% arrange(desc(Kraj))
+
+merged_data$Kraj <- factor(merged_data$Kraj, levels = unique(merged_data$Kraj))
+
+# Violin plot dla czasu rozwiązywania zadań
+vp1 <- ggplot(merged_data, aes(x = Kraj, y = weighted_mean.x, color = Kraj)) + 
+  geom_violin() + 
+  ggtitle("Rozkład czasu rozwiązywania zadań w podziale na kraje") + 
+  ylab("Średni czas rozwiązywania") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 12)) + 
+  theme(plot.title = element_text(hjust = 1.2)) + 
+  stat_summary(fun.y = mean, geom = "point", size = 2) + 
+  coord_flip()
+vp1
+
+# Violin plot dla liczby akcji
+vp2 <- ggplot(merged_data, aes(x = Kraj, y = weighted_mean.y, color = Kraj)) + 
+  geom_violin() + 
+  ggtitle("Rozkład liczby akcji w podziale na kraje") + 
+  ylab("Liczba akcji potrzebnych do rozwiązania zadania") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 12)) + 
+  theme(plot.title = element_text(hjust = -6.2)) + 
+  stat_summary(fun.y = mean, geom = "point", size = 2) + 
+  coord_flip()
+vp2
+
+# Violin plot dla odsetek w pełni rozwiązanych zadań
+vp3 <- ggplot(merged_data, aes(x = Kraj, y = credit_percentage, color = Kraj)) + 
+  geom_violin() + 
+  ggtitle("Odsetek w pełni rozwiązanych zadań w podziale na kraje") + 
+  ylab("Odsetek rozwiązań zadań") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 12)) + 
+  theme(plot.title = element_text(hjust = 1.15)) + 
+  stat_summary(fun.y = mean, geom = "point", size = 2) + 
+  coord_flip()
+vp3
+```
+
+## Wykres zależności odsetku w pełni rozwiązanych zadań od czasu
+
+```{r, fig.align = "center"}
+# Scatter plot
+sp <- ggplot(merged_data, aes(x = mean_timing, y = mean_result, color = Kraj, shape = Zadanie)) + 
+  geom_point() +
+  ggtitle("Zależność odsetku w pełni rozwiązanych zadań od czasu") + 
+  xlab("Średni czas rozwiązywania") +
+  ylab("Odsetek rozwiązań zadań") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 13)) + 
+  theme(plot.title = element_text(hjust = 0.55))
+sp
 ```
