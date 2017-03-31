@@ -1,5 +1,4 @@
 # Zawartość
 
-    1. create_dane_pisa_filtered.R - skrypt do stworzenia pomocniczej tabelki
-    2. create_dane_merged_final.R - skrypt do stworzenia ostatecznej tabelki
-    3. zadanie_0_sample.csv - przykładowe wiersze tabelki
+    1. zadanie_0.Rmd - skrypt generujący raport o sposobie rozwiązania zadania 0
+    2. zadanie_0.html - raport opisujący sposób rozwiązania zadania 0
