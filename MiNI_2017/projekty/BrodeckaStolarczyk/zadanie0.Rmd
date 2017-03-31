@@ -1,0 +1,310 @@
+---
+title: "Zadanie 0"
+author: "A.Brodecka, M.Stolarczyk"
+date: "18 marca 2017"
+output: html_document
+---
+
+```{r warning=FALSE, message=FALSE} 
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = FALSE)
+library(dplyr)
+library(tidyr)
+library(stringi)
+library(data.table)
+library(readxl)
+```
+# Wczytanie danych
+
+Wczytywanie danych z pliku `.rds` do R jest o wiele szybsze, niż z formatu SPSS-owego. Dlatego opłaca się przechowywać dodatkową kopię danych w formacie R-owym.
+```{r}
+if (file.exists("cog.rds")) {
+    dane1 <- readRDS("cog.rds")
+} else {
+    dane1 <- read.spss("Cy6_ms_cmb_stu_cog.sav", 
+                       use.value.labels = TRUE, 
+                       to.data.frame = TRUE)
+    saveRDS(dane1, "cog.rds")
+}
+
+if (file.exists("qqq.rds")) {
+    dane2 <- readRDS("qqq.rds")
+} else {
+    dane2 <- read.spss("Cy6_ms_cmb_stu_qqq.sav", 
+                       use.value.labels = TRUE, 
+                       to.data.frame = TRUE)
+    saveRDS(dane2, "qqq.rds")
+}
+```
+
+
+# Tabela z wynikami i czasami rozwiązywania zadań 
+
+
+```{r}
+dane2 %>%
+    select(CNT, CNTRYID, CNTSCHID, CNTSTUID, BOOKID, CBASCI, W_FSTUWT, ST004D01T,
+           starts_with("ST118")) ->
+        dane2
+
+panstwa <- unique(dane1$CNTRYID) 
+wyniki <- list(length(panstwa))
+
+for (i in seq_along(panstwa)) {
+    panstwo <- panstwa[i]
+   
+    qqq <- filter(dane2, CNTRYID == panstwo)
+    
+    dane1 %>%
+        filter(CNTRYID == panstwo) %>%
+        select(CNT, CNTSCHID, CNTSTUID, BOOKID, CBASCI, 
+               matches("^[CD][SMR][0-9]{3,3}Q[0-9]{2,2}[SCAT]")) -> 
+        cog
+    cog$id <- 1:nrow(cog)
+    
+    scores <- select(cog, id, matches("^[CD][SMR][0-9]{3,3}Q[0-9]{2,2}[SC]"))
+    actions<- select(cog, id, matches("^[CD][SMR][0-9]{3,3}Q[0-9]{2,2}A"))
+    times  <- select(cog, id, matches("^[CD][SMR][0-9]{3,3}Q[0-9]{2,2}T"))
+    
+    f <- function(df) {
+        df <- gather(df, nazwa_kolumny, wartosc, -id) %>%
+                     mutate(item = stri_sub(nazwa_kolumny, 1, 8)) %>%
+                     select(-nazwa_kolumny)
+        # zamiana na data.table przyspiesza joiny
+        df <- as.data.table(df)
+        setkey(df, item, id)
+    } 
+    
+    scores <- f(scores)
+    actions <- f(actions)
+    times <- f(times)
+    
+    names(scores)[2] <- "result"
+    names(actions)[2] <- "n.actions"
+    names(times)[2] <- "timing"
+    
+    scores %>%
+        merge(actions) %>%
+        merge(times) ->
+        wynik
+        
+    cog %>% 
+        select(id, CNT, CNTSCHID, CNTSTUID, BOOKID, CBASCI) %>%
+        left_join(wynik, by = "id") %>%
+        select(-id) %>%
+        filter(!is.na(n.actions))->
+        wynik
+    
+    wynik %>% 
+        left_join(qqq, by = c("CNT", "CNTSCHID", "CNTSTUID", "BOOKID", "CBASCI")) ->
+        wynik
+    
+    wyniki[[i]] <- wynik
+} 
+
+wyniki <- do.call(rbind, wyniki)
+
+wyniki$BOOKID <- as.integer(stri_extract_first_regex(wyniki$BOOKID, "[0-9]+"))
+
+knitr::kable(head(wyniki))
+```
+
+
+# Dodanie informacji o pozycji pytania 
+
+## Grupy pytań Math i Reading
+
+### Listy pytań w poszczególnych klastrach
+
+```{r, cache=TRUE}
+formularze <- paste0("Form ", 55:60, " (CBA)")
+wynikiM <- list(length(formularze))
+wynikiR <- list(length(formularze))
+
+for (i in seq_along(formularze)) {
+    
+    form <- filter(dane1, BOOKID == formularze[i])
+    
+    matematyka <- select(form, matches("^[CD]M.*"))
+    czytanie <- select(form, matches("^[CD]R.*"))
+    
+    matematyka %>%
+        select(matches("^.{8,8}[SC]")) %>%
+        sapply(function(x) !all(is.na(x))) -> 
+        indM
+    czytanie %>%
+        select(matches("^.{8,8}[SC]")) %>%
+        sapply(function(x) !all(is.na(x))) -> 
+        indR
+    
+    tmpM <- grep("^.{8,8}[SC]", names(matematyka), value = TRUE)[indM]
+    tmpR <- grep("^.{8,8}[SC]", names(czytanie), value = TRUE)[indR]
+    
+    wynikiM[[i]] <- tmpM
+    wynikiR[[i]] <- tmpR
+}
+
+print(wynikiM)
+print(wynikiR)
+```
+
+### Przekształcenie do ramki danych
+
+```{r}
+klastryM <- c("M01", "M02", "M03", "M04", "M05", "M06ab")
+klastryR <- c("R01", "R02", "R03", "R04", "R05", "R06ab")
+
+
+pytanie_klaster_M <- mapply(function(x, y) {
+    data.frame(pytanie = x, klaster = y)
+}, wynikiM, klastryM, SIMPLIFY = FALSE)
+
+
+pytanie_klaster_R <- mapply(function(x, y) {
+    data.frame(pytanie = x, klaster = y)
+}, wynikiR, klastryR, SIMPLIFY = FALSE)
+
+
+pytanie_klaster <- rbind(
+    do.call(rbind, pytanie_klaster_M), 
+    do.call(rbind, pytanie_klaster_R)
+)
+
+pytanie_klaster$pytanie <- substr(pytanie_klaster$pytanie, 1, 8)
+
+knitr::kable(head(pytanie_klaster))
+```
+
+
+### Przypisanie pozycji do formularza i kodu pytania 
+
+```{r}
+klastry <- read_excel("sheet_structure.xlsx")
+names(klastry)[1] <- "form"
+
+klastry %>% 
+    gather(position, klaster, -form) %>%
+    mutate(position = as.numeric(stri_extract_first_regex(position, "[0-9]")),
+           klaster = stri_trim(klaster)) ->
+    form_pos_kl
+
+
+form_kl_pyt_pos <- left_join(pytanie_klaster, form_pos_kl,
+                             by = "klaster")
+
+knitr::kable(head(form_kl_pyt_pos))
+```
+
+## Grupa pytań Science 
+
+### Pozycja klastrów w formularzach
+
+```{r}
+
+ss <- readxl::read_excel("sheet_structure.xlsx")
+sce <- readxl::read_excel("science_cluster_encoding.xlsx")
+scc <- readxl::read_excel("science_cluster_combination.xlsx")
+
+names(ss)[1] <- "BOOKID"
+names(sce)[1] <- "BOOKID"
+names(scc) <- c("comb", "1", "2")
+
+ss <- gather(ss, position, cluster, -BOOKID)
+sce <- gather(sce, CBASCI, comb, -BOOKID)
+scc <- gather(scc, pos, cluster, -comb)
+
+ss$position <- as.integer(stri_extract_first_regex(ss$position, "[0-9]"))
+sce$CBASCI <- as.integer(sce$CBASCI)
+scc$pos  <- as.integer(scc$pos)
+
+
+ss %>%
+    mutate(cluster = stri_trim(cluster)) %>%
+    filter(cluster == "S") %>%
+    select(-cluster) %>%
+    left_join(sce) %>% 
+    left_join(scc, by = "comb") %>%  
+    group_by(BOOKID, position, CBASCI) %>%
+    arrange(pos) %>%
+    summarise(cluster = ifelse(position[1] %% 2 == 0,
+                               cluster[1],
+                               cluster[2])) %>%
+    ungroup() %>%
+    arrange(BOOKID, CBASCI) ->
+    form_pos_cbasci_cluster
+
+knitr::kable(head(form_pos_cbasci_cluster))
+```
+
+
+### Pozycja pytań w formularzach
+
+```{r}
+wyniki$CBASCI <- as.integer(stri_extract_first_regex(wyniki$CBASCI, "[0-9]+"))
+
+wyniki %>% 
+    select(BOOKID, CBASCI,  item) %>% 
+    distinct() %>%
+    left_join(sce) %>% 
+    left_join(scc) ->
+    tmp
+
+klastry <- na.omit(unique(tmp$cluster))
+pytania <- vector("list", length(klastry))
+
+for (i in seq_along(klastry)) {
+    kl <- klastry[i]
+    t <- filter(tmp, cluster == kl)
+    t <- split(t$item, factor(t$BOOKID):factor(t$CBASCI))
+    t <- t[sapply(t, length) != 0]    
+    w <- t[[1]]
+    for (x in t) {
+        w <- intersect(w, x)
+    }
+    pytania[[i]] <- w
+}
+
+
+pytanie_klasterS <- mapply(function(x, y) {
+    data.frame(pytanie = x, klaster = y)
+}, pytania, klastry, SIMPLIFY = FALSE)
+
+
+pytanie_klasterS <- do.call(rbind, pytanie_klasterS)
+
+
+tab_s <- left_join(pytanie_klasterS, 
+                 form_pos_cbasci_cluster, 
+                 by = c("klaster" = "cluster"))
+
+
+knitr::kable(head(tab_s, 10))
+```
+
+
+# Złączenie w jedną tabelę
+
+```{r}
+wyniki %>% 
+    left_join(form_kl_pyt_pos, by = c("item" = "pytanie", "BOOKID" = "form")) %>%
+    left_join(tab_s, 
+              by = c("item" = "pytanie", "BOOKID" = "BOOKID", "CBASCI"="CBASCI")) %>%
+    mutate(position = ifelse(substr(item, 2, 2) == "S",
+                             position.y,
+                             position.x),
+           klaster = ifelse(substr(item, 2, 2) == "S",
+                            klaster.y,
+                            klaster.x)) %>%
+    select(-klaster.x, -klaster.y, -position.x, -position.y) ->
+    wyniki2
+saveRDS(wyniki2, file = "zadanie0_wynik.rds")
+
+```
+
+
+# Wynik końcowy
+
+```{r}
+knitr::kable(head(wyniki2, 10))
+
+```
+
