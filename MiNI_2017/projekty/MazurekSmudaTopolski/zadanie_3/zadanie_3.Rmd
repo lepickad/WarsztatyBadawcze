@@ -2,14 +2,38 @@
 title: "Warsztaty badawcze - zadanie 3"
 author: "Magdalena Mazurek, Piotr Smuda, Bartosz Topolski"
 date: "March 30, 2017"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+  html:
+    toc: yes
+    toc_float: yes
 ---
 
 <br>
 
-# Wczytanie danych
+# 1. Cel Raportu
 
-```{r, message = FALSE, warning = FALSE, cache = TRUE, cache.lazy = FALSE}
+Za cel poniższego raportu obraliśmy pokazanie podstawowych statystyk dla zadań, dotyczących wyników i czasów ich rozwiązywania w podziale na kraje. Aby zawęzić naszą analizę postanowiliśmy skupić się na pięciu wybranych krajach:
+
+   1. Polska,
+   2. Korea Południowa,
+   3. Stany Zjednoczone,
+   4. Niemcy,
+   5. Wielka Brytania.
+
+# 2. Otrzymane wyniki
+
+Wśród otrzymanych wyników rzeczami, na które zwróciliśmy uwagę są:
+
+   1. Uczniowie z Korei Południowej rozwiązują zadania szybko i poprawnie, ale za to są bardzo aktywni patrząc na liczbę wykonanych przez nich akcji. Może to wynikać z faktu, że sport elektroniczny (zawodowe granie na komputerze) jest ich sportem narodowym, przez co od najmłodszych lat uczą się tego w szkole i po zajęciach. Natomiast jeśli spojrzymy na uczniów z Niemiec, to można zauważyć, że skuteczność rozwiązywania zadań mają porównywalną do swoich rówieśników z Korei, ale potrzebują na to średnio więcej czasu i mniej akcji.
+   2. Jeśli spojrzy się na różne typy zadań, to widać, że uczniowie, niezależnie od kraju pochodzenia, najwięcej czasu poświęcają na matematykę, co nie przekłada się na ich wyniki. Mianowicie, w każdym kraju najmniej rozwiązanych poprawnie zadań w porównaniu do czytania i nauk ścisłych jest z matematyki.
+   3. Z wybranych przez nas krajów najlepiej z zadaniami różnych typów radzą sobie uczniowie z Korei Południowej, a najgorzej ze Stanów Zjednoczonych, co potwierdza oficjalny ranking PISA 2012.
+
+# 3. Analiza i wizualizacja
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, cache = TRUE, cache.lazy = FALSE}
 library(dplyr)
 library(isotone)
 library(knitr)
@@ -18,6 +42,9 @@ library(ggplot2)
 
 load("../data/processed_data/dane_pisa_merged_final_26032017.RDA")
 
+# Zamiana timingu na minuty
+dane_pisa_merged_final$timing <- dane_pisa_merged_final$timing / 60000
+
 # Wybór krajów
 chosen_countries <- c("POL", "KOR", "USA", "DEU", "GBR")
 n <- length(chosen_countries)
@@ -25,13 +52,208 @@ n <- length(chosen_countries)
 # Pozbycie się braków danych
 dane_pisa_merged_final <- dane_pisa_merged_final %>% 
   filter(!is.na(timing) & !is.na(n.actions) & !is.na(result))
+
+result_timing <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
+   summarise(min = min(timing, na.rm = TRUE),
+          q1 = quantile(timing, 0.25, na.rm = TRUE),
+          weighted_median = round(weighted.median(timing, W_FSTUWT), 2),
+          weighted_mean = round(weighted.mean(timing, W_FSTUWT, na.rm = TRUE), 2),
+          q3 = quantile(timing, 0.75, na.rm = TRUE),
+          max = max(timing, na.rm = TRUE))
+
+write.csv(result_timing, file = "../data/processed_data/result_timing.csv", row.names = FALSE)
+
+result_timing_subset <- result_timing %>% filter(CNT %in% chosen_countries)
+
+result_result <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
+   summarise(full_credit = sum(ifelse(is.na(result), 0, result == 1)),
+             no_credit = sum(ifelse(is.na(result), 0, result == 0)))
+
+write.csv(result_result, file = "../data/processed_data/result_result.csv", row.names = FALSE)
+
+result_result_subset <- result_result %>% filter(CNT %in% chosen_countries)
+
+result_n_actions <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
+   summarise(min = min(n.actions, na.rm = TRUE),
+             q1 = quantile(n.actions, 0.25, na.rm = TRUE),
+             weighted_median = round(weighted.median(n.actions, W_FSTUWT), 2),
+             weighted_mean = round(weighted.mean(n.actions, W_FSTUWT, na.rm = TRUE), 2),
+             q3 = quantile(n.actions, 0.75, na.rm = TRUE),
+             max = max(n.actions, na.rm = TRUE))
+
+write.csv(result_n_actions, file = "../data/processed_data/result_n_actions.csv", row.names = FALSE)
+
+result_n_actions_subset <- result_n_actions %>% filter(CNT %in% chosen_countries)
 ```
 
 <br>
 
+## 3.1 Wykres czasu rozwiązywania zadań
+
+```{r, echo = FALSE, fig.align = "center"}
+# Obróbka danych
+merged_data <- left_join(result_timing_subset, result_n_actions_subset, by = c("item_short", "CNT"))
+merged_data <- left_join(merged_data, result_result_subset, by = c("item_short", "CNT"))
+merged_data <- merged_data %>% 
+  mutate(credit_percentage = full_credit/(full_credit + no_credit),
+         Zadanie = stri_sub(item_short, 1, 1)) %>%
+  group_by(CNT, Zadanie) %>%
+  mutate(mean_timing = mean(weighted_mean.x),
+         mean_result = mean(credit_percentage)) %>%
+  select(CNT, weighted_mean.x, weighted_mean.y, credit_percentage, 
+         Zadanie, mean_timing, mean_result)
+
+merged_data$CNT[which(merged_data$CNT == "GBR")] <- "Wielka Brytania"
+merged_data$CNT[which(merged_data$CNT == "DEU")] <- "Niemcy"
+merged_data$CNT[which(merged_data$CNT == "KOR")] <- "Korea Południowa"
+merged_data$CNT[which(merged_data$CNT == "POL")] <- "Polska"
+merged_data$CNT[which(merged_data$CNT == "USA")] <- "Stany Zjednoczone"
+
+merged_data$Zadanie[which(merged_data$Zadanie == "M")] <- "Matematyka"
+merged_data$Zadanie[which(merged_data$Zadanie == "R")] <- "Czytanie"
+merged_data$Zadanie[which(merged_data$Zadanie == "S")] <- "Nauki przyrodnicze"
+names(merged_data)[which(names(merged_data) == "CNT")] <- "Kraj"
+merged_data <- merged_data %>% group_by(Kraj) %>% arrange(desc(Kraj))
+
+merged_data$Kraj <- factor(merged_data$Kraj, levels = unique(merged_data$Kraj))
+
+# Violin plot dla czasu rozwiązywania zadań
+vp1 <- ggplot(merged_data, aes(x = Kraj, y = weighted_mean.x, color = Kraj)) + 
+  geom_violin() + 
+  ggtitle("Rozkład czasu rozwiązywania zadań w podziale na kraje") + 
+  ylab("Średni czas rozwiązywania") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 12)) + 
+  theme(plot.title = element_text(hjust = 1.2)) + 
+  stat_summary(fun.y = mean, geom = "point", size = 2) + 
+  coord_flip()
+vp1
+```
+
+Na powyższym wykresie został przedstawiony rozkład czasu rozwiązywania zadań w podziale na kraje. Widać na nim, że uczniowie z Korei Południowej znacząco odstają prędkością rozwiązywania od uczniów pozostałych krajów, dla których otrzymane wyniki są podobne.
+
+<br>
+
+## 3.2 Wykres rozkładu liczby akcji w podziale na kraje 
+
+```{r, echo = FALSE, fig.align = "center"}
+# Violin plot dla liczby akcji
+vp2 <- ggplot(merged_data, aes(x = Kraj, y = weighted_mean.y, color = Kraj)) + 
+  geom_violin() + 
+  ggtitle("Rozkład liczby akcji w podziale na kraje") + 
+  ylab("Liczba akcji potrzebnych do rozwiązania zadania") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 12)) + 
+  theme(plot.title = element_text(hjust = -6.2)) + 
+  stat_summary(fun.y = mean, geom = "point", size = 2) + 
+  coord_flip()
+vp2
+```
+
+Na powyższym wykresie został przedstawiony rozkład liczby akcji potrzebnych do rozwiązania zadań w podziale na kraje. Widać na nim, że ponownie uczniowie z Korei Południowej znacząco odstają od swoich rówieśników z pozostałych krajów, dla których otrzymane wyniki znów są podobne, i potrzebują wykonać od nich więcej akcji.
+
+<br>
+
+## 3.3 Wykres odsetku w pełni rozwiązanych zadań w podziale na kraje
+
+```{r, echo = FALSE, fig.align = "center"}
+# Violin plot dla odsetek w pełni rozwiązanych zadań
+vp3 <- ggplot(merged_data, aes(x = Kraj, y = credit_percentage, color = Kraj)) + 
+  geom_violin() + 
+  ggtitle("Odsetek w pełni rozwiązanych zadań w podziale na kraje") + 
+  ylab("Odsetek rozwiązań zadań") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 12)) + 
+  theme(plot.title = element_text(hjust = 1.15)) + 
+  stat_summary(fun.y = mean, geom = "point", size = 2) + 
+  coord_flip()
+vp3
+```
+
+Na powyższym wykresie został przedstawiony rozkład odsetek w pełni rozwiązanych zadań w podziale na kraje. Widać na nim, że uczniowie z Korei Południowej i Niemiec najlepiej wypadli z wynikiem około `55%`, a najgorzej uczniowe ze Stanów Zjednoczonych.
+
+<br>
+
+## 3.4 Wykres zależności odsetku w pełni rozwiązanych zadań od czasu
+
+```{r, echo = FALSE, fig.align = "center"}
+# Scatter plot
+sp <- ggplot(merged_data, aes(x = mean_timing, y = mean_result, color = Kraj, shape = Zadanie)) + 
+  geom_point(size = 3) +
+  ggtitle("Zależność odsetku w pełni rozwiązanych zadań od czasu") + 
+  xlab("Średni czas rozwiązywania") +
+  ylab("Odsetek rozwiązań zadań") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = rev(merged_data$Kraj)) +
+  theme(text=element_text(size = 13)) + 
+  theme(plot.title = element_text(hjust = 0.55))
+sp
+```
+
+Na powyższym wykresie został przedstawiony stosunek odsetku w pełni rozwiązanych zadań od czasu w podziale na kraje oraz typy zadań. Widać na nim, że uczniowie z Korei Południowej ogólnie wypadają najlepiej na tle swoich rówieśników z innych krajów, niezależnie od typu zadania. Ponadto widać, że uczniowie wszystkich krajów najgorzej radzą sobie z zadaniami z matematyki.
+
+<br>
+
+## 3.5 Czas rozwiązywania zadań
+
+```{r, echo = FALSE, cache = TRUE}
+kable(head(result_timing_subset, 5))
+```
+
+Powyższa tabela przedstawia przykładowe wiersze ze statystykami czasu rozwiązywania zadań. Na przykładzie przedstawione zostały wyniki dla zadania `M00GQ01`.
+
+<br>
+
+## 3.6 Rodzaje zakończenia rozwiązywania zadań
+
+```{r, echo = FALSE, cache = TRUE}
+kable(head(result_result_subset, 5))
+```
+
+Powyższa tabela przedstawia przykładowe wiersze ze statystykami rozwiązania / nie rozwiązania zadań. Na przykładzie przedstawione zostały wyniki dla zadania `M00GQ01`.
+
+<br>
+
+## 3.7 Liczba akcji potrzebnych do rozwiązania zadań
+
+```{r, echo = FALSE, cache = TRUE}
+kable(head(result_n_actions_subset, 5))
+```
+
+Powyższa tabela przedstawia przykładowe wiersze ze statystykami liczby akcji potrzebnych do rozwiązania zadań. Na przykładzie przedstawione zostały wyniki dla zadania `M00GQ01`.
+
+<br>
+
+# 4. Wykorzystany kod
+
+```{r, eval = FALSE}
+#############################
+# Wczytanie pakietów i danych
+library(dplyr)
+library(isotone)
+library(knitr)
+library(stringi)
+library(ggplot2)
+
+load("../data/processed_data/dane_pisa_merged_final_26032017.RDA")
+
+# Zamiana timingu na minuty
+dane_pisa_merged_final$timing <- dane_pisa_merged_final$timing / 60000
+
+# Wybór krajów
+chosen_countries <- c("POL", "KOR", "USA", "DEU", "GBR")
+n <- length(chosen_countries)
+
+# Pozbycie się braków danych
+dane_pisa_merged_final <- dane_pisa_merged_final %>% 
+  filter(!is.na(timing) & !is.na(n.actions) & !is.na(result))
+
+##########################
 # Czas rozwiązywania zadań
 
-```{r, cache = TRUE}
 result_timing <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
    summarise(min = min(timing, na.rm = TRUE),
           q1 = quantile(timing, 0.25, na.rm = TRUE),
@@ -45,13 +267,10 @@ write.csv(result_timing, file = "../data/processed_data/result_timing.csv", row.
 result_timing_subset <- result_timing %>% filter(CNT %in% chosen_countries)
 
 kable(head(result_timing_subset, 5))
-```
 
-<br>
-
+#########################################
 # Rodzaje zakończenia rozwiązywania zadań
 
-```{r, cache = TRUE}
 result_result <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
    summarise(full_credit = sum(ifelse(is.na(result), 0, result == 1)),
              no_credit = sum(ifelse(is.na(result), 0, result == 0)),
@@ -62,13 +281,10 @@ write.csv(result_result, file = "../data/processed_data/result_result.csv", row.
 result_result_subset <- result_result %>% filter(CNT %in% chosen_countries)
 
 kable(head(result_result_subset, 5))
-```
 
-<br>
-
+###############################################
 # Liczba akcji potrzebnych do rozwiązania zadań
 
-```{r, cache = TRUE}
 result_n_actions <- dane_pisa_merged_final %>% group_by(item_short, CNT) %>% 
    summarise(min = min(n.actions, na.rm = TRUE),
              q1 = quantile(n.actions, 0.25, na.rm = TRUE),
@@ -82,13 +298,10 @@ write.csv(result_n_actions, file = "../data/processed_data/result_n_actions.csv"
 result_n_actions_subset <- result_n_actions %>% filter(CNT %in% chosen_countries)
 
 kable(head(result_n_actions_subset, 5))
-```
 
-<br>
-
+########################
 # Wizualizacja i analiza
 
-```{r, fig.align = "center"}
 # Obróbka danych
 merged_data <- left_join(result_timing_subset, result_n_actions_subset, by = c("item_short", "CNT"))
 merged_data <- left_join(merged_data, result_result_subset, by = c("item_short", "CNT"))
@@ -98,7 +311,6 @@ merged_data <- merged_data %>%
   group_by(CNT, Zadanie) %>%
   mutate(mean_timing = mean(weighted_mean.x),
          mean_result = mean(credit_percentage)) %>%
-  filter(!(duplicated(CNT) & duplicated(Zadanie))) %>%
   select(CNT, weighted_mean.x, weighted_mean.y, credit_percentage, 
          Zadanie, mean_timing, mean_result)
 
@@ -154,14 +366,10 @@ vp3 <- ggplot(merged_data, aes(x = Kraj, y = credit_percentage, color = Kraj)) +
   stat_summary(fun.y = mean, geom = "point", size = 2) + 
   coord_flip()
 vp3
-```
 
-## Wykres zależności odsetku w pełni rozwiązanych zadań od czasu
-
-```{r, fig.align = "center"}
-# Scatter plot
+# Wykres zależności odsetku w pełni rozwiązanych zadań od czasu
 sp <- ggplot(merged_data, aes(x = mean_timing, y = mean_result, color = Kraj, shape = Zadanie)) + 
-  geom_point() +
+  geom_point(size = 3) +
   ggtitle("Zależność odsetku w pełni rozwiązanych zadań od czasu") + 
   xlab("Średni czas rozwiązywania") +
   ylab("Odsetek rozwiązań zadań") +
@@ -170,4 +378,10 @@ sp <- ggplot(merged_data, aes(x = mean_timing, y = mean_result, color = Kraj, sh
   theme(text=element_text(size = 13)) + 
   theme(plot.title = element_text(hjust = 0.55))
 sp
+```
+
+# 5. Informacja o sesji
+
+```{r, echo = FALSE, comment = ""}
+devtools::session_info()
 ```
