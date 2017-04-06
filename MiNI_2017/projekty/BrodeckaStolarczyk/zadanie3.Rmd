@@ -1,66 +1,625 @@
 ---
 title: "Zadanie3"
 author: "A.Brodecka, M.Stolarczyk"
-date: "13 marca 2017"
+date: "26 marca 2017"
 output: html_document
+  
 ---
 
-```{r, echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = FALSE)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width =  15, message =  FALSE, warning =  FALSE, comment = FALSE)
+```
+
+
+
+```{r}
+setwd('C:/Users/ola/Desktop/wb')
+
+library(rworldmap)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(knitr)
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#ad2803", "#0072B2", "#D55E00", "#CC79A7")
+data <- readRDS('PodstawoweStatystyki.rds')
+data$TimeMed <- data$TimeMed/1000
+
+```
+
+## Streszczenie
+
+Poni¿szy dokument przedstawia klasteryzacjê pañstw wzglêdem wa¿onej mediany czasów rozwi¹zañ oraz proporcji dobrze rozwi¹zanych zadañ. W analizie grupowania pañstw zastosowano metodê Warda.
+
+
+Uzyskana klasteryzacja krajów jest silnie zwi¹zana z rozwojem gospodarczym. Kraje Europejskie s¹ zazwyczaj klasyfikowane do jednej grupy, podobnie Ameryka Po³udniowa czy Pó³nocna tworz¹ osobne klastry. Kraje azjatyckie mo¿emy podzieliæ na dwie grupy: Kraje charakteryzuj¹ce siê bardzo dobrymi wynikami w badaniu PISA (Japonia, Hong-Kong) oraz pozosta³e, zazwyczaj uzyskuj¹ce wyniki gorsze od krajów europejskich czy USA lub Kanady.
+
+## Analiza:
+
+* Krok 0: Budujemy statystyki wa¿one dla ka¿dego pytania w podziale na kraje. (zbiór PodstawoweStatystyki.rds)
+
+* Dokonujemy standaryzacji kolumn powy¿szego zbioru 
+
+* Budujemy dendogram dla kazdej kategorii, który porównuje wa¿on¹ medianê czasów rozwi¹zañ dla ka¿dego pytania i proporcjê dobrze rozwi¹zanych zadañ w podziale na kraje.
+
+* U¿ywamy tylko kolumn bez braków danych.
+
+* W celu narysowania boxplotów i przedstawienia wyników mediany czasów rozwi¹zañ dokonaliœmy zmiany jednostki z milisekund na sekundy.
+
+## Matematyka:
+
+
+```{r}
+
+mat <- data %>% filter(substr(item, 2,2) == "M") %>% select(item, TimeMed, CNT, FreqFull) 
+
+mat %>% select(item, TimeMed, CNT)  %>% spread(item, TimeMed) -> mat_clust
+mat %>% select(item,  FreqFull, CNT)  %>% mutate(FreqFull =  FreqFull) %>% spread(item,  FreqFull) -> mat_clust_prop
+
+colnames(mat_clust_prop)[-1] <- paste0('Freq',colnames(mat_clust_prop)[-1])
+
+mat_clust <- mat_clust %>% left_join(mat_clust_prop)
+
+mat_clust <- mat_clust[ , colSums(is.na(mat_clust)) == 0]
+rownames(mat_clust) <- mat_clust[,1]
+
+
+```
+
+Ramka danych do klasteryzacji:
+
+
+```{r, echo = FALSE}
+source("http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R")
+
 ```
 
 ```{r}
-library(dplyr)
-library(tidyr)
-library(knitr)
-library(stringr)
+mat_clust <- scale(mat_clust[,-1])
+kable(head(mat_clust))
 
-data <- readRDS('zadanie0_wynik.rds')
+hc = hclust(dist(mat_clust), method = "ward.D")
+klasy <- data.frame(class = cutree(hc, k = 5), CNT = names(cutree(hc, k = 5)))
+mat <- mat %>% left_join(klasy)
+
+
+mat$CNT <- reorder(mat$CNT, mat$class)
+
+op = par(bg = "#EFEFEF")
+A2Rplot(hc, k = 5, boxes = FALSE, col.up = "gray50", col.down = cbPalette)
+
+
+ggplot(mat, aes(factor(CNT), TimeMed, fill = as.factor(class))) + geom_boxplot() + 
+  scale_fill_manual(values=cbPalette, name = "Nr klastra") + labs(x = "Kraj") +
+  theme(legend.position="bottom") + ggtitle('Kategoria matematyka') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+ggplot(mat, aes(factor(CNT), FreqFull, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette, name = "Nr klastra") + labs(x = "Kraj") +
+  theme(legend.position="bottom") + ggtitle('Kategoria matematyka') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+```
+
+```{r, fig.width= 15, fig.height=10}
+
+klasy$class <- as.factor(klasy$class)
+spdf <- joinCountryData2Map(klasy, joinCode="NAME", nameJoinColumn="CNT")
+mapCountryData(spdf, nameColumnToPlot="class", catMethod="fixedWidth", mapTitle =  'Wynik klasteryzacji na mapie',
+               colourPalette =cbPalette )
+
 ```
 
 
-```{r, results='asis'}
+### Wyniki:
 
-data %>% filter(result %in% c('Full credit')) -> items
-items <- unique(items$item)
+* Honk-kong, Korea, Singapur, Japonia s¹ wzglêdem siebie bardzo podobne. Maj¹ podobn¹, nisk¹ medianê czasów rozwi¹zañ oraz 
+du¿¹ proporcjê dobrze rozwi¹zanych zadañ. Jeden kraj spoœród krajów europejskich równie¿ nale¿y do grona 'najlepszej' grupy, jest to Holandia.
 
-for (it in items){
+* Brazylia, Columbia, Meksyk, Peru oraz Tunezja to równie¿ zbli¿one do siebie kraje. Maj¹ one najwy¿sze mediany czasów rozwi¹zañ ale te¿ i najgorszy stopieñ rozwi¹zania
 
-cat(paste0('Pytanie: \n ', it))
-   
+* Bardzo zbli¿one do siebie wyniki uzyskuj¹ kraje Europejskie. Maj¹ podobne rezultaty jak czo³ówka azjatycka.
+
+* Polska ma najbardziej porównywalne wyniki do krajów nordyckich oraz Wêgier.
+
+Warto zauwa¿yæ, ¿e proprocje dobrze rozwi¹zanych zadañ nie maj¹ du¿o obserwacji odstajaj¹cych w przeciwieñstwie do mediany czasów rozwi¹zañ.
+
+## Nauki przyrodnicze:
+
+```{r}
+science <- data %>% filter(substr(item, 2,2) == "S") %>% select(item, TimeMed, CNT,  FreqFull) 
+
+science %>% select(item, TimeMed, CNT)  %>% spread(item, TimeMed) -> science_clust
+science %>% select(item,  FreqFull, CNT) %>% spread(item,  FreqFull) -> science_clust_prop
+
+colnames(science_clust_prop)[-1] <- paste0('Freq',colnames(science_clust_prop)[-1])
+
+science_clust <- science_clust %>% left_join(science_clust_prop)
+
+science_clust <- science_clust[ , colSums(is.na(science_clust)) == 0]
+rownames(science_clust) <- science_clust[,1]
+
+
+science_clust <- scale(science_clust[,-1])
+hc = hclust(dist(science_clust), method = "ward.D")
+
+
+klasy <- data.frame(class = cutree(hc, k = 5), CNT = names(cutree(hc, k = 5)))
+science <- science %>% left_join(klasy)
+
+
+science$CNT <- reorder(science$CNT, science$class)
+
+A2Rplot(hc, k = 5, boxes = FALSE, col.up = "gray50", col.down = cbPalette )
+
+
+ggplot(science, aes(factor(CNT), TimeMed, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette, name = 'Nr klastra') + labs(x = "Kraj") +
+  theme(legend.position="bottom") + ggtitle('Kategoria nauki przyrodnicze') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+ggplot(science, aes(factor(CNT), FreqFull, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette, name = "Nr klastra") + labs(x = "Kraj") + 
+  theme(legend.position="bottom") + ggtitle('Kategoria nauki przyrodnicze') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+
+
+```
+
+
+
+```{r, fig.width= 15}
+
+klasy$class <- as.factor(klasy$class)
+spdf <- joinCountryData2Map(klasy, joinCode="NAME", nameJoinColumn="CNT")
+mapCountryData(spdf, nameColumnToPlot="class", catMethod="fixedWidth", mapTitle =  'Wynik klasteryzacji na mapie',
+               colourPalette =cbPalette )
+
+```
+
+
+### Wyniki:
+
+* I znów kraje azjatyckie takie jak  Honk-kong,  Korea i Japonia s¹ wzglêdem siebie bardzo podobne. Maj¹ podobn¹, nisk¹ medianê czasów rozwi¹zañ oraz 
+du¿¹ proporcjê dobrze rozwi¹zanych zadañ
+
+* Brazylia, Columbia i Meksyk to równie¿ zbli¿one do siebie kraje. Maj¹ one najwy¿sze mediany czasów rozwi¹zañ ale te¿ i najgorszy stopieñ rozwi¹zania
+
+* Najliczniejsza grupa to grupa krajów o nieco wy¿szej medianie i proporcji ni¿ grupa najlepszych krajów. Do tej grupy zaklasyfikowano Polskê i wiele innych krajów europejskich.
+
+* Równie¿ w wynikach w kategorii nauki przyrodnicze Polska wypada podobnie jak kraje nordyckie. Bardzo du¿e podobieñstwo rezultatów polskich uczniów wystêpuje równie¿ bior¹c pod uwagê Estoniê.
+
+* Najbardziej odmienn¹ grupê stanowi Qatar oraz Dominikana. Proporcjê rozwi¹zanych zadañ znacznie odbiegaj¹ od pozosta³ych krajów, niestety na niekorzyœæ wspomnianych pañstw.
+
+## Czytanie:
+
+```{r}
+
+read <- data %>% filter(substr(item, 2,2) == "R") %>% select(item, TimeMed, CNT,  FreqFull) 
+
+
+read %>% select(item, TimeMed, CNT)  %>% spread(item, TimeMed) -> read_clust
+read %>% select(item,  FreqFull, CNT)   %>% spread(item,  FreqFull) -> read_clust_prop
+
+colnames(read_clust_prop)[-1] <- paste0('Freq',colnames(read_clust_prop)[-1])
+
+read_clust <- read_clust %>% left_join(read_clust_prop)
+
+read_clust <- read_clust[ , colSums(is.na(read_clust)) == 0]
+rownames(read_clust) <- read_clust[,1]
+
+read_clust <- scale(read_clust[,-1])
+
+
+hc = hclust(dist(read_clust), method = "ward.D")
+
+klasy <- data.frame(class = cutree(hc, k = 5), CNT = names(cutree(hc, k = 5)))
+read <- read %>% left_join(klasy)
+
+
+read$CNT <- reorder(read$CNT, read$class)
+
+
+A2Rplot(hc, k = 5, boxes = FALSE, col.up = "gray50", col.down = cbPalette)
+
+ggplot(read, aes(factor(CNT), TimeMed, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette, name = 'Nr klastra') + labs(x = 'Kraj') +
+  theme(legend.position="bottom") + ggtitle('Kategoria czytanie') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+ggplot(read, aes(factor(CNT), FreqFull, fill = as.factor(class))) + geom_boxplot() + scale_fill_manual(values=cbPalette, name = 'Nr klastra') + labs(x = 'Kraj') +
+  theme(legend.position="bottom") + ggtitle('Kategoria czytanie') + theme(title = element_text(size = 18), 
+  axis.text.x = element_text(angle = 90, hjust = 1, size = 14))
+
+
+```
+
+
+
+```{r, fig.width= 15}
+
+klasy$class <- as.factor(klasy$class)
+spdf <- joinCountryData2Map(klasy, joinCode="NAME", nameJoinColumn="CNT")
+mapCountryData(spdf, nameColumnToPlot="class", catMethod="fixedWidth", mapTitle =  'Wynik klasteryzacji na mapie',
+               colourPalette =cbPalette )
+
+```
+
+
+### Wyniki:
+
+* Warto zauwa¿yæ, ¿e proporcje dobrze rozwi¹zanych zadañ s¹ najwy¿sze w³aœnie w kateogrii Czytanie ze zrozumieniem
+
+* Hong-kong i Korea znów zosta³y zaklasyfikowane do krajów, które maj¹ najlepsze wyniki i najni¿sze mediany. Tym razem Japonia zosta³a przyporz¹dkowana do krajów Ameryki Pó³nocnej razem z Irlandi¹ i Wielk¹ Brytani¹. 
+
+* Polska, tradycyjnie znalaz³a siê w grupie, w której przewa¿aj¹ kraje europejskie. BliŸniaczo podobne wyniki do Polski uzyska³a Francja oraz Szwecja.
+
+* Równie¿ w czytaniu Dominikana poradzia³a sobie najgorzej ze wszystkich krajów uzyskuj¹c najgorsze propocje rozwi¹zanych zadañ.
+
+
+## Dodatki
+
+### S³ownik krajow
+
+<div class="verysmall">
+
+```{r}
+kable(readRDS('slownik.rds'), format = 'html')
+
+```
+
+# Rysowanie dendogramu
+
+Theme do wykresów pochodzi ze Ÿród³a:
+
+http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R
+
+Licencja: GPL
+
+
+```{r, mysize=TRUE, size='\\tiny'}
+"._a2r_hclu"       <- NULL # to receive an hclust object when 
+                           # A2Rplot.hclust is called
+
+"._a2r_counter"       <- NA # a counter used in A2Rplot.hclust
+"._a2r_height_cut"    <- NA
+
+"._a2r_envir"         <- NA
+"._a2r_group"         <- NA
+
+
+#===============================================================================
+"A2Rplot" <- function(x,...){
+  UseMethod("A2Rplot")
+}
+#===============================================================================
+"A2Rplot.default" <- function(x,...){
+  plot(x,...)
+}
+#===============================================================================
+"A2Rplot.hclust" <- function(
+  x ,             # an hclust object to draw
+  k        = 2,   # the number of groups
+  col.up   = "black",
+  col.down = rainbow(k),
+  lty.up   = 2,
+  lty.down = 1,
+  lwd.up   = 1,
+  lwd.down = 2,
+  type     = c("rectangle","triangle"),
+  knot.pos = c("mean","bary","left","right","random"),
+  criteria,
+  fact.sup,
+  show.labels=TRUE,
+  only.tree=FALSE,
+  main     = paste("Colored Dendrogram (",k," groups)"),
+  boxes    = TRUE,
+  members,
+  ...
+){
+
+  if(missing(members)) members <- NULL
+  opar <- par(no.readonly=TRUE)
+  knot.pos <- match.arg(knot.pos)
+  type     <- match.arg(type)
+  # tests
+  if(k<2) 
+    stop("k must be at least 2")  
+    
+  ._a2r_counter    <<- 0
+  ._a2r_hclu       <<- x
+
+  ._a2r_envir      <<- environment()
+  nn <- length(x$order) - 1
+
+  ._a2r_height_cut <<- mean(x$height[nn-k+1:2])
+  ._a2r_group      <<- 0
   
-data %>% filter(item == it) %>% 
-  select(CNT, timing) %>%
-  group_by(CNT) %>% summarise(TimeAvg = mean(timing, na.rm = TRUE),
-                              TimeMin = min(timing, na.rm = TRUE),
-                              TimeMax = max(timing, na.rm = TRUE),
-                              TimeMed = median(timing, na.rm = TRUE)) %>%
-  mutate(CNT = str_trim(CNT)) %>%
-  as.data.frame() -> time
+  n.indiv   <- length(x$order)
+  groups.o  <- cutree.order(x, k=k)[x$order]
   
-data %>% filter(item == it) %>%  
-  select(CNT, result) %>%
-  group_by(CNT, result) %>% summarise(value = n()) %>% 
-  as.data.frame( )%>% spread(result, value) %>% 
-  mutate(FreqFull = round(`Full credit`/rowSums(.[-1]), 2),
-         CNT = str_trim(CNT)) %>%
-  left_join(time, by = c('CNT' = 'CNT'))-> odp
+  bottom <- if(is.null(members)) 0 else x$height[nn] * -.2 
+  
+  if(only.tree){
+    if(is.null(members)) plot(0,type="n",xlim=c(0.5,n.indiv+.5), ylim=c(bottom,x$height[nn]), xaxs="i", axes=FALSE, xlab="",ylab="") 
+    else                 plot(0,type="n",xlim=c(0.5,sum(members)+.5), ylim=c(bottom,x$height[nn]), xaxs="i", axes=FALSE, xlab="",ylab="")
+    #call to the ** recursive function ** .rec.hclust
+    .rec.hclust(nn, col=col.up, lty=lty.up, lwd=lwd.up)
+    
+    if(boxes){
+      axis(2)
+      box()
+    }
+    return(NULL)
+  }
+  
+  # prepare the layout
+  matlayout <- matrix(c(2,4,6,1,3,5), nc=2, nr=3)
+  widths    <- c(1,9)
+  heights   <- c(8,1,1)
+  if(!show.labels){
+      matlayout <- matrix(c(2,4,1,3), nc=2, nr=2)
+      widths    <- c(1,9)
+      heights   <- c(9,1)
+  }
+  if(!missing(fact.sup) ) {
+    heights   <- c(8,1,1)
+  }
+  if(missing(criteria) & missing(fact.sup)){
+    matlayout <- matrix(c(2,4,1,3), nc=2, nr=2)
+      widths    <- c(1,9)
+      heights   <- c(9,1)
+    
+  }
+  layout(matlayout, width=widths, height=heights)
+  
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ The tree (1)
+  par(mar=c(0,0,3,4))
+  if(is.null(members)) plot(0,type="n",xlim=c(0.5,n.indiv+.5), ylim=c(bottom,x$height[nn]), xaxs="i", axes=FALSE, xlab="",ylab="") 
+  else plot(0,type="n",xlim=c(0.5,sum(members)+.5), ylim=c(bottom,x$height[nn]), xaxs="i", axes=FALSE, xlab="",ylab="") 
+  #call to the ** recursive function ** .rec.hclust
+  .rec.hclust(nn, col=col.up, lty=lty.up, lwd=lwd.up)
+  title(main)
+  if(boxes){
+    box()
+    axis(4)
+  }
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Criteria (2)
+  if(!missing(criteria)){
+    par(mar=c(0,0,3,0))
+    plot(0,
+         type="n",
+         xlim=range(criteria), 
+         ylim=c(0,x$height[nn]), 
+         axes=FALSE, 
+         xlab="",
+         ylab="")
+    par(las=2)
+    n.crit <- length(criteria)
+    heights.cut <- ( tail(x$height,n.crit) + 
+                     tail(x$height,n.crit+1)[-(n.crit+1)] ) / 2
+    heights.cut <- rev(heights.cut)
+                   
+    points(criteria   , heights.cut   , pch=21, bg="red", type="o")
+    points(criteria[k-1], heights.cut[k-1], pch=21, cex=2, bg="blue", xpd=NA)
+    if(boxes){
+      axis(3)
+      box()
+    }
+  }
+  else{
+    par(mar=c(0,0,3,0))
+    plot(0,
+         type="n",
+         xlim=c(0,1), 
+         ylim=c(0,1), 
+         axes=FALSE, 
+         xlab="",
+         ylab="")
+  }
 
-colnames(odp)[colnames(odp) == '<NA>'] <- 'NaValues'
+  if(show.labels){
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Name of the observations (3)
+    par(mar=c(0,0,0,4))
+    par(srt=90)
+    obs.labels <- toupper(substr(x$labels[x$order],1,6))
+    if(is.null(members)) {
+      plot(0,type="n",xlim=c(0.5,n.indiv+.5), ylim=c(0,1), xaxs="i", axes=FALSE, xlab="",ylab="") 
+      text(1:n.indiv            , 0, obs.labels, pos=4, col=col.down[groups.o])
+    }
+    else{
+      plot(0,type="n",xlim=c(0.5,sum(members)+.5), ylim=c(0,1), xaxs="i", axes=FALSE, xlab="",ylab="") 
+      xo <-   members[x$order]
+      text(cumsum(xo)-xo/2, 0, obs.labels, pos=4, col=col.down[groups.o])
+    }
+    par(srt=0)
+    if(boxes){
+      box()
+    }
+  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Labels (4)
+    par(mar=c(0,0,0,0))
+    plot(0,type="n",xlim=c(0,1), ylim=c(0,1), xaxs="i", axes=FALSE, xlab="",ylab="") 
+    text(.5,.5,"Labels")
+    if(boxes){
+      box()
+    }
+      
+  }
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Quali (5,6)
+  if(!missing(fact.sup)){
+    quali  <- as.factor(fact.sup)[x$order]
+    quanti <- as.numeric(quali)
 
-to_print <- rbind(
-  odp %>% arrange(desc(FreqFull)) %>% head(5),
-  odp %>% arrange(-desc(FreqFull)) %>% head(5)
-)
-
-if (!('POL' %in% str_trim(to_print[,1]))) {
-  try(to_print <- rbind(odp %>% filter(CNT == 'POL'), to_print))
+    par(mar=c(1,0,0,4))
+    n.levels <- length(levels(quali))
+    plot(0,type="n",
+         xlim=c(0.5,n.indiv+.5), 
+         ylim=c(0,n.levels), 
+         xaxs="i", yaxs="i",axes=FALSE, xlab="",ylab="") 
+        
+    rect(xleft    = (1:n.indiv)-.5,
+         xright   = (1:n.indiv)+.5,
+         ybottom  = quanti-1, 
+         ytop     = quanti,
+         col      = col.down[groups.o])
+    par(las=1)
+    axis(4, (1:n.levels)-.5,levels(quali), tick=FALSE)
+      
+    if(boxes){
+      box()
+    }
+    
+    
+    par(mar=c(1,0,0,0))
+    plot(0,type="n",xlim=c(0,1), ylim=c(0,1), xaxs="i", axes=FALSE, xlab="",ylab="") 
+    text(.5,.5,deparse(substitute(fact.sup)))
+    if(boxes){
+      box()
+    }
+  }
+  
+  
+  par(opar) # reset parameter
 }
 
-cat("\n")
-print(kable(to_print))
-cat("\n")
- 
+#===============================================================================
+
+".rec.hclust" <- function(
+  index, # index of the current tree to draw
+  lwd = 1,
+  lty = 1,
+  col = "black"){
+
+  members <- get('members', envir= ._a2r_envir) 
+  bottom  <- get('bottom',  envir= ._a2r_envir) 
+  if(index<0){ # it is a leaf
+    if(is.null(members)){
+       ._a2r_counter <<- ._a2r_counter + 1
+       return(list( x = ._a2r_counter,
+                    n = 1))       
+    }
+    else{
+      cc <- ._a2r_counter
+      mm <- members[-index]
+      polygon(x  = c(cc, cc+mm/2, cc+mm),
+              y  = c(bottom, 0, bottom),
+              col= col, 
+              border = col, 
+              lwd=lwd)
+      ._a2r_counter <<- ._a2r_counter + mm
+      return(list(x = cc+mm/2,
+                  n = mm))
+    }
+  }
+  
+  h.m   <- ._a2r_hclu$height[index]
+
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~ do left
+  index.l  <- ._a2r_hclu$merge[index,1]
+  
+  h.l <- if(index.l<0) 0 else ._a2r_hclu$height[index.l]
+  if(h.l<._a2r_height_cut & h.m > ._a2r_height_cut){
+      ._a2r_group <<- ._a2r_group + 1
+      col.l <- get("col.down",envir=._a2r_envir)[._a2r_group]
+      lwd.l <- get("lwd.down",envir=._a2r_envir)
+      lty.l <- get("lty.down",envir=._a2r_envir)
+  }
+  else{
+      col.l <- col
+      lwd.l <- lwd
+      lty.l <- lty
+  }
+  out.l   <- .rec.hclust(index.l, col=col.l, lty=lty.l, lwd=lwd.l)
+  x.l     <- out.l$x
+  n.l     <- out.l$n
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~ do right
+  index.r  <- ._a2r_hclu$merge[index,2]
+  h.r <- if(index.r<0) 0 else ._a2r_hclu$height[index.r]
+  if(h.r<._a2r_height_cut & h.m > ._a2r_height_cut){
+      ._a2r_group <<- ._a2r_group + 1
+      col.r <- get("col.down",envir=._a2r_envir)[._a2r_group]
+      lwd.r <- get("lwd.down",envir=._a2r_envir)
+      lty.r <- get("lty.down",envir=._a2r_envir)
+  }
+  else{
+      col.r <- col
+      lwd.r <- lwd
+      lty.r <- lty
+  }
+  out.r   <- .rec.hclust(index.r, col=col.r, lty=lty.r, lwd=lwd.r)
+  x.r     <- out.r$x
+  n.r     <- out.r$n
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~ draw what you have to draw
+  
+  type <- get("type",envir=._a2r_envir)
+  x.m  <- (x.r + x.l) / 2  
+  n    <- n.r + n.l
+  x.b  <- (n.r * x.r + n.l * x.l) / n
+
+  
+  knot.pos <- get("knot.pos",envir=._a2r_envir) 
+  
+  x <- switch(knot.pos,
+          mean = x.m,
+          left = x.l,
+          right= x.r,
+          random = x.l + runif(1)*(x.r-x.l),
+          bary   = x.b)
+
+          
+          
+  if(type=="rectangle"){
+    segments(x0  = c(x.l, x.l, x.r),
+             x1  = c(x.l, x.r, x.r),
+             y0  = c(h.l, h.m, h.r),
+             y1  = c(h.m, h.m, h.m),
+             col = col,
+             lty = lty,
+             lwd = lwd)
+  }
+  if(type =="triangle"){
+    segments(x0  = c(x.l, x.r),
+             x1  = c(x  , x),
+             y0  = c(h.l, h.r),
+             y1  = c(h.m, h.m),
+             col = col,
+             lty = lty,
+             lwd = lwd)
+  }
+          
+          
+  list(x=x,n=n)
 }
+#===============================================================================
+"cutree.order" <- function(hclu, k=NULL, h=NULL){
+  
+  coupe <- cutree(hclu,k=k, h=h)
+
+  coupe.or <- coupe[hclu$order]
+  coupe.out<- rep(NA,length(coupe))
+  j <-  1 #
+  k <-  coupe.or[1]
+  for(i in 1:length(coupe)){
+    if(coupe.or[i]==k) next
+    else{
+      coupe.out[which(coupe==k)] <- j
+      j <- j + 1
+      k <- coupe.or[i]
+    }
+  }
+  coupe.out[is.na(coupe.out)] <- j
+  names(coupe.out) <- names(coupe)
+  coupe.out
+}
+#===============================================================================
+
 ```
 
