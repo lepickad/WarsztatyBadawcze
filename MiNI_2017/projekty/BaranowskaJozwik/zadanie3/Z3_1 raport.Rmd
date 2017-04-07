@@ -1,0 +1,883 @@
+---
+title: "Zadanie 3 - raport"
+author: "Ewa Baranowska, Marta Jóźwik"
+date: "31 marca 2017"
+output:
+  html_notebook:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: united
+    code_folding: hide
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/E540/Desktop/PISA 2015/zadanie0")
+library(knitr)
+```
+
+
+# Dodawanie wag do zbioru
+
+## Wybieranie wag ze zbioru z kwestionariuszem
+
+Ze zbioru Cy6_ms_cmb_stu_qqq.sav wybrałyśmy przy pomocy skryptu SAS-owego Z0_QQQ_wagi.sas kolumny z wagami (zmienne: W_FSTUWT oraz W_FSTURWT1:W_FSTURWT80) wraz z odpowiednimi kolumnami-kluczami (CNTSCHID oraz CNTSTUID). W wyniku wykonania tego skryptu został utworzony plik CY6_MS_CMB_STU_QQQ_wagi.csv zawierający 447400 obserwacji oraz 83 zmienne:
+
+```{r, message=F, warning=F }
+library(knitr)
+wagi <- read.csv("CY6_MS_CMB_STU_QQQ_wagi.csv")
+kable(head(wagi[,c(1:7)],5))
+```
+
+## Dodawanie wag do zbiorów głównych i tworzenie plików ze statystykami
+
+Wykorzystując wcześniej stworzony zbiór dołączono kolumny z wagami do głównych zbiorów: Z0_matem.rda, Z0_read.rda oraz Z0_science.rda, tworząc zbiory Z0_matem_w.rda, Z0_read_w.rda oraz Z0_science_w.rda o 99 kolumnach.
+
+Dodatkowo utworzono dla każdego ze zbiorów (działów) pomocniczy dokument xlsowy, w którym w oddzielnych arkuszach umieszczono ważone statystyki dla każdego z pytań z odpowiedniego działu dla każdego kraju oraz łączne statystyki dla całego pytania (CNT = TOTAL).
+
+Przykład takiego pojedynczego arkusza:
+
+```{r, message=F, warning=F}
+library(readxl)   
+podglad <- read_excel("stat_matem_3.xlsx", sheet = "M00GQ01")
+kable(head(podglad,10))
+```
+
+Obie czynności zostały wykonane przy użyciu skryptu Z3_1.r.
+
+# Wizualizacja
+
+## Część 1 - wstępna analiza czasów  i odpowiedzi dla pytań
+
+Patrząc na średnie czasy rozwiązywania różnych rodzajów zadań widać, że zarówno ogólnie jak i w rozbiciu na poszczególne kontynenty średni czas rozwiązywania zadań z matematyki jest najdłuższy, a czytanie i nauki ścisłe mają podobny średni czas.
+```{r ,warning=FALSE,message=FALSE,echo=FALSE}
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie3/wyslac/Marta")
+
+load("ZRead.rda")
+#load("ZMat.rda")
+#load("ZScience.rda")
+#load("dane.rda")
+
+library(dplyr)
+library(isotone)
+library(ggplot2)
+
+kraje<-c("GBR","USA","POL","SWE","DEU","CZE","RUS","HKG","BRA","AUS")
+kraje<-data.frame(kraje)
+
+#####################dorobic wykres srednich czasow z podzialem na kontynenty i rodzaj zadan
+
+#dane$rodzaj<-substr(dane$item_short,1,1)
+#save(dane,file="dane.rda")
+
+#dane %>% group_by(rodzaj,kontynent) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+#  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+#)   %>% arrange(kontynent,TimeAvgSek)-> stat18
+#save(stat18,file="stat18.rda")
+
+#dane %>% group_by(rodzaj) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+#  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+#)   %>% arrange(TimeAvgSek)-> stat19
+#save(stat19,file="stat19.rda")
+
+load("stat18.rda")
+load("stat19.rda")
+ggplot(stat19,aes(x=rodzaj,y=TimeAvgSek))+geom_bar(stat="identity")+coord_flip()+ggtitle("Średni czas rozwiązywania zadań w podziale na rodzaj")+ ylab("Średni czas w sek")+xlab("Rodzaj zadań")
+ggplot(stat18,aes(x=rodzaj,y=TimeAvgSek,fill=kontynent))+geom_bar(stat="identity",position="dodge")+coord_flip()+ggtitle("Średni czas rozwiązywania zadań w podziale na kontynenty i rodzaje")+ ylab("Średni czas w sek")+xlab("Rodzaj zadań")
+
+```
+
+
+Zobaczmy teraz jak wygląda średni czas rozwiązywania 1 zadania w podziale na kraje.
+```{r ,warning=FALSE,message=FALSE,echo=FALSE}
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie3/wyslac/Marta")
+load("stat13.rda")
+
+stat13$CNT<-reorder(stat13$CNT,1:58)
+ggplot(stat13,aes(x=CNT,y=TimeAvgSek,fill=kontynent))+geom_bar(stat="identity")+coord_flip()+ggtitle("Średni czas rozwiązywania zadań w podziale na kraje")+ylab("Sredni czas w sek")+xlab("Kraj")
+
+
+```
+
+Można zauwazyć, że średnio najkrótszy i najdłuższy czas są w Azji: Korea i Tunezja. Również od razu widać, że w Ameryce Płd. wszytskie kraje mają długie średnie czasy rozwiazywania zadań.
+
+
+Przyglądając się średnim czasom w podziale na poszczególne zadania i kontynenty (dla lepszego zobrazowania wybierzmy kilka zadań w każdym typie), możemy zauważył, że dla zadań z czytania utrzymuje się poprzednio zauważona tendencja: najdłużej - Ameryka Płd. i Centr., najkrócej Australia, Europa i Azja zwykle podobnie. Dla zadań z matematyki nie widać aż tak wielkich różnic i dla zadań z nauk ścisłych również.
+
+```{r,warning=FALSE ,echo=FALSE, message=F }
+#ZRead %>% group_by(item_short) %>% summarise( 
+#   TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+#)   %>% arrange(TimeAvgSek)-> stat2
+
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie3/wyslac/Marta")
+#wybierzmy 3 zadania z najdluzszymi i 3 z najkrotszymi srednimi czasami
+zadania<-c("R102Q07","R220Q05","R455Q04","R466Q02","R219Q01","R460Q01")
+zadania<-data.frame(zadania)
+
+ZRead2<-ZRead[ZRead$item_short %in% zadania$zadania,]
+
+
+ZRead2 %>% group_by(kontynent, item_short) %>% summarise( 
+   TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+   TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+)  %>% arrange(desc(TimeAvgSek))-> stat3
+
+stat3$kontynent<-reorder(stat3$kontynent,1:36)
+stat3$item_short<-reorder(stat3$item_short,1:36)
+
+ggplot(stat3[1:18,],aes(x=kontynent,y=TimeAvgSek,fill=kontynent))+geom_bar(stat="identity")+facet_wrap(~item_short)+ggtitle("Sredni czas rozwiązywania 3 wybranych zadań z czytania")+ylab("Sredni czas w sek")+xlab("Kontynent")+ scale_x_discrete(breaks = c()) 
+
+#ZMat %>% group_by(item_short) %>% summarise( 
+#   TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+#)   %>% arrange(TimeAvgSek)-> stat14
+#save(stat14,file="stat14.rda")
+
+
+#wybierzmy 3 zadania z najdluzszymi i 3 z najkrotszymi srednimi czasami
+zadania2<-c("M033Q01","M474Q01","M423Q01","M949Q03","M155Q03","M406Q01")
+zadania2<-data.frame(zadania2)
+
+#ZMat2<-ZMat[ZMat$item_short %in% zadania2$zadania2,]
+load("ZMat2.rda")
+
+#ZMat2 %>% group_by(kontynent, item_short) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+#  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+#)  %>% arrange(desc(TimeAvgSek))-> stat15
+load("stat15.rda")
+
+stat15$kontynent<-reorder(stat15$kontynent,1:36)
+stat15$item_short<-reorder(stat15$item_short,1:36)
+
+ggplot(stat15[1:18,],aes(x=kontynent,y=TimeAvgSek,fill=kontynent))+geom_bar(stat="identity")+facet_wrap(~item_short)+ggtitle("Średni czas rozwiązywania 3 wybranych zadań z matematyki")+ylab("Sredni czas w sek")+xlab("Kontynent")+ scale_x_discrete(breaks = c()) 
+
+#ZScience %>% group_by(item_short) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+#)   %>% arrange(TimeAvgSek)-> stat16
+load("stat16.rda")
+
+
+#wybierzmy 3 zadania z najdluzszymi i 3 z najkrotszymi srednimi czasami
+zadania3<-c("S421Q03","S607Q02","S521Q06","S131Q02","S458Q01","S607Q03")
+zadania3<-data.frame(zadania3)
+
+#ZScience2<-ZScience[ZScience$item_short %in% zadania3$zadania3,]
+#save(ZScience2,file="ZScience2.rda")
+
+#ZScience2 %>% group_by(kontynent, item_short) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+#  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+#)  %>% arrange(desc(TimeAvgSek))-> stat17
+load("stat17.rda")
+
+stat17$kontynent<-reorder(stat17$kontynent,1:36)
+stat17$item_short<-reorder(stat17$item_short,1:36)
+
+ggplot(stat17[1:18,],aes(x=kontynent,y=TimeAvgSek,fill=kontynent))+geom_bar(stat="identity")+facet_wrap(~item_short)+ggtitle("Średni czas rozwiązywania 3 wybranych zadań z nauk ścisłych")+ylab("Średni czas w sek")+xlab("Kontynent")+ scale_x_discrete(breaks = c()) 
+
+
+```
+
+
+
+Teraz obejrzyjmy te wykresy dla kilku wybranych krajów:
+```{r ,warning=FALSE,echo=FALSE, message=F }
+
+################################zamiast tego dac taki wykres z calosci
+
+
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie3/wyslac/Marta")
+#dane4<-dane[dane$CNT %in% kraje$kraje,]
+#load("dane4.rda")
+
+#dane4 %>% group_by(CNT,rodzaj) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+#  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+#)  %>% arrange(CNT,TimeAvgSek)-> stat24
+load("stat24.rda")
+
+stat24$CNT<-reorder(stat24$CNT,c(19,20,21,1,2,3,10,11,12,22,23,24,25,26,27,28,29,30,13,14,15,4,5,6,7,8,9,16,17,18))
+ggplot(stat24,aes(x=CNT,y=TimeAvgSek,fill=CNT))+geom_bar(stat="identity")+coord_flip()+ggtitle("Sredni czas rozwiązywania zadań dla wybranych krajów")+
+  facet_wrap(~rodzaj)
+
+
+```
+
+Można zauważyć, że 'czołówka' i 'koniec stawki' znów pozostają prawie takie same niezależnie od rodzaju zadania.
+
+
+A teraz przyjrzyjmy się  statystykom dla najlatwiejszego (tzn takiego na ktore odsetek dobrych odpowiedzi byl najwiekszy) i najtrudniejszego pytania (analogicznie). Możemy zauważyć, że kraje zachowują takie same tendencje przy wszystkich typach zadaniach. Widać również, że najmniejsza zmiana między czasem rozwiązywania trudnego i łatwego zadania zachodzi dla dla Brazylii (najmniejszy kąt nachylenia - nadal czas jest długi). Widac, że niezależnie od typu zdania HongKong nadal jest najszybszy.
+
+```{r,warning=FALSE ,echo=FALSE, message=F }
+library(sqldf)
+#stat<-sqldf("select item_short, sum(result*W_FSTUWT)/sum(W_FSTUWT) as #mean_result
+#            from ZRead group by item_short ")
+#stat$mean_result<-round(stat$mean_result,4)
+#sort(stat$mean_result)
+#stat[stat$mean_result==2.9093,]#najlatwiejsze pytanie
+#84    R456Q01      2.9093
+#stat[stat$mean_result==1.1490,]#najtrudniejsze pytanie
+#57    R432Q06       1.149
+
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie3/wyslac/Marta")
+ZRead3<-ZRead[ZRead$item_short %in% c("R456Q01","R432Q06"),]
+
+
+
+load("ZMat3.rda")
+
+
+
+ZRead6<-ZRead[ZRead$item_short %in% c("R456Q01","R432Q06"),]
+ZRead6<-ZRead6[ZRead6$CNT %in% kraje$kraje,]
+
+ZRead6 %>% group_by(CNT, item_short) %>% summarise( 
+  Punkty=weighted.mean(result, W_FSTUWT),
+  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+)  %>% arrange(TimeAvgSek)-> stat4
+
+
+
+ggplot(stat4,aes(x=item_short,y=TimeAvgSek,color=CNT,group=CNT,label=CNT))+
+  geom_point(aes(size=Punkty))+geom_line(show.legend = FALSE)+geom_text( nudge_x = 0.05,show.legend = FALSE,hjust = 0.1)+
+   ggtitle("Sredni czas rozwiązywania najtrudniejszego i najłatwiejszego zadania z czytania")+ylab("Średni czas w sek")+xlab("Zadanie")+ scale_x_discrete(labels=c("najtrudniejsze","najłatwiejsze"))+scale_size_continuous(breaks=c(1.5,2,2.5),labels=c(0.3,0.6,0.9))
+
+#stat<-sqldf("select item_short, sum(result*W_FSTUWT)/sum(W_FSTUWT) as mean_result
+#            from ZMat group by item_short ")
+#stat$mean_result<-round(stat$mean_result,4)
+#sort(stat$mean_result)
+#stat[stat$mean_result== 2.6502,]#najlatwiejsze pytanie
+#32    M909Q01      2.6502
+#stat[stat$mean_result==1.0783,]#najtrudniejsze pytanie
+#68    M961Q02      1.0783
+
+
+#ZMat3<-ZMat[ZMat$item_short %in% c("M800Q01","M909Q01"),]
+#ZMat4<-ZMat3[ZMat3$CNT %in% kraje$kraje,]
+load("ZMat3.rda")
+load("ZMat4.rda")
+#save(ZMat4,file="ZMat4.rda")
+
+#ZMat4 %>% group_by(CNT, item_short) %>% summarise( 
+# Punkty=weighted.mean(result, W_FSTUWT),
+# TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+#  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+#)  %>% arrange(TimeAvgSek)-> stat40
+#save(stat40,file="stat40.rda")
+load("stat40.rda")
+
+ggplot(stat40,aes(x=item_short,y=TimeAvgSek,color=CNT,group=CNT,label=CNT))+
+  geom_point(aes(size=Punkty))+geom_line(show.legend = FALSE)+geom_text( nudge_x = 0.05,show.legend = FALSE,hjust = 0.1)+
+   ggtitle("Średni czas rozwiązywania najtrudniejszego i najłatwiejszego zadania z matematyki")+ylab("Sredni czas w sek")+xlab("Zadanie")+ scale_x_discrete(labels=c("najtrudniejsze","najłatwiejsze"))+scale_size_continuous(breaks=c(1.5,2,2.5),labels=c(0.3,0.6,0.9))
+
+#stat<-sqldf("select item_short, sum(result*W_FSTUWT)/sum(W_FSTUWT) as mean_result
+#            from ZScience group by item_short ")
+#stat$mean_result<-round(stat$mean_result,4)
+#sort(stat$mean_result)
+#stat[stat$mean_result== 2.8044,]#najlatwiejsze pytanie
+#32    S641Q03      2.6502
+#stat[stat$mean_result==1.1285,]#najtrudniejsze pytanie
+#68    S601Q01      1.0783
+
+
+#ZScience3<-ZScience[ZScience$item_short %in% c("S641Q03","S601Q01"),]
+#ZScience4<-ZScience3[ZScience3$CNT %in% kraje$kraje,]
+#save(ZScience3,file="ZScience3.rda")
+#save(ZScience4,file="ZScience4.rda")
+
+#ZScience4%>% group_by(CNT, item_short) %>% summarise( 
+#  Punkty=weighted.mean(result, W_FSTUWT),
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT),
+#  TimeMedSek= weighted.median(timing/60000, W_FSTUWT)
+#)  %>% arrange(TimeAvgSek)-> stat41
+#save(stat41,file="stat41.rda")
+load("stat41.rda")
+
+
+
+ggplot(stat41,aes(x=item_short,y=TimeAvgSek,color=CNT,group=CNT,label=CNT))+
+  geom_point(aes(size=Punkty))+geom_line(show.legend = FALSE)+geom_text( nudge_x = 0.05,show.legend = FALSE,hjust = 0.1)+
+   ggtitle("Średni czas rozwiązywania najtrudniejszego i najłatwiejszego zadania z nauk ścisłych")+ylab("Średni czas w sek")+xlab("Zadanie")+ scale_x_discrete(labels=c("najtrudniejsze","najłatwiejsze"))+scale_size_continuous(breaks=c(1.5,2,2.5),labels=c(0.3,0.6,0.9))
+
+```
+
+
+
+
+Warto również przyjrzeć się wpływowi płci na czasy rozwiązywania zadań.
+Wydaje się, że dziewczynki zwykle rozwiązują zadania z czytania  i nauk ścisłych dłużej niż chłopcy, matematyka jest rozwiązywana w podobnym czasie.
+
+```{r,warning=FALSE,echo=FALSE, message=F }
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie3/wyslac/Marta")
+ZRead %>% group_by(ST004D01T, item_short) %>% summarise( 
+   TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+)  %>% arrange(item_short)-> stat6
+
+#wykres na podstawie losowo wybranych zadan
+stat6$ST004D01T<-as.factor(stat6$ST004D01T)
+ggplot(stat6[c(3,4,11,12,17,18,25,26,39,40,101,102,133,134,167,168,185,186),],aes(x=item_short,y=TimeAvgSek,fill=ST004D01T))+
+   geom_bar(stat="identity",position = "dodge")+ggtitle("Średni czas rozwiązywania zadań z czytania w podziale na płeć")+ylab("Średni czas w sek")+xlab("Zadanie")+ scale_fill_discrete(labels=c("dziewczynki","chłopcy"))
+
+#ZMat %>% group_by(ST004D01T, item_short) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+#)  %>% arrange(item_short)-> stat25
+load("stat25.rda")
+
+#wykres na podstawie losowo wybranych zadan
+stat25$ST004D01T<-as.factor(stat25$ST004D01T)
+ggplot(stat25[c(3,4,11,12,17,18,25,26,39,40,101,102,133,134,161,162),],aes(x=item_short,y=TimeAvgSek,fill=ST004D01T))+
+  geom_bar(stat="identity",position = "dodge")+ggtitle("Sredni czas rozwiązywania zadań z matematyki w podziale na płeć")+ylab("Średni czas w sek")+xlab("Zadanie")+ scale_fill_discrete(labels=c("dziewczynki","chłopcy"))
+
+
+#ZScience %>% group_by(ST004D01T, item_short) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+#)  %>% arrange(item_short)-> stat26
+load("stat26.rda")
+
+#wykres na podstawie losowo wybranych zadan
+stat26$ST004D01T<-as.factor(stat26$ST004D01T)
+ggplot(stat26[c(3,4,11,12,17,18,25,26,39,40,101,102,133,134,167,168,185,186),],aes(x=item_short,y=TimeAvgSek,fill=ST004D01T))+
+  geom_bar(stat="identity",position = "dodge")+ggtitle("Sredni czas rozwiązywania zadań z nauk ścisłych w podziale na płeć")+ylab("Sredni czas w sek")+xlab("Zadanie")+ scale_fill_discrete(labels=c("dziewczynki","chłopcy"))
+```
+
+
+Również ciekawe będzie spojrzenie na średnie czasy przy różnych zadeklarowanych poziomach zdenerwowania.
+Wydaje się, że ci którzy mało sie denerwowali powinni rozwiązywać zadania szybciej, jednak w większości przypadków różnice są tak niewielkie, że możemy własciwie mówić o braku różnic.
+
+```{r ,warning=FALSE,echo=FALSE, message=F}
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie3/wyslac/Marta")
+#teraz w podziale na zdenerwowanie
+#Even if I am well-prepared for a test I feel very anxious.
+ZRead %>% group_by(ST118Q03NA, item_short) %>% summarise( 
+   TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+)  %>% arrange(item_short)-> stat7
+
+stat7$ST118Q03NA<-as.factor(stat7$ST118Q03NA)
+stat7<-stat7[!is.na(stat7$ST118Q03NA),]
+
+
+
+
+#ZMat %>% group_by(ST118Q03NA, item_short) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+#)  %>% arrange(item_short)-> stat27
+load("stat27.rda")
+
+stat27$ST118Q03NA<-as.factor(stat27$ST118Q03NA)
+stat27<-stat27[!is.na(stat27$ST118Q03NA),]
+
+#ZScience%>% group_by(ST118Q03NA, item_short) %>% summarise( 
+#  TimeAvgSek = weighted.mean(timing/60000, W_FSTUWT)
+#)  %>% arrange(item_short)-> stat28
+load("stat28.rda")
+
+stat28$ST118Q03NA<-as.factor(stat28$ST118Q03NA)
+stat28<-stat28[!is.na(stat28$ST118Q03NA),]
+
+stat7[397:720,]<-stat27
+stat7[721:1444,]<-stat28
+
+ggplot(stat7[c(13,14,15,16,45,46,47,48,133,134,135,136,597,598,599,600,425,426,427,428,653,654,655,656,721,722,723,724,901,902,903,904,1221,1222,1223,1224),],aes(x=item_short,y=TimeAvgSek,fill=ST118Q03NA))+
+   geom_bar(stat="identity",position = "dodge")+ggtitle("Średni czas rozwiązywania zadań w podziale na stopień zdenerwowania")+ylab("Średni czas w sek")+xlab("Zadanie")+ scale_fill_discrete(labels=c("niski","średni","duży","bardzo duży"))
+
+```
+
+
+
+
+## Część 2 - wyniki w działach M R i S w podziale na kraje i płeć
+
+Przy pomocy skryptu Z3_2_plec.R przygotowano odpowiednie dane potrzebne do wygenerowania 3 wykresów dot.poprawnych odpowiedzi na pytania z 3 działów w podziale na płeć i kraje. Wygenerowane dane miały postać 
+
+      a) ramki danych zawierającej średnie ważone procenty poprawnych odpowiedzi w podziale na płeć dla danego działu np.
+      
+```{r,message=F, warning=F}
+load("total.rda")
+kable(total)
+```
+
+      b) ramki danych zawierającej dla danego działu dla wszystkich krajów: 
+      
+      CNT - skrótowa nazwa kraju
+      
+      nazwa - pełna nazwa kraju
+      
+      GII - indeks nierówności płci (ze strony http://hdr.undp.org/en/composite/GII)
+      
+      M - średni ważony procent popr. odpowiedzi dla mężczyzn
+      
+      F - średni ważony procent popr. odpowiedzi dla kobiet
+      
+      czyIstotny - wynik dwustronnego testu równości powyższych proporcji (na poziomie alfa = 0.05)
+      
+```{r,message=F, warning=F}
+load("dane_plec.rda")
+kable(head(dane_plec,8))
+```
+
+Odchylenie standardowe użyte przy liczeniu statystyki testowej testu równości proprocji zostało policzone przy użyciu wzoru:
+<img src="wzor.jpg" />
+
+Gotowe wykresy interaktywne są dostępne w plikach: "wykres matem.html", "wykres read.html", "wykres science.html". Zostały one stworzone na podstawie powyższych 2 ramek danych (po wcześniejszym ich przekonwertowaniu do obiektów/tablic JS) przy użyciu biblioteki D3.js.
+
+Wersja statyczna takiej grafiki dla działu matematycznego wygląda następująco (w wersji interaktywnej dostępne są tooltipy po najechaniu na kółko lub kwadrat, pokazujące wartości zmiennych użytych do wygenerowania danego punktu):
+<img src="wykres.jpg" />
+
+Na wykresie na osi poziomej umieszczono procent poprawnych odpowiedzi na pytania z działu matematycznego dla dziewczyn, a na osi pionowej analogiczne liczby dla chłopców. Kółkami (lub kwadracikami) zaznaczono te proprocje dla poszczególnych krajów. Kolor kształtu zależy od wyniku testu równości proporcji popr. odpowiedzi, natomiast kształt i wielkość punktów zależy od indeksu GII (indeksu nierówności płci), udostępnionego przez ONZ (kwadrat oznacza brak danych na temat GII dla danego państwa). Dodatkowo na wykresie umieszczono adnotację pozwalającą szybko zlokalizować Polskę oraz linie ogólnych ważonych średnich procentów popr. odpowiedzi dla obu płci, aby można był np. ocenić czy dziewczynki i/lub chłopcy w Polsce radzą sobie lepiej czy gorzej od średniej.
+
+Wnioski:
+
+      a) dodanie indeksu GII miało sprawdzić czy punkty, które są mocno oddalone od linii y=x będą miały również większy indeks GII oznaczający większą nierówność płciową w danym kraju; okazało się jednak, patrząc na wykresy, że istnieje raczej tendencja, pokazująca, że dla krajów o niższych procentach poprawnych odp., występuje wyższa nierówność płciowa
+      
+      b) dla działu matematycznego wydaje się, że w większości krajów chłopcy radzą sobie lepiej niż dziewczynki w matematyce, choć wiele wyników mimo odchylenia od prostej y=x, pozostaje nieistotna statystycznie
+      
+      c) dla działu czytania: we wszystkich krajach (poza 3 krajami, dla których test nie wykazał istotnej statystycznie róznicy proporcji) dziewczynki radziły sobie lepiej od chłopców
+      
+      d) dla działu przyrodniczego nie ma jednoznacznej przewagi żadnej z płci
+      
+      e) najlepsze wyniki w każdym z działów osiągał Singapur, natomiast najgorsze Dominikana
+      
+      f) Polska w każdym z działów reprezentowała wysoki poziom - była powyżej średnich dla każdej z płci
+
+
+## Część 3 - czasy odp. i proc. popr. odp. w działach M R i S
+
+Przy pomocy skryptu Z3_3.R przygotowano odpowiednie dane potrzebne do wygenerowania 3 wykresów dot. czasów odpowiedzi oraz procentów poprawnych odpowiedzi na pytania z 3 działów. Wygenerowane dane miały postać:
+
+      a) ramki danych zawierającej dla danego działu
+      
+      item_short - nazwa pytania
+      
+      VARLABEL - treść pytania z Codebook
+      
+      ProcFullCredit - ważony procent poprawnych odpowiedzi na dane pytanie
+      
+      N - ilość odpowiedzi na dane pytanie
+      
+      TimeAvgMin - średni ważony czas odpowiedzi na pytania w min
+      
+      std - odchylenie standardowe proc. popr. odp. wśród krajów odpowiadających na dane pytanie
+      
+      rankingPolska - wynik Polski dla danego pytania (pozycja)
+      
+      top1 - kraj, który osiągnął najlepszy wynik dla danego pytania
+      
+      top2 - kraj, który osiągnął drugi najlepszy wynik dla danego pytania
+      
+      top3 - kraj, który osiągnął trzeci najlepszy wynik dla danego pytania
+      
+```{r, message=F, warning=F}
+load(file="daneMatem_pytania.rda")
+kable(head(daneMatem,8))
+```
+
+Gotowe wykresy interaktywne dostępne są w plikach: wykres_matem_pytania.html, wykres_read_pytania.html, wykres_science_pytania.html. Zostały one stworzone na podstawie ramek danych powyższego typu (po wcześniejszym ich przekonwertowaniu do obiektów/tablic JS) przy użyciu biblioteki D3.js.
+
+Wersja statyczna takiego wykresu dla działu matematycznego wygląda następująco (w wersji interaktywnej dostępne są tooltipy po najechaniu na kółko, pokazujące wartości zmiennych użytych do wygenerowania danego punktu):
+<img src="wykres2.jpg" />
+
+Na wykresie na osi poziomej umieszczono czas odpowiedzi na poszczególne pytania w min, na osi pionowje procent poprawnych odpowiedzi. Kółkami zaznaczono poszczególne pytania. Kolor kółka jest zależny od wielkości odchylenia standardowego dla danego pytania, liczonego po procentach poprawnych odpowiedzi dla danego pytania dla różnych państw. Wielkość kółka zależy od liczby osób odpowiadających na dane pytanie.
+
+Wnioski:
+
+         pytania różniły się między sobą średnim czasem odpowiedzi (od 0.5 do 4.5 min)
+         
+         pytania różniły się między sobą trudnością (patrząc po proc. popr. odpowiedzi 
+
+         pytania różniły się między sobą ilością wystąpień (nie każde pytanie zostało zadane uczniom mniej więcej tyle samo razy)
+         
+         pytania miały zróżnicowaną trudność dla różnych krajów, te bardzo łatwe i te bardzo trudne były w miarę dla wszystkich łatwe i trudne; pytania o średniej trudności miały największy zróżnicowanie wyników krajów
+         
+         średnie czasy pytań przyrodniczych nie przekraczają 3 min 
+         
+         dla pytań z czytania trend zależności między czasem odp. a procentem popr. odp. okazuje się najmniejszy, nie wydaje się, żeby wraz ze wzrostem czasu poświęconego na zadanie, malał procent popr. odpowiedzi; wyraźniejsze trendy występują dla pytani przyrodniczych i matematycznych
+
+# Skrypty:
+
+## Z0_QQQ_wagi.sas
+
+```{r,eval=F}
+/*********************************************************
+importowanie pliku: Cy6_ms_cmb_stu_qqq.sav
+
+folder_IN - sciezka do folderu zawierajacego plik Cy6_ms_cmb_stu_qqq.sav
+folder_OUT - sciezka do folderu do zapisu pliku wyjściowego
+***********************************************************/
+
+%let folder_IN = C:\Users\E540\Desktop\PISA 2015\dokumentacja\;
+%let folder_OUT = C:\Users\E540\Desktop\PISA 2015\zadanie0\;
+
+proc import out=work.CY6_MS_CMB_STU_QQQ_wagi 
+  datafile = "&folder_IN.Cy6_ms_cmb_stu_qqq.sav" 
+  dbms = SAV replace; 
+run;
+
+/*********************************************************
+wybor odpowiednich kolumn i wierszy
+***********************************************************/
+
+data CY6_MS_CMB_STU_QQQ_wagi;
+	set CY6_MS_CMB_STU_QQQ_wagi ( keep =
+	 							  CNTSCHID 
+								  CNTSTUID
+								  W_FSTUWT
+								  W_FSTURWT:
+								  ADMINMODE 
+							  where = (ADMINMODE = 2) 
+							);
+run;
+
+/*********************************************************
+kasowanie formatów ze zmiennych
+***********************************************************/
+
+proc datasets lib=work nolist;
+	modify CY6_MS_CMB_STU_QQQ_wagi;
+	format _all_; 
+	informat _all_; 
+quit;
+run;
+
+/*********************************************************
+odrzucenie zbędnej kolumny
+***********************************************************/
+
+data CY6_MS_CMB_STU_QQQ_wagi;
+	set CY6_MS_CMB_STU_QQQ_wagi(drop = adminmode);
+run;
+
+/*********************************************************
+eksportowanie gotowego zbioru do CY6_MS_CMB_STU_QQQ_wagi.csv
+***********************************************************/
+
+proc export data=CY6_MS_CMB_STU_QQQ_wagi
+    outfile = "&folder_OUT.CY6_MS_CMB_STU_QQQ_wagi.csv"
+    dbms = csv
+    replace;
+run;
+
+```
+
+## Z3_1.r
+
+```{r, eval=F}
+############################################################################
+################ dodawanie wag do zbioru
+############################################################################
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie0")
+load("Z0_matem.rda")
+load("Z0_read.rda")
+load("Z0_science.rda")
+wagi <- read.csv("CY6_MS_CMB_STU_QQQ_wagi.csv")
+memory.limit(200000)
+Sys.setenv("R_ZIPCMD" = "C:/Rtools/bin/zip.exe") # writeWorkbook
+
+Z3_statystyki <- function(zbior_in = Z0_matem, zbior_wagi=wagi, stat_out = "stat_matem.xlsx"){
+   
+   require(dplyr)
+   require(isotone) # do wazonej mediany
+   require(openxlsx)
+   require(data.table)
+   
+   # dolaczanie wag do zbioru i zapis danych wraz z wagami 
+   zbior_in <- data.table(zbior_in)
+   zbior_wagi <- data.table(zbior_wagi)
+   setkey(zbior_in, CNTSCHID, CNTSTUID)
+   setkey(zbior_wagi, CNTSCHID, CNTSTUID)
+   zbior_in <- as.data.frame(zbior_wagi[zbior_in])
+   cat("Zmergowano zbior z wagami","\n")
+   
+   
+   
+   # statystyki dla calego pytania
+   
+   zbior_in %>% group_by(item_short) %>% summarise( suma_pytanie = sum(W_FSTUWT),
+                                                    ProcFullCredit = sum( W_FSTUWT[result == 3] ) * 100 / suma_pytanie,
+                                                    ProcNoCredit = sum( W_FSTUWT[result == 1] )  * 100 / suma_pytanie,
+                                                    N = n(),
+                                                    TimeAvgMin = weighted.mean(timing/60000, W_FSTUWT),
+                                                    TimeMedMin= weighted.median(timing/60000, W_FSTUWT),
+                                                    TimeMinMin = min(timing)/60000,
+                                                    TimeMaxMin = max(timing)/60000
+   )  %>%
+      select(-suma_pytanie) -> per_pytanie
+   
+   # dodanie kolumnt CNT = "TOTAL"
+   per_pytanie <- cbind(CNT="TOTAL",per_pytanie)
+   per_pytanie$CNT <- as.character(per_pytanie$CNT)
+   
+   # statystyki per pytanie per kraj
+   
+   zbior_in %>% group_by(CNT, item_short) %>% summarise( suma_pytanie = sum(W_FSTUWT),
+                                                         ProcFullCredit = sum( W_FSTUWT[result == 3] ) * 100 / suma_pytanie,
+                                                         ProcNoCredit = sum( W_FSTUWT[result == 1] )  * 100 / suma_pytanie,
+                                                         N = n(),
+                                                         TimeAvgMin = weighted.mean(timing/60000, W_FSTUWT),
+                                                         TimeMedMin= weighted.median(timing/60000, W_FSTUWT),
+                                                         TimeMinMin = min(timing)/60000,
+                                                         TimeMaxMin = max(timing)/60000
+   ) %>% select(-suma_pytanie) %>% 
+      arrange(item_short, desc(ProcFullCredit))-> per_kraj
+   
+   # zapis statystyk do pliku 
+   pytania <- sort(unique(zbior_in$item_short))
+   n_pytania <- length(pytania)
+   
+   wb <- createWorkbook()
+   
+   for(i in 1:n_pytania){
+      cat("Zapisano ", i, "/", n_pytania, "pytan \n")
+      dane <- bind_rows(per_pytanie %>% filter(item_short == pytania[i]),
+                        per_kraj %>% filter(item_short == pytania[i]))
+      addWorksheet(wb, pytania[i])
+      writeData(wb, sheet = pytania[i], x = dane)
+   }
+   
+   saveWorkbook(wb, file=stat_out, overwrite = FALSE)
+   
+   
+   return(zbior_in)
+   
+}
+
+Z0_matem <- Z3_statystyki(zbior_in = Z0_matem, zbior_wagi = wagi, stat_out = "stat_matem_3.xlsx")
+save(Z0_matem, file="Z0_matem_w.rda")
+rm(Z0_matem)
+
+Z0_read <- Z3_statystyki(zbior_in = Z0_read, zbior_wagi = wagi, stat_out = "stat_read_3.xlsx")
+save(Z0_read, file="Z0_read_w.rda")
+rm(Z0_read)
+
+Z0_science <- Z3_statystyki(zbior_in = Z0_science, zbior_wagi = wagi, stat_out = "stat_science_3.xlsx")
+save(Z0_science, file="Z0_science_w.rda")
+rm(Z0_science)
+```
+
+## Z3_2_plec.R
+
+
+```{r, eval=F}
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie0")
+load("Z0_matem_w.rda")
+load("Z0_read_w.rda")
+load("Z0_science_w.rda")
+GII <- read.csv2("GII.csv", header = T, stringsAsFactors = F) 
+memory.limit(200000)
+
+
+library(jsonlite)
+
+
+daneDoWykresowPlec <- function(zbior, indeks_GII){
+   
+   require(dplyr)
+   require(tidyr)
+   
+   # statystyki ogolne poprawnych odpowiedzi w podziale na plec   
+   zbior %>% group_by(ST004D01T) %>%
+      summarise( ProcFullCredit = sum( W_FSTUWT[result == 3] ) * 100 /  sum(W_FSTUWT)) -> total
+   
+   
+   
+   # statystyki poprawnych odpowiedzi w podziale na plec per kraj
+   zbior %>% group_by(CNT, ST004D01T) %>% 
+      summarise( ProcFullCredit = sum( W_FSTUWT[result == 3] ) * 100 / sum(W_FSTUWT)) %>% spread(ST004D01T,ProcFullCredit) -> per_kraj
+   
+   colnames(per_kraj) <-c("CNT", "F", "M") 
+   
+   # kolumna odpowiadajaca za roznice miedzy plciami
+   per_kraj$ile_roznicy <- per_kraj$F -per_kraj$M
+   
+   ######################## obliczanie  ważonych procentów dla każdego kraju
+   
+   # liczenie dla kolumn wagowych sumy wag
+   zbior %>% select(-CNTSCHID, -CNTSTUID, -BOOKID, -klaster, -item_short, -CBASCI, -ST118Q01NA, -ST118Q02NA, -ST118Q03NA,
+                    -ST118Q04NA, -ST118Q05NA, -item, -n.actions, -timing, -pozycja, -result) %>% group_by(CNT, ST004D01T) %>% 
+      summarise_each(funs(sum)) %>% 
+      gather(key=wagi, value=sumy_razem,-CNT, -ST004D01T)-> wazone
+   
+   # liczenie dla kolumn wagowych sumy wag dla poprawnych odpowiedzi
+   zbior %>% filter(result == 3) %>%
+      select(-CNTSCHID, -CNTSTUID, -BOOKID, -klaster, -item_short, -CBASCI, -ST118Q01NA, -ST118Q02NA, -ST118Q03NA,
+                    -ST118Q04NA, -ST118Q05NA, -item, -n.actions, -timing, -pozycja, -result) %>% group_by(CNT, ST004D01T) %>%
+      summarise_all( funs(sum) ) %>%
+      gather(key=wagi, value=sumy_czesc,-CNT, -ST004D01T)-> wazone2
+   
+   wazone <- merge(wazone2, wazone, by=c("CNT", "ST004D01T", "wagi"))
+   
+   # liczenie procentu ważonego dla kazdego panstwa, plci i wagi
+   wazone %>% group_by(CNT, ST004D01T, wagi) %>% summarise(procent = sumy_czesc*100/sumy_razem
+                                                           ) %>% spread(ST004D01T,procent) -> wazone
+   
+   colnames(wazone) <-c("CNT","wagi", "F", "M") 
+   
+   # liczenie roznicy procentu miedzy plciami dla kazdego kraju i wagi
+   wazone %>% group_by(CNT, wagi) %>% mutate( roznica = F - M) -> wazone
+   
+   # obliczanie odchylenia standardowego na podstawie 80 wag
+   wazone %>% group_by(CNT) %>% summarise(
+      
+      std = sqrt((1/20)*sum( (roznica[wagi=="W_FSTUWT"] - roznica )^2  ))
+      
+   ) -> wazone
+
+   # dodanie odchylenia do glownego zbioru
+   per_kraj <- merge(per_kraj, wazone,all.x=T, by=c("CNT"))
+   rm(wazone)
+   
+   # obliczanie statystyki testowej 
+   # sprawdzanie istotności testu na poziomie 0.05 (dwustronny)
+   per_kraj %>% mutate(z= ile_roznicy/std,
+                       czyIstotny = (z < qnorm(0.025)) | (z  > qnorm(0.975) ) ) %>%
+      select(-z,-std, -ile_roznicy) -> per_kraj
+   
+
+   # dolaczanie danych z indeksem GII  
+   indeks_GII$GII <- as.numeric(indeks_GII$GII)
+   indeks_GII$GII <- ifelse(is.na(indeks_GII$GII),0,indeks_GII$GII) # wstawiamy 0 za NA
+   
+   per_kraj<- merge(per_kraj, indeks_GII, by=c("CNT"))
+   
+   
+   return(list(total=total, dane=per_kraj))
+}
+
+#### dane matematyczne
+daneMatem <- daneDoWykresowPlec(Z0_matem, GII)
+rm(Z0_matem)
+# zapis do struktur JavaScriptowych
+jsonik <- toJSON(daneMatem$dane)
+total <- toJSON(daneMatem$total$ProcFullCredit)
+   
+#### dane czytelnicze
+daneRead <- daneDoWykresowPlec(Z0_read, GII)
+rm(Z0_read)
+# zapis do struktur JavaScriptowych
+jsonik <- toJSON(daneRead$dane)
+total <- toJSON(daneRead$total$ProcFullCredit)
+
+#### dane matematyczne
+daneScience <- daneDoWykresowPlec(Z0_science, GII)
+rm(Z0_science)
+# zapis do struktur JavaScriptowych
+jsonik <- toJSON(daneScience$dane)
+total <- toJSON(daneScience$total$ProcFullCredit)
+
+```
+
+## Z3_3.R
+
+```{r, eval=F}
+library(readxl)   
+library(dplyr)
+library(stringi)
+library(jsonlite)
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie0")
+
+# funkcja do wczytywania wszystkich arkuszy excela w jedną ramkę danych
+read_excel_allsheets <- function(filename) {
+   
+   sheets <- excel_sheets(filename)
+   x <-    do.call("rbind",
+                   lapply(sheets, function(X) read_excel(filename, sheet = X))
+   )
+
+   return(x)
+   
+}
+
+# pliki ze statystykami
+stat_matem <- read_excel_allsheets("stat_matem_3.xlsx")
+stat_read <- read_excel_allsheets("stat_read_3.xlsx")
+stat_science <- read_excel_allsheets("stat_science_3.xlsx")
+
+#  wczytywanie nazw pytan z Codebook
+codebook <- read_excel("Codebook_CMB.xlsx", sheet="Cognitive")
+codebook %>% filter(!is.na(NAME)) %>% mutate(NAME = substr(NAME,2,8)) %>% 
+   select(NAME, VARLABEL)-> codebook
+
+# usuwanie śmieci z nazw pytań
+for(slowo in c("(Coded Response)", "(Timing)", "(Number of Actions)","(Scored Response)","(Raw Response)",
+               "(Raw Paper Response)", "(Paper Scored Response)", "[Part A]", " [Part B]", " [Part C]", 
+               " [Part D]", "(Coded Paper Response)" ,  "[Part E]", 
+               " [Part F]", " [Part G]", "[Part H]", " [Part I]",
+               "(Number of Trials)", "(Number of Selected Rows)", "(Number of Rows)", " (All Rows Correct)",
+               "[1-L2]", "[1-L1]", " [2-L1]", "[3-L3]", "[2-L2]", "[1-L3]",
+               " (Solar Panels) - Q02", " (Solar Panels) - Q07", " (Solar Panels) - Q08")){
+   
+   codebook$VARLABEL <- stri_replace_all_fixed(codebook$VARLABEL,
+                                               pattern = slowo, "")
+
+}
+
+codebook$VARLABEL <- stri_replace_all_regex(codebook$VARLABEL,
+                                            pattern = "[ABCDE] $", "")
+
+codebook$VARLABEL <- trimws(codebook$VARLABEL)
+codebook %>% distinct(NAME, VARLABEL) -> codebook
+colnames(codebook) <- c("item_short", "VARLABEL")
+
+
+# funkcja do tworzenia potrzebnych zmiennych
+doWykresuPytania <- function(zbior, codebook){
+   
+   # licze odchylenie standardowe dla proc popr. odpow
+   zbior %>% filter(CNT != "TOTAL") %>% group_by(item_short) %>% summarise(std =sqrt(var(ProcFullCredit))) -> odch_stand
+   
+   # licze pozycje Polski w kazdym pytaniu
+   zbior %>% filter(CNT != "TOTAL") %>% group_by(item_short) %>% arrange(item_short,desc(ProcFullCredit)) %>%
+            mutate(rankingWPytaniu = 1:n()) %>% filter(CNT == "POL") %>% select(item_short,rankingWPytaniu) %>%
+      rename(rankingPolska =  rankingWPytaniu )-> top_Polska
+   
+   # wyciagam top3 krajów dla każdego pytania
+   zbior %>% filter(CNT != "TOTAL") %>% group_by(item_short) %>% arrange(item_short,desc(ProcFullCredit)) %>%
+      mutate(rankingWPytaniu = 1:n(),
+             top1 = CNT[ rankingWPytaniu == 1],
+             top2 = CNT[ rankingWPytaniu == 2],
+             top3 = CNT[ rankingWPytaniu == 3]) %>% distinct(top1, top2, top3)-> top3
+   
+   # wybieram tylko ogolne statystyki
+   zbior %>% filter(CNT == "TOTAL") %>% select(item_short, ProcFullCredit, N, TimeAvgMin) -> zbior
+   
+   # dodaje nazwe pytania
+   zbior <- merge(zbior, codebook, all.x = T, by=c("item_short"))
+   
+   # dodaje poprzednio obliczone zmienne
+   zbior <- merge(zbior, odch_stand, all.x = T, by=c("item_short"))
+   zbior <- merge(zbior, top_Polska, all.x = T, by=c("item_short"))
+   zbior <- merge(zbior, top3, all.x = T, by=c("item_short"))
+
+   return(zbior)
+   
+}
+
+daneMatem <- doWykresuPytania(stat_matem,codebook)
+daneRead <- doWykresuPytania(stat_read,codebook)
+daneScience <- doWykresuPytania(stat_science,codebook)
+
+daneMatem <- toJSON(daneMatem)
+daneRead <- toJSON(daneRead)
+daneScience <- toJSON(daneScience)
+
+#save(daneMatem, file="daneMatem_pytania.rda")
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
