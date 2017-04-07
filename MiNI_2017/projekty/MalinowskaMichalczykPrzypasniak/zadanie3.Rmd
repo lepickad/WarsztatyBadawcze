@@ -1,0 +1,439 @@
+---
+title: "zadanie 3"
+author: "S. Michalczyk M. Malinowska O. Przypaœniak"
+date: "27 marca 2017"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+## INFORMACJE O SKRYPCIE
+
+Poni¿szy plik zawiera podstawowe statystyki dla zadañ wyznaczonych na podstawie ramki danych $\texttt{table_rms.rds}$ utworzonej po uruchomieniu pliku $\texttt{zadanie0.html}$ .
+
+Po uruchomieniu tego skryptu utworzone pliki to:
+
+- $\texttt{statistics.csv}$ - statystyki wyników dla ka¿dego zadania w podziale na kraje [1.1]
+
+- $\texttt{statistics_by_sex.csv}$ - statystyki wyników dla ka¿dego zadania w podziale na kraje i p³eæ [1.2]
+
+- $\texttt{statistics_clus.csv}$ - statystyki wyników dla ka¿dego klastra w podziale na kraje [2.1]
+
+- $\texttt{statistics_by_sex2.csv}$ - statystyki wyników dla ka¿dego klastra w podziale na kraje i p³eæ [2.2]
+
+## STRESZCZENIE
+
+Pierwsza sekcja zawiera statystyki wyników dla poszczególnych zadañ w podziale na kraje oraz p³eæ. 
+
+Druga sekcja przedstawia statystyki wyników dla krajów w podziale na trzy rodzaje zadañ (matematykê, czytanie i nauki przyrodnicze).
+
+Ostatnia trzecia czêœæ zawiera przedstawienie graficzne uzyskanych wyników. 
+
+
+**Podstawowe wnioski:**
+
+ - Œrednio najwiêcej czasu zajmuj¹ uczniom zadania z matematyki oraz z tych zadañ uczniowie maj¹ najgorsze wyniki. 
+ 
+ - Ch³opcy uzyskuj¹ lepsze wyniki z matematyki i nauk przyrodniczych zaœ dziewczynki s¹ lepsze w czytaniu. Ró¿nice jednak nie wydaj¹ siê zbyt du¿e.
+ 
+ - Z rozwa¿anych krajów najlepsze œrednie wyniki maj¹ Finlandia, Estonia, Belgia oraz Niemcy. Na tle pozosta³ych krajów wyró¿nia siê Brazylia. Z poszczególnych typów zadañ (M,R,S) œrednio najd³u¿ej rozwi¹zywa³a zadania i otrzyma³a œrednio najmniejszy wynik.
+ 
+
+```{r setup, message=FALSE, warning=FALSE}
+library("dplyr")
+library("tidyr")
+library("plotly")
+library("htmlTable")
+library("matrixStats")
+library("knitr")
+
+# wczytanie danych:
+dane <- readRDS("table_rms.rds")
+
+```
+
+## 1. STATYSTYKI WYNIKÓW DLA POSZCZEGÓLNYCH ZADAÑ
+
+### 1.1 podzia³ na kraje
+
+```{r,warning=FALSE}   
+statistics <- dane %>% group_by(item,CNT) %>% 
+   filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+         !is.na(n.actions) & !is.na(result_num) ) %>% 
+   summarise(
+      MinTime=min(timing),
+      WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+      MedianTime=round( weightedMedian(timing,W_FSTUWT,na.rm=TRUE),2),
+      MaxTime=max(timing),
+      MinN.Actions=min(n.actions),
+      WMeaN.Actions=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2),
+      MediaN.Actions=round( weightedMedian(n.actions,W_FSTUWT,na.rm=TRUE),2),
+      MaxN.Actions=max(n.actions),
+      WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+      MedianResult=round( weightedMedian(result_num,W_FSTUWT,na.rm=TRUE),2),
+      Number=n()
+   )
+
+knitr::kable(statistics[1:5,])
+
+# liczba uzyskanych obserwacji dla poszczególnych poziomów zmiennej result
+# w podziale na zadania i kraje
+results_number <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+               !is.na(n.actions) & !is.na(result_num) ) %>%  
+         group_by(item, CNT, result) %>% 
+         summarise(value = n()) %>% 
+         as.data.frame( ) %>% spread(result, value) %>%
+         complete(item, fill = list("Full credit"=0, 
+                                    "No credit"=0, 
+                                    "Partial credit"= 0) )
+knitr::kable(results_number[1:5,])
+
+# po³¹czenie obu powy¿szych tabelek
+statistics <- left_join(statistics,results_number,by=c("item","CNT"))
+
+knitr::kable(statistics[1:5,])
+
+# zapisuje wynik w pliku statistics.xlsx
+write.csv(as.data.frame(statistics), file="statistics.csv",
+           col.names = TRUE, row.names = FALSE)
+
+```
+
+Na podstawie uzyskanego zbioru $\texttt{statistics}$ wybieram 20 zadañ: 
+
+dla ka¿dego kraju po dwa zadania: zajmuj¹ce najwiêcej i najmniej czasu uczniom. 
+
+Wybrane statystyki to : œredni wa¿ony czas ($\texttt{WMeanTime}$), œrednia wa¿ona liczba akcji ($\texttt{WMeaN.Actions}$), œredni wa¿ony wynik ($\texttt{WMeanResult}$). 
+
+Wydobyta ramka danych zostaje na koñcu posortowana po œrednim wa¿onym czasie.
+
+```{r}
+selected_item_statistics <- statistics %>% select(item, CNT, WMeanTime, WMeaN.Actions, WMeanResult)%>% group_by(CNT) %>% filter(WMeanTime==min(WMeanTime) | WMeanTime==max(WMeanTime)) %>% arrange(WMeanTime)
+
+knitr::kable(selected_item_statistics)
+```
+
+Na podstawie wybranych wierszy mo¿na zaobserwowaæ, ¿e:
+
+- najszybciej rozwi¹zywanym zadaniem przez uczniów oœmiu krajów jest zadanie z czytania (CR102Q07). Zadanie to najszybciej rozwi¹zali uczniowie z Polski. Jednak najlepszy œredni wynik dla tego zadania uzyskali uczniowie z Estonii, którzy byli wolniejsi od Polaków jedynie o 0.01 minuty.
+
+-  Portugalczykom najszybciej uda³o siê rozwi¹zaæ inne zadanie z czytania (CR220Q05), zaœ Niemcom najmniej czasu zajê³o zadanie z nauk przyrodniczych (CS521Q06).
+
+- najd³u¿szy œredni czas uzyskali uczniowie z Austrii dla zadania CS605Q03 z nauk przyrodniczych. Jednak uzyskany przez nich wynik nie by³ z³y bior¹c pod uwagê poprzednie wiersze tabeli. Uzyskali œredni wa¿ony wynik 2.17 podczas gdy dla pozosta³ych kraji d³u¿szy czas rozwi¹zywania zadañ przek³ada³ siê na du¿o gorsze wyniki (poni¿ej 1.65).
+
+- na podstawie wybranych zadañ widaæ, ¿e d³u¿ej rozwi¹zywane zadania najczêœciej wi¹¿¹ siê z wiêksz¹ iloœci¹ akcji oraz z gorszym wynikiem ( wyj¹tek stanowi Austria).
+
+### 1.2 podzia³ na kraje i na p³eæ
+
+```{r,warning=FALSE}
+statistics_by_sex <- dane %>% group_by(item,CNT,ST004D01T) %>% 
+   filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+             !is.na(n.actions) & !is.na(result_num) ) %>% 
+   summarise(MinTime=min(timing),
+             WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+             MedianTime=round( weightedMedian(timing,W_FSTUWT,na.rm=TRUE),2),
+             MaxTime=max(timing),
+             MinN.Actions=min(n.actions),
+             WMeaN.Actions=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2),
+             MediaN.Actions=round( weightedMedian(n.actions,W_FSTUWT,na.rm=TRUE),2),
+             MaxN.Actions=max(n.actions),
+             WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+             Number=n())
+
+knitr::kable(statistics[1:5,])
+
+results_number2 <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                           !is.na(n.actions) & !is.na(result_num) ) %>%  
+   group_by(item, CNT,ST004D01T,result) %>% 
+   summarise(value = n()) %>% 
+   as.data.frame( ) %>% spread(result, value) %>%
+   complete(item, fill = list("Full credit"=0, 
+                              "No credit"=0, 
+                              "Partial credit"= 0) )
+
+statistics_by_sex <- left_join(statistics_by_sex, results_number2, by=c("item","CNT","ST004D01T"))
+
+# zapisuje wynik w pliku statistics_by_sex.xlsx
+write.csv(as.data.frame(statistics_by_sex), file="statistics_by_sex.csv",
+           col.names = TRUE, row.names = FALSE)
+
+```
+
+
+
+## 2. STATYSTYKI WYNIKÓW DLA ZADAÑ Z MATEMATYKI, CZYTANIA I NAUK PRZYRODNICZYCH
+
+### 2.1 podzia³ na kraje
+```{r,warning=FALSE}
+statistics_clus <- dane %>% group_by(CNT,clus_short) %>% 
+   filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+             !is.na(n.actions) & !is.na(result_num) ) %>% 
+   summarise(
+      MinTime=min(timing),
+      WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+      MedianTime= round(weightedMedian(timing,W_FSTUWT,na.rm=TRUE),2),
+      MaxTime=max(timing),
+      MinN.Actions=min(n.actions),
+      WMeaN.Actions=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2),
+      MediaN.Actions= round(weightedMedian(n.actions,W_FSTUWT,na.rm=TRUE),2),
+      MaxN.Actions=max(n.actions),
+      WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+      MedianResult= round(weightedMedian(result_num,W_FSTUWT,na.rm=TRUE),2),
+      Number=n()
+   )
+
+
+results_number_clus <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                                     !is.na(n.actions) & !is.na(result_num) ) %>%  
+   group_by( CNT,clus_short, result) %>% 
+   summarise(value = n()) %>% 
+   as.data.frame( ) %>% spread(result, value) %>%
+   complete(CNT, fill = list("Full credit"=0, 
+                              "No credit"=0, 
+                              "Partial credit"= 0) )
+
+statistics_clus <- left_join(statistics_clus,results_number_clus,by=c("CNT","clus_short"))
+
+# zapisuje wynik w pliku statistics_clus.xlsx
+write.csv(as.data.frame(statistics_clus), file="statistics_clus.csv",
+           col.names = TRUE, row.names = FALSE)
+```
+
+KOMENTARZ : patrz czêœæ [3.1]
+
+### 2.2 podzia³ na kraje i p³eæ
+
+```{r,warning=FALSE}
+statistics_by_sex2 <- dane %>% group_by(CNT,ST004D01T,clus_short) %>% 
+  filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+           !is.na(n.actions) & !is.na(result_num) ) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+            Number=n())
+
+results_number2a <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                                     !is.na(n.actions) & !is.na(result_num) ) %>%  
+  group_by(CNT,ST004D01T,clus_short,result) %>% 
+  summarise(value = n()) %>% 
+  as.data.frame( ) %>% spread(result, value) %>%
+  complete(CNT, fill = list("Full credit"=0, 
+                             "No credit"=0, 
+                             "Partial credit"= 0) )
+
+statistics_by_sex2 <- left_join(statistics_by_sex2,results_number2a,by=c("CNT","ST004D01T", "clus_short"))
+
+htmlTable(statistics_by_sex2[1:10,],
+          header = c("CNT_","ST004D01T_","clus_short_" ,"WMeanTime_","WMeanResult_","Number_","Full credit_","No credit_","Partial credit"),
+          rnames = c("1","2","3","4","5","6","7","8","9","10"),
+           col.rgroup = c("none","#FFFFCC"),
+          cspan.rgroup = 1,
+          caption="Statystyki dla poszczególnych krajów w podziale na p³eæ")
+
+# zapisuje wynik w pliku statistics_by_sex2.xlsx
+write.csv(as.data.frame(statistics_by_sex2), file="statistics_by_sex2.csv",
+           col.names = TRUE, row.names = FALSE)
+```
+
+KOMETNTARZ : patrz czêœæ [3.2]
+
+## 3. WIZUALIZACJA
+
+### 3.1 result vs time w podziale na clus (matematyka, czytanie, nauki przyrodnicze)
+```{r}
+plot1_data <- data.frame(
+   CNT=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="R"),1]),
+   RR=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="R"),11]),
+   RT=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="R"),4]),
+   MR=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="M"),11]),
+   MT=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="M"),4]),
+   SR=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="S"),11]),
+   ST=as.data.frame(statistics_clus[which(statistics_clus$clus_short=="S"),4]))
+
+colnames(plot1_data) <- c("CNT","RR","RT","MR","MT","SR","ST")
+
+htmlTable(plot1_data,
+          header = c("CNT_","RR_","RT_","MR_","MT_","SR_","ST_"),
+          rnames = c("1","2","3","4","5","6","7","8","9","10"),
+           col.rgroup = c("none","#FFFFCC"),
+          cspan.rgroup = 1,
+          caption="Œredni czas i œredni wynik z zadañ z matematyki, czytania i nauk przyrodniczych w poszczególnych krajach.")
+
+p1 <- plot_ly(plot1_data, 
+              x=plot1_data$RT,
+              y=plot1_data$RR, 
+              name="Reading",
+              type = "scatter", 
+              mode = "markers", 
+              marker = list(size = 9, sizemode = 'diameter', color = "green"),
+              hoverinfo = 'text',
+              text = ~paste(CNT)) %>%
+  add_trace(x=plot1_data$MT,
+            y=plot1_data$MR,
+            name = "Math",
+            marker = list(color = "blue"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  add_trace(x=plot1_data$ST,
+            y=plot1_data$SR,
+            name = "Science",
+            marker = list(color = "violet"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  layout(
+    title = "Results vs Time",
+    xaxis = list(title = "Time"),
+    yaxis = list(title = "Result"),
+    margin = list(l = 65)
+  )
+p1
+```
+
+- Najkrócej rozwi¹zywano zadania z czytania i z tej dziedziny pañstwa otrzymywa³y najwy¿sze wyniki. Najlepszy wynik z czytania a zarazem najmniejszy czas rozwi¹zywania zadañ z tej dziedziny uzyskali uczniowie z Finlandii.
+
+- Nieznacznie gorzej wypad³y nauki przyrodnicze, zajê³y uczniom œrednio trochê wiêcej czasu ni¿ czytanie i osi¹gniêto z nich niewiele ni¿sze wyniki.
+ 
+ - Punkty dla matematyki znacznie wyró¿niaj¹ siê od pozosta³ych - dla wszystkich krajów najwiêcej czasu zajê³o rozwi¹zywanie zadañ z tej dziedziny. Widaæ, ¿e jest to przedmiot sprawiaj¹cy uczniom najwiêcej trudnoœci. Najd³u¿ej œrednio rozwi¹zywa³a je Brazylia i otrzyma³a najmniejszy wynik. 
+ 
+### 3.2 porównanie wyników - ch³opcy vs dziewczêta w podziale na clus (matematyka, czytanie, nauki przyrodnicze) i kraje
+
+```{r}
+plot2_data <- data.frame(CNT=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Male"),1]),
+                         RRM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Male"),5]),
+                         RRF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Female"),5]),
+                         RTM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Male"),4]),
+                         RTF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="R" & statistics_by_sex2$ST004D01T=="Female"),4]),
+                         MRM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Male"),5]),
+                         MRF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Female"),5]),
+                         MTM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Male"),4]),
+                         MTF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="M" & statistics_by_sex2$ST004D01T=="Female"),4]),
+                         SRM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Male"),5]),
+                         SRF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Female"),5]),
+                         STM=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Male"),4]),
+                         STF=as.data.frame(statistics_by_sex2[which(statistics_by_sex2$clus_short=="S" & statistics_by_sex2$ST004D01T=="Female"),4]))
+colnames(plot2_data) <- c("CNT","RRM","RRF","RTM","RTF","MRM","MRF","MTM","MTF","SRM","SRF","STM","STF")
+
+
+p2 <- plot_ly(plot2_data, x=seq(from=1.25, to=1.78, length.out=10), y=seq(from=1.25, to=1.78, length.out=10),
+              type="scatter", mode = "lines", name = "y=x") %>%
+  add_trace(x = plot2_data$RRF, y = plot2_data$RRM,
+            name="Reading",
+            mode = "markers", 
+            marker = list(size = 9, sizemode = 'diameter', color = "green"),
+            hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  add_trace(x = plot2_data$MRF, y = plot2_data$MRM,
+            name = "Math",
+            marker = list(size = 9, sizemode = 'diameter', color = "blue"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  add_trace(x = plot2_data$SRF, y = plot2_data$SRM,
+            name = "Science",
+            marker = list(size = 9, sizemode = 'diameter', color = "violet"),
+            mode = "markers", hoverinfo = 'text',
+            text = ~paste(CNT)) %>%
+  layout(
+    title = "Gender disparity",
+    xaxis = list(title = "Female"),
+    yaxis = list(title = "Male"),
+    margin = list(l = 65)
+  )
+
+p2
+```
+
+- Wy¿sze wyniki z nauk przyrodniczych i matematyki uzyskali ch³opcy, natomiast dziewczynki nieznacznie lepsze okaza³y siê byæ w czytaniu.
+
+### 3.3 wykresy wyników wszystkich zadañ dla poszczególnych krajów
+
+```{r,warning=FALSE}
+statistics3 <- dane %>% group_by(CNT,item,clus_short) %>% 
+  filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+           !is.na(n.actions) & !is.na(result_num) ) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+            Number=n())
+
+results3 <- dane %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+                                      !is.na(n.actions) & !is.na(result_num) ) %>%  
+  group_by(CNT,item,clus_short,result) %>% 
+  summarise(value = n()) %>% 
+  as.data.frame( ) %>% spread(result, value) %>%
+  complete(CNT, fill = list("Full credit"=0, 
+                            "No credit"=0, 
+                            "Partial credit"= 0) )
+
+statistics3 <- left_join(statistics3,results3,by=c("CNT","item", "clus_short"))
+htmlTable(statistics3[1:10,],
+          header = c("CNT_","item_","clus_short_","WMeanTime_","WMeanResult_","Number_","Full credit_","No credit_","Partial credit"),
+          rnames = c("1","2","3","4","5","6","7","8","9","10"),
+           col.rgroup = c("none","#FFFFCC"),
+          cspan.rgroup = 1,
+          caption="Statystyki dla poszczególnych zadañ w podziale na kraje")
+
+# caly wykres + dane do niego w fukcji plot_for_country
+
+plot_for_country <- function(i){
+  x <- unique(statistics$CNT)[i]
+  data <- as.data.frame(statistics3[which(statistics3$CNT==x),])
+  
+  max_length <- max(length(which(data$clus_short=="R")), length(which(data$clus_short=="M")), length(which(data$clus_short=="S")))
+  
+  plot_data <- data.frame( RR=numeric(max_length),
+                           RT=numeric(max_length),
+                           MR=numeric(max_length),
+                           MT=numeric(max_length),
+                           SR=numeric(max_length),
+                           ST=numeric(max_length)
+                           )
+  
+  plot_data$RR<-c(as.numeric(data[which(data$clus_short=="R"),5]), rep(NA,max_length-length(which(data$clus_short=="R"))))
+  plot_data$RT<-c(as.numeric(data[which(data$clus_short=="R"),4]), rep(NA,max_length-length(which(data$clus_short=="R"))))
+  plot_data$MR<-c(as.numeric(data[which(data$clus_short=="M"),5]), rep(NA,max_length-length(which(data$clus_short=="M"))))
+  plot_data$MT<-c(as.numeric(data[which(data$clus_short=="M"),4]), rep(NA,max_length-length(which(data$clus_short=="M"))))
+  plot_data$SR<-c(as.numeric(data[which(data$clus_short=="S"),5]), rep(NA,max_length-length(which(data$clus_short=="S"))))
+  plot_data$ST<-c(as.numeric(data[which(data$clus_short=="S"),4]), rep(NA,max_length-length(which(data$clus_short=="S"))))
+  plot_data$Ritem<-c(as.character(data[which(data$clus_short=="R"),2]), rep(NA,max_length-length(which(data$clus_short=="R"))))
+  plot_data$Mitem<-c(as.character(data[which(data$clus_short=="M"),2]), rep(NA,max_length-length(which(data$clus_short=="M"))))
+  plot_data$Sitem<-c(as.character(data[which(data$clus_short=="S"),2]), rep(NA,max_length-length(which(data$clus_short=="S"))))
+  
+  
+  p <- plot_ly(plot_data,
+                x=plot_data$RT,
+                y=plot_data$RR, 
+                name="Reading",
+                type = "scatter", 
+                mode = "markers", 
+                marker = list(size = 9, sizemode = 'diameter', color = "green"),
+                hoverinfo = 'text',
+                text = ~paste(Ritem)) %>%
+    add_trace(x=plot_data$MT,
+              y=plot_data$MR,
+              name = "Math",
+              marker = list(color = "blue"),
+              mode = "markers",
+              text = ~paste(Mitem))%>%
+    add_trace(x=plot_data$ST,
+              y=plot_data$SR,
+              name = "Science",
+              marker = list(color = "violet"),
+              mode = "markers",
+              text = ~paste(Sitem)) %>%
+              
+    layout(
+      title = paste("Results vs Time for",x),
+      xaxis = list(title = "Time"),
+      yaxis = list(title = "Result"),
+      margin = list(l = 65)
+    )
+  p
+}
+
+
+plot_for_country(9)
+
+```
+
+- W Polsce utrzymuje siê tendencja jak na pierwszym wykresie, czyli gorsze wyniki i œrednio d³u¿ej czasu zajmuj¹ zadania z matematyki.
+
+- Mniej czasu poœwiêcono czytaniu i naukom przyrodniczym i z  tych dziedzin uzyskano lepsze wyniki.
