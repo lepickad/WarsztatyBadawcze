@@ -128,7 +128,8 @@ library(dplyr)
 library(tidyr)
 library(stringi)
 library(data.table)
-library(readxl)</code></pre>
+library(readxl)
+library(foreign)</code></pre>
 <div id="wczytanie-danych" class="section level1">
 <h1>Wczytanie danych</h1>
 <p>Wczytywanie danych z pliku <code>.rds</code> do R jest o wiele szybsze, niż z formatu SPSS-owego. Dlatego opłaca się przechowywać dodatkową kopię danych w formacie R-owym.</p>
@@ -391,70 +392,70 @@ for (i in seq_along(formularze)) {
 }
 
 print(wynikiM)</code></pre>
-<pre><code>[[1]]
-  [1] &quot;CM033Q01S&quot; &quot;CM474Q01S&quot; &quot;DM155Q02C&quot; &quot;CM155Q01S&quot; &quot;DM155Q03C&quot;
-  [6] &quot;CM155Q04S&quot; &quot;CM411Q01S&quot; &quot;CM411Q02S&quot; &quot;CM803Q01S&quot; &quot;CM442Q02S&quot;
- [11] &quot;DM462Q01C&quot; &quot;CM034Q01S&quot;
- 
- [[2]]
-  [1] &quot;CM305Q01S&quot; &quot;CM496Q01S&quot; &quot;CM496Q02S&quot; &quot;CM423Q01S&quot; &quot;DM406Q01C&quot;
-  [6] &quot;DM406Q02C&quot; &quot;CM603Q01S&quot; &quot;CM571Q01S&quot; &quot;CM564Q01S&quot; &quot;CM564Q02S&quot;
- 
- [[3]]
-  [1] &quot;CM447Q01S&quot; &quot;CM273Q01S&quot; &quot;CM408Q01S&quot; &quot;CM420Q01S&quot; &quot;CM446Q01S&quot;
-  [6] &quot;DM446Q02C&quot; &quot;CM559Q01S&quot; &quot;DM828Q02C&quot; &quot;CM828Q03S&quot; &quot;CM464Q01S&quot;
- [11] &quot;CM800Q01S&quot;
- 
- [[4]]
-  [1] &quot;CM982Q01S&quot; &quot;CM982Q02S&quot; &quot;CM982Q03S&quot; &quot;CM982Q04S&quot; &quot;CM992Q01S&quot;
-  [6] &quot;CM992Q02S&quot; &quot;DM992Q03C&quot; &quot;CM915Q01S&quot; &quot;CM915Q02S&quot; &quot;CM906Q01S&quot;
- [11] &quot;DM906Q02C&quot; &quot;DM00KQ02C&quot;
- 
- [[5]]
-  [1] &quot;CM909Q01S&quot; &quot;CM909Q02S&quot; &quot;CM909Q03S&quot; &quot;CM949Q01S&quot; &quot;CM949Q02S&quot;
-  [6] &quot;DM949Q03C&quot; &quot;CM00GQ01S&quot; &quot;DM955Q01C&quot; &quot;DM955Q02C&quot; &quot;CM955Q03S&quot;
- [11] &quot;DM998Q02C&quot; &quot;CM998Q04S&quot;
- 
- [[6]]
-  [1] &quot;CM905Q01S&quot; &quot;DM905Q02C&quot; &quot;CM919Q01S&quot; &quot;CM919Q02S&quot; &quot;CM954Q01S&quot;
-  [6] &quot;DM954Q02C&quot; &quot;CM954Q04S&quot; &quot;CM943Q01S&quot; &quot;CM943Q02S&quot; &quot;DM953Q02C&quot;
- [11] &quot;CM953Q03S&quot; &quot;DM953Q04C&quot; &quot;CM948Q01S&quot; &quot;CM948Q02S&quot; &quot;CM948Q03S&quot;
- [16] &quot;CM936Q01S&quot; &quot;DM936Q02C&quot; &quot;DM961Q02C&quot; &quot;CM961Q03S&quot; &quot;DM961Q05C&quot;
- [21] &quot;CM939Q01S&quot; &quot;CM939Q02S&quot; &quot;CM967Q01S&quot; &quot;CM967Q03S&quot;</code></pre>
+<pre><code>FALSE [[1]]
+FALSE  [1] &quot;CM033Q01S&quot; &quot;CM474Q01S&quot; &quot;DM155Q02C&quot; &quot;CM155Q01S&quot; &quot;DM155Q03C&quot;
+FALSE  [6] &quot;CM155Q04S&quot; &quot;CM411Q01S&quot; &quot;CM411Q02S&quot; &quot;CM803Q01S&quot; &quot;CM442Q02S&quot;
+FALSE [11] &quot;DM462Q01C&quot; &quot;CM034Q01S&quot;
+FALSE 
+FALSE [[2]]
+FALSE  [1] &quot;CM305Q01S&quot; &quot;CM496Q01S&quot; &quot;CM496Q02S&quot; &quot;CM423Q01S&quot; &quot;DM406Q01C&quot;
+FALSE  [6] &quot;DM406Q02C&quot; &quot;CM603Q01S&quot; &quot;CM571Q01S&quot; &quot;CM564Q01S&quot; &quot;CM564Q02S&quot;
+FALSE 
+FALSE [[3]]
+FALSE  [1] &quot;CM447Q01S&quot; &quot;CM273Q01S&quot; &quot;CM408Q01S&quot; &quot;CM420Q01S&quot; &quot;CM446Q01S&quot;
+FALSE  [6] &quot;DM446Q02C&quot; &quot;CM559Q01S&quot; &quot;DM828Q02C&quot; &quot;CM828Q03S&quot; &quot;CM464Q01S&quot;
+FALSE [11] &quot;CM800Q01S&quot;
+FALSE 
+FALSE [[4]]
+FALSE  [1] &quot;CM982Q01S&quot; &quot;CM982Q02S&quot; &quot;CM982Q03S&quot; &quot;CM982Q04S&quot; &quot;CM992Q01S&quot;
+FALSE  [6] &quot;CM992Q02S&quot; &quot;DM992Q03C&quot; &quot;CM915Q01S&quot; &quot;CM915Q02S&quot; &quot;CM906Q01S&quot;
+FALSE [11] &quot;DM906Q02C&quot; &quot;DM00KQ02C&quot;
+FALSE 
+FALSE [[5]]
+FALSE  [1] &quot;CM909Q01S&quot; &quot;CM909Q02S&quot; &quot;CM909Q03S&quot; &quot;CM949Q01S&quot; &quot;CM949Q02S&quot;
+FALSE  [6] &quot;DM949Q03C&quot; &quot;CM00GQ01S&quot; &quot;DM955Q01C&quot; &quot;DM955Q02C&quot; &quot;CM955Q03S&quot;
+FALSE [11] &quot;DM998Q02C&quot; &quot;CM998Q04S&quot;
+FALSE 
+FALSE [[6]]
+FALSE  [1] &quot;CM905Q01S&quot; &quot;DM905Q02C&quot; &quot;CM919Q01S&quot; &quot;CM919Q02S&quot; &quot;CM954Q01S&quot;
+FALSE  [6] &quot;DM954Q02C&quot; &quot;CM954Q04S&quot; &quot;CM943Q01S&quot; &quot;CM943Q02S&quot; &quot;DM953Q02C&quot;
+FALSE [11] &quot;CM953Q03S&quot; &quot;DM953Q04C&quot; &quot;CM948Q01S&quot; &quot;CM948Q02S&quot; &quot;CM948Q03S&quot;
+FALSE [16] &quot;CM936Q01S&quot; &quot;DM936Q02C&quot; &quot;DM961Q02C&quot; &quot;CM961Q03S&quot; &quot;DM961Q05C&quot;
+FALSE [21] &quot;CM939Q01S&quot; &quot;CM939Q02S&quot; &quot;CM967Q01S&quot; &quot;CM967Q03S&quot;</code></pre>
 <pre class="r"><code>print(wynikiR)</code></pre>
-<pre><code> [[1]]
-  [1] &quot;DR219Q01CC&quot; &quot;DR219Q01C&quot;  &quot;DR219Q02C&quot;  &quot;CR067Q01S&quot;  &quot;DR067Q04C&quot; 
-  [6] &quot;DR067Q05C&quot;  &quot;DR102Q04C&quot;  &quot;DR102Q05C&quot;  &quot;CR102Q07S&quot;  &quot;CR220Q01S&quot; 
- [11] &quot;CR220Q02S&quot;  &quot;CR220Q04S&quot;  &quot;CR220Q05S&quot;  &quot;CR220Q06S&quot; 
- 
- [[2]]
-  [1] &quot;CR227Q01S&quot; &quot;CR227Q02S&quot; &quot;DR227Q03C&quot; &quot;DR227Q06C&quot; &quot;CR111Q01S&quot;
-  [6] &quot;DR111Q06C&quot; &quot;CR055Q01S&quot; &quot;DR055Q02C&quot; &quot;DR055Q03C&quot; &quot;DR055Q05C&quot;
- [11] &quot;CR104Q01S&quot; &quot;CR104Q02S&quot; &quot;CR104Q05S&quot;
- 
- [[3]]
-  [1] &quot;DR420Q02C&quot; &quot;DR420Q10C&quot; &quot;DR420Q06C&quot; &quot;DR420Q09C&quot; &quot;CR453Q01S&quot;
-  [6] &quot;DR453Q04C&quot; &quot;CR453Q05S&quot; &quot;DR453Q06C&quot; &quot;CR412Q01S&quot; &quot;CR412Q05S&quot;
- [11] &quot;DR412Q08C&quot; &quot;CR412Q06S&quot; &quot;CR437Q01S&quot; &quot;DR437Q07C&quot; &quot;CR437Q06S&quot;
- 
- [[4]]
-  [1] &quot;CR456Q01S&quot; &quot;DR456Q02C&quot; &quot;DR456Q06C&quot; &quot;DR466Q02C&quot; &quot;CR466Q03S&quot;
-  [6] &quot;CR466Q06S&quot; &quot;CR446Q03S&quot; &quot;DR446Q06C&quot; &quot;DR432Q01C&quot; &quot;DR432Q05C&quot;
- [11] &quot;CR432Q06S&quot; &quot;DR460Q01C&quot; &quot;CR460Q05S&quot; &quot;CR460Q06S&quot;
- 
- [[5]]
-  [1] &quot;CR424Q02S&quot; &quot;CR424Q03S&quot; &quot;CR424Q07S&quot; &quot;CR404Q03S&quot; &quot;CR404Q06S&quot;
-  [6] &quot;CR404Q07S&quot; &quot;DR406Q01C&quot; &quot;DR406Q05C&quot; &quot;DR406Q02C&quot; &quot;DR455Q02C&quot;
- [11] &quot;DR455Q03C&quot; &quot;CR455Q04S&quot; &quot;CR455Q05S&quot;
- 
- [[6]]
-  [1] &quot;CR083Q01S&quot; &quot;CR083Q02S&quot; &quot;CR083Q03S&quot; &quot;CR083Q04S&quot; &quot;DR442Q02C&quot;
-  [6] &quot;DR442Q03C&quot; &quot;DR442Q05C&quot; &quot;DR442Q06C&quot; &quot;CR442Q07S&quot; &quot;CR245Q01S&quot;
- [11] &quot;CR245Q02S&quot; &quot;CR101Q01S&quot; &quot;CR101Q02S&quot; &quot;CR101Q03S&quot; &quot;CR101Q04S&quot;
- [16] &quot;CR101Q05S&quot; &quot;CR445Q03S&quot; &quot;DR445Q01C&quot; &quot;CR445Q04S&quot; &quot;CR445Q06S&quot;
- [21] &quot;DR462Q02C&quot; &quot;DR462Q05C&quot; &quot;CR462Q04S&quot; &quot;CR435Q02S&quot; &quot;CR435Q01S&quot;
- [26] &quot;DR435Q05C&quot; &quot;CR435Q08S&quot; &quot;DR465Q01C&quot; &quot;DR465Q02C&quot; &quot;DR465Q06C&quot;
- [31] &quot;DR465Q05C&quot;</code></pre>
+<pre><code>FALSE [[1]]
+FALSE  [1] &quot;DR219Q01CC&quot; &quot;DR219Q01C&quot;  &quot;DR219Q02C&quot;  &quot;CR067Q01S&quot;  &quot;DR067Q04C&quot; 
+FALSE  [6] &quot;DR067Q05C&quot;  &quot;DR102Q04C&quot;  &quot;DR102Q05C&quot;  &quot;CR102Q07S&quot;  &quot;CR220Q01S&quot; 
+FALSE [11] &quot;CR220Q02S&quot;  &quot;CR220Q04S&quot;  &quot;CR220Q05S&quot;  &quot;CR220Q06S&quot; 
+FALSE 
+FALSE [[2]]
+FALSE  [1] &quot;CR227Q01S&quot; &quot;CR227Q02S&quot; &quot;DR227Q03C&quot; &quot;DR227Q06C&quot; &quot;CR111Q01S&quot;
+FALSE  [6] &quot;DR111Q06C&quot; &quot;CR055Q01S&quot; &quot;DR055Q02C&quot; &quot;DR055Q03C&quot; &quot;DR055Q05C&quot;
+FALSE [11] &quot;CR104Q01S&quot; &quot;CR104Q02S&quot; &quot;CR104Q05S&quot;
+FALSE 
+FALSE [[3]]
+FALSE  [1] &quot;DR420Q02C&quot; &quot;DR420Q10C&quot; &quot;DR420Q06C&quot; &quot;DR420Q09C&quot; &quot;CR453Q01S&quot;
+FALSE  [6] &quot;DR453Q04C&quot; &quot;CR453Q05S&quot; &quot;DR453Q06C&quot; &quot;CR412Q01S&quot; &quot;CR412Q05S&quot;
+FALSE [11] &quot;DR412Q08C&quot; &quot;CR412Q06S&quot; &quot;CR437Q01S&quot; &quot;DR437Q07C&quot; &quot;CR437Q06S&quot;
+FALSE 
+FALSE [[4]]
+FALSE  [1] &quot;CR456Q01S&quot; &quot;DR456Q02C&quot; &quot;DR456Q06C&quot; &quot;DR466Q02C&quot; &quot;CR466Q03S&quot;
+FALSE  [6] &quot;CR466Q06S&quot; &quot;CR446Q03S&quot; &quot;DR446Q06C&quot; &quot;DR432Q01C&quot; &quot;DR432Q05C&quot;
+FALSE [11] &quot;CR432Q06S&quot; &quot;DR460Q01C&quot; &quot;CR460Q05S&quot; &quot;CR460Q06S&quot;
+FALSE 
+FALSE [[5]]
+FALSE  [1] &quot;CR424Q02S&quot; &quot;CR424Q03S&quot; &quot;CR424Q07S&quot; &quot;CR404Q03S&quot; &quot;CR404Q06S&quot;
+FALSE  [6] &quot;CR404Q07S&quot; &quot;DR406Q01C&quot; &quot;DR406Q05C&quot; &quot;DR406Q02C&quot; &quot;DR455Q02C&quot;
+FALSE [11] &quot;DR455Q03C&quot; &quot;CR455Q04S&quot; &quot;CR455Q05S&quot;
+FALSE 
+FALSE [[6]]
+FALSE  [1] &quot;CR083Q01S&quot; &quot;CR083Q02S&quot; &quot;CR083Q03S&quot; &quot;CR083Q04S&quot; &quot;DR442Q02C&quot;
+FALSE  [6] &quot;DR442Q03C&quot; &quot;DR442Q05C&quot; &quot;DR442Q06C&quot; &quot;CR442Q07S&quot; &quot;CR245Q01S&quot;
+FALSE [11] &quot;CR245Q02S&quot; &quot;CR101Q01S&quot; &quot;CR101Q02S&quot; &quot;CR101Q03S&quot; &quot;CR101Q04S&quot;
+FALSE [16] &quot;CR101Q05S&quot; &quot;CR445Q03S&quot; &quot;DR445Q01C&quot; &quot;CR445Q04S&quot; &quot;CR445Q06S&quot;
+FALSE [21] &quot;DR462Q02C&quot; &quot;DR462Q05C&quot; &quot;CR462Q04S&quot; &quot;CR435Q02S&quot; &quot;CR435Q01S&quot;
+FALSE [26] &quot;DR435Q05C&quot; &quot;CR435Q08S&quot; &quot;DR465Q01C&quot; &quot;DR465Q02C&quot; &quot;DR465Q06C&quot;
+FALSE [31] &quot;DR465Q05C&quot;</code></pre>
 </div>
 <div id="przeksztacenie-do-ramki-danych" class="section level3">
 <h3>Przekształcenie do ramki danych</h3>
@@ -610,7 +611,7 @@ ss %&gt;%
     left_join(scc, by = &quot;comb&quot;) %&gt;%  
     group_by(BOOKID, position, CBASCI) %&gt;%
     arrange(pos) %&gt;%
-    summarise(cluster = ifelse(position[1] %% 2 == 0,
+    summarise(cluster = ifelse(position[1] %% 2 == 1,
                                cluster[1],
                                cluster[2])) %&gt;%
     ungroup() %&gt;%
@@ -632,37 +633,37 @@ knitr::kable(head(form_pos_cbasci_cluster))</code></pre>
 <td align="right">31</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">S07</td>
+<td align="left">S01</td>
 </tr>
 <tr class="even">
 <td align="right">31</td>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="left">S01</td>
+<td align="left">S07</td>
 </tr>
 <tr class="odd">
 <td align="right">31</td>
 <td align="right">1</td>
-<td align="right">2</td>
-<td align="left">S02</td>
-</tr>
-<tr class="even">
-<td align="right">31</td>
-<td align="right">2</td>
 <td align="right">2</td>
 <td align="left">S09</td>
 </tr>
+<tr class="even">
+<td align="right">31</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="left">S02</td>
+</tr>
 <tr class="odd">
 <td align="right">31</td>
 <td align="right">1</td>
 <td align="right">3</td>
-<td align="left">S07</td>
+<td align="left">S04</td>
 </tr>
 <tr class="even">
 <td align="right">31</td>
 <td align="right">2</td>
 <td align="right">3</td>
-<td align="left">S04</td>
+<td align="left">S07</td>
 </tr>
 </tbody>
 </table>
@@ -723,70 +724,70 @@ knitr::kable(head(tab_s, 10))</code></pre>
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">31</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="right">2</td>
 </tr>
 <tr class="even">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">31</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="right">6</td>
 </tr>
 <tr class="odd">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">32</td>
-<td align="right">1</td>
+<td align="right">2</td>
 <td align="right">6</td>
 </tr>
 <tr class="even">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">33</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="right">4</td>
 </tr>
 <tr class="odd">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">34</td>
-<td align="right">1</td>
+<td align="right">2</td>
 <td align="right">2</td>
 </tr>
 <tr class="even">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">35</td>
-<td align="right">1</td>
+<td align="right">2</td>
 <td align="right">4</td>
 </tr>
 <tr class="odd">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">35</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="right">5</td>
 </tr>
 <tr class="even">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">36</td>
-<td align="right">1</td>
+<td align="right">2</td>
 <td align="right">5</td>
 </tr>
 <tr class="odd">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">37</td>
-<td align="right">3</td>
+<td align="right">4</td>
 <td align="right">2</td>
 </tr>
 <tr class="even">
 <td align="left">CS620Q01</td>
 <td align="left">S09</td>
 <td align="right">38</td>
-<td align="right">3</td>
+<td align="right">4</td>
 <td align="right">4</td>
 </tr>
 </tbody>
@@ -856,7 +857,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="even">
@@ -877,7 +878,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="odd">
@@ -898,7 +899,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="even">
@@ -919,7 +920,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="odd">
@@ -940,7 +941,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="even">
@@ -961,7 +962,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="odd">
@@ -982,7 +983,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="even">
@@ -1003,7 +1004,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="odd">
@@ -1024,7 +1025,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 <tr class="even">
@@ -1045,7 +1046,7 @@ saveRDS(wyniki2, file = &quot;zadanie0_wynik.rds&quot;)</code></pre>
 <td align="left">Disagree</td>
 <td align="left">Agree</td>
 <td align="left">Strongly agree</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">S09</td>
 </tr>
 </tbody>

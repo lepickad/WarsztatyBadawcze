@@ -1,0 +1,239 @@
+---
+title: "Zadanie 3.5"
+author: Aleksandra Brodecka, Michał Stolarczyk
+output: 
+    html_document:
+        toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+# Plan analizy
+
+Dla każdego państwa, każdej pozycji i każdej grupy tematycznej zadań obliczamy
+ważone minimum, maksimum, średnią i medianę czasów rozwiązywania zadań oraz 
+ważoną proporcję zadań rozwiązanych poprawnie.
+
+Następnie dla każdej grupy tematycznej zadań klasteryzujemy państwa za pomocą 
+metody hierarchicznej Warda. Zmienne uwzględniane w klasteryzacji to mediana 
+czasów rozwiązywania zadań oraz średnia liczba poprawnie rozwiązanych zadań 
+na każdej pozycji (w sumie 8 zmiennych). 
+
+Dla każdej grupy tematycznej rysujemy wykresy rozproszenia frakcji poprawnie
+rozwiązanych zadań od mediany czasu rozwiązywania dla poszczególnych 
+pozycji. Jeden punkt oznacza jedno pozycjo-państwo.
+Wyniki klasteryzacji przedstawiamy za pomocą dendogramu oraz mapy świata 
+z zaznaczonymi klastrami. Dla każdego klastra na wykresach liniowych pokazujemy
+zależności frakcji poprawnie rozwiązanych zadań i czasu rozwiązywania zadań od
+numeru pozycji zadania.
+
+# Wnioski
+
+Kraje różnią się pod względem czasów rozwiązywania i wyników zadań. Najlepiej wypadają państwa azjatyckie takie jak: Japonia, Korea, Chiny, Hongkong. 
+Najsłabiej natomiast wypadają państwa Ameryki Łacińskiej takie jak: Meksyk, Brazylia, Peru i Kolumbia. Uczniowie poświęcają znacznie więcej czasu na zadania na pozycji pierwszej i trzeciej niż drugiej i czwartej, co może świadczyć o tym, że nie starcza im czasu na rozwiązanie wszystkich zadań.
+
+
+# Wczytanie danych i pakietów
+
+```{r}
+library(rworldmap)
+library(dplyr)
+library(matrixStats)
+library(ggplot2)
+library(stringi)
+library(knitr)
+library(tidyr)
+library(gridExtra)
+source("http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R")
+
+dane <- readRDS("zadanie0_wynik.rds")
+dane <- filter(dane, BOOKID >= 31 & BOOKID <= 61, !is.na(position))
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#ad2803",
+               "#CC79A7")
+```
+
+
+# Obliczenie statystyk
+
+```{r}
+dane %>% 
+    select(CNTRYID, CNT, item, result, timing, W_FSTUWT, position) %>% 
+    mutate(result = as.integer(result == "Full credit"),
+           group = stri_sub(item, 2, 2),
+           timing = timing / 1000) %>%
+    group_by(CNTRYID, CNT, group, position) %>%
+    summarise(TimeAvg = weighted.mean(timing, W_FSTUWT, na.rm = TRUE ),
+              TimeMin = min(timing, na.rm = TRUE),
+              TimeMax = max(timing, na.rm = TRUE),
+              TimeMed = weightedMedian(timing, W_FSTUWT, na.rm = TRUE),
+              FreqFull = weighted.mean(result, W_FSTUWT, na.rm = TRUE)) %>%
+    ungroup() ->
+    statystyki
+knitr::kable(head(statystyki, 15))
+
+
+```
+
+Poniżej przekształcamy dane do postaci szerokiej, która będzie potrzebna do klasteryzacji.
+
+```{r}
+statystyki %>% 
+    select(CNTRYID, group, position, TimeMed) %>%
+    mutate(position = paste0("TimeMed", position)) %>%
+    spread(position, TimeMed) -> time_spread
+
+statystyki %>% 
+    select(CNTRYID, group, position, FreqFull) %>%
+    mutate(position = paste0("FreqFull", position)) %>%
+    spread(position, FreqFull) -> freq_spread
+
+stats_spread <- merge(time_spread, freq_spread)
+
+knitr::kable(head(stats_spread, 15))
+```
+
+
+# Funkcje pomocnicze
+
+```{r}
+freq_vs_time_plot <- function(df, title = "") {
+     
+    mutate(df, position = factor(position)) %>%
+        ggplot(aes(x=TimeMed, y=FreqFull, color = position)) +
+        geom_point(size=2) + 
+        geom_smooth(method="lm", se=FALSE) +
+        labs(x="Czas odpowiedzi (s)",
+             y="Frakcja poprawnych odpowiedzi") +
+        ggtitle(title) 
+        
+    
+}
+
+dendogram <- function(df, gr) {
+    filter(df, group == gr) -> df_filtered
+    
+    rownames(df_filtered) <- df_filtered$CNTRYID
+    select(df_filtered, -CNTRYID, -group) %>%
+        scale(center=TRUE, scale=TRUE) %>%
+        dist() ->
+        distance_matrix
+    
+    hc <- hclust(distance_matrix, method="ward.D")
+    x <- A2Rplot(hc, k = 5, boxes = FALSE, 
+            col.up = "gray50", col.down = cbPalette)
+    ._a2r_envir$groups.o
+}
+
+
+statystyki %>% 
+    select(CNTRYID, CNT) %>% 
+    distinct() ->
+    country_dict
+
+country_cluster <- function(kl) {
+    data.frame(CNTRYID = names(kl), 
+               clust = factor(kl)) %>%
+        left_join(country_dict, by = "CNTRYID")
+}
+
+
+time_vs_position_plot <- function(df, title="") {
+    df %>% 
+        mutate(clust = factor(clust)) %>%
+        group_by(position, clust) %>%
+        summarise(TimeMed = mean(TimeMed)) %>%
+        ggplot(aes(x=position, y=TimeMed, color = clust)) +
+        geom_line(size = 2) +
+        labs(x="Pozycja", y="Czas odpowiedzi") +
+        ggtitle(title) +
+        scale_color_manual(values = cbPalette)
+}
+
+freq_vs_position_plot <- function(df, title="") {
+    df %>% 
+        mutate(clust = factor(clust)) %>%
+        group_by(position, clust) %>%
+        summarise(FreqFull = mean(FreqFull)) %>%
+        ggplot(aes(x=position, y=FreqFull, color = clust)) +
+        geom_line(size = 2) +
+        labs(x="Pozycja", y="Frakcja poprawnych odpowiedzi") +
+        ggtitle(title) +
+        scale_color_manual(values = cbPalette)
+        
+}
+
+
+clusters_map_plot <- function(clusters) {
+    capture.output(
+        country_data <- joinCountryData2Map(clusters,
+                                            joinCode = "NAME",
+                                            nameJoinColumn = "CNTRYID")
+    )
+    mapCountryData(country_data, 
+                   aspect = 1, 
+                   nameColumnToPlot="clust", 
+                   mapTitle = 'Wynik klasteryzacji na mapie',
+                   colourPalette = cbPalette)
+}
+
+plots <- function(df, clusters, title = "") {
+    df <- left_join(df, kl_R, by = c("CNTRYID", "CNT")) 
+    print(time_vs_position_plot(df, title))    
+    print(freq_vs_position_plot(df, title))
+    clusters_map_plot(df)
+}
+
+```
+
+
+# Wyniki
+
+## Czytanie
+```{r, fig.align="center", fig.asp=0.5, fig.width=16, message=FALSE, warning=FALSE, fig.show='hold'}
+statystyki %>% 
+    filter(group == "R") %>%
+    freq_vs_time_plot("Czytanie") %>% 
+    print()
+kl_R <- country_cluster(dendogram(stats_spread, "R"))
+statystyki %>% filter(group=="R") %>%
+    plots(kl_R, "Czytanie")
+
+```
+
+## Matematyka
+
+```{r, fig.align="center", fig.asp=0.5, fig.width=16, message=FALSE, warning=FALSE, fig.show='hold'}
+statystyki %>% 
+    filter(group == "M") %>%
+    freq_vs_time_plot("Matematyka") %>% 
+    print()
+kl_R <- country_cluster(dendogram(stats_spread, "M"))
+statystyki %>% filter(group=="M") %>%
+    plots(kl_R, "Matematyka")
+
+```
+
+## Nauki przyrodnicze
+
+```{r, fig.align="center", fig.asp=0.5, fig.width=16, message=FALSE, warning=FALSE, fig.show='hold'}
+statystyki %>% 
+    filter(group == "S") %>%
+    freq_vs_time_plot("Nauki przyrodnicze") %>% 
+    print()
+kl_R <- country_cluster(dendogram(stats_spread, "S"))
+statystyki %>% filter(group=="S") %>%
+    plots(kl_R, "Nauki przyrodnicze")
+
+```
+
+
+
+
+
+
+
+
+
