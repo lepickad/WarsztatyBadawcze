@@ -1,0 +1,109 @@
+---
+title: "ZADANIE_3"
+output: html_document
+---
+#KOD 
+
+```{r, eval=F}
+a<-list.files("D:\\BIECEK\\pisa\\student_question_cntpart")
+ramka_0<- data.frame(matrix(,ncol=13))
+ramka_0<- data.frame(ramka_0,CNT=as.character(c(NA)))
+colnames(ramka_0)<-c("TMin","T1","T3","TMean","TMed","TMax","AMin","A1","A3","AMean","AMed","AMax","coun","CNT")
+
+
+ramka_1<- data.frame(matrix(,ncol=13))
+ramka_1<- data.frame(item_short=as.character(c(NA)),ramka_1,CNT=as.character(c(NA)))
+colnames(ramka_1)<-c("item_short","TMin","T1","T3","TMean","TMed","TMax","AMin","A1","A3","AMean","AMed","AMax","coun","CNT")
+
+ramka_2<- data.frame(matrix(,ncol=13))
+ramka_2<- data.frame(item_short=as.character(c(NA)),result=as.character(c(NA)),ramka_2,CNT=as.character(c(NA)))
+colnames(ramka_2)<-c("item_short","result","TMin","T1","T3","TMean","TMed","TMax","AMin","A1","A3","AMean","AMed","AMax","coun","CNT")
+
+for( i in 1:length(a))
+{
+  plik <- read.csv(a[i])
+  
+  if (all(is.na(plik$timing))!=T)
+  {
+  #zwykle statysyki
+  plik %>%
+    summarise(TMin = min(timing, na.rm = TRUE)/1000,
+              T1 = quantile(timing, 0.25, na.rm = TRUE),
+              T3 = quantile(timing, 0.75, na.rm = TRUE),
+              TMean = mean(timing, na.rm = TRUE),
+              TMed = median(timing, na.rm = TRUE),
+              TMax = max(timing, na.rm = TRUE),
+                
+              AMin = min(n.actions, na.rm = TRUE),
+              A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+              A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+              AMean = mean(n.actions, na.rm = TRUE),
+              AMed = median(n.actions, na.rm = TRUE),
+              AMax = max(n.actions, na.rm = TRUE),
+              coun=n()
+      ) -> statystyki_0
+  ramka_0<-rbind(ramka_0,data.frame(statystyki_0,CNT=trimws(as.character(plik$CNT[1]))))
+  
+  plik %>%
+  group_by(item_short) %>%
+  summarise(TMin = min(timing, na.rm = TRUE),
+            T1 = quantile(timing, 0.25, na.rm = TRUE),
+            T3 = quantile(timing, 0.75, na.rm = TRUE),
+            TMean = mean(timing, na.rm = TRUE),
+            TMed = median(timing, na.rm = TRUE),
+            TMax = max(timing, na.rm = TRUE),
+            
+            AMin = min(n.actions, na.rm = TRUE),
+            A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+            A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+            AMean = mean(n.actions, na.rm = TRUE),
+            AMed = median(n.actions, na.rm = TRUE),
+            AMax = max(n.actions, na.rm = TRUE),
+            coun=n()
+            ) -> statystyki_1
+  
+    ramka_1<-rbind(ramka_1,data.frame(statystyki_1,CNT=trimws(as.character(plik$CNT[1]))))
+    plik %>%
+      group_by(item_short,result) %>%
+      summarise(TMin = min(timing, na.rm = TRUE),
+                T1 = quantile(timing, 0.25, na.rm = TRUE),
+                T3 = quantile(timing, 0.75, na.rm = TRUE),
+                TMean = mean(timing, na.rm = TRUE),
+                TMed = median(timing, na.rm = TRUE),
+                TMax = max(timing, na.rm = TRUE),
+                
+                AMin = min(n.actions, na.rm = TRUE),
+                A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+                A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+                AMean = mean(n.actions, na.rm = TRUE),
+                AMed = median(n.actions, na.rm = TRUE),
+                AMax = max(n.actions, na.rm = TRUE),
+                coun=n()) -> statystyki_2
+    ramka_2<-rbind(ramka_2,data.frame(statystyki_2,CNT=trimws(as.character(plik$CNT[1]))))
+    
+   }
+  remove(plik)
+}
+
+```
+
+#Wyniki
+
+## Czas i wynik dla każdego kraju
+```{r,echo=F, message=FALSE, warning=FALSE}
+r1<-read.csv2("D:\\BIECEK\\pisa\\ramka_l_0.csv")
+
+head(r1)
+```
+## Czas i wynik dla każdego kraju i zadania 
+```{r,echo=F, message=FALSE, warning=FALSE}
+
+r2<-read.csv2("D:\\BIECEK\\pisa\\ramka_l_1.csv")
+head(r2)
+```
+## Czas,  dla każdego kraju,wyniku i zadania
+```{r,echo=F, message=FALSE, warning=FALSE}
+r3<-read.csv2("D:\\BIECEK\\pisa\\ramka_l_2.csv")
+head(r3)
+
+```
