@@ -1,0 +1,391 @@
+---
+title: "Warsztaty badawcze - zadanie 3.5"
+author: "Magdalena Mazurek, Piotr Smuda, Bartosz Topolski"
+date: "April 6, 2017"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+  html:
+    toc: yes
+    toc_float: yes
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(dplyr)
+library(isotone)
+library(knitr)
+library(stringi)
+library(ggplot2)
+
+load("../data/processed_data/dane_pisa_merged_final.RDA") #_26032017
+
+# Zamiana timingu na minuty
+dane_pisa_merged_final$timing <- dane_pisa_merged_final$timing / 60000
+
+# Wybór krajów
+chosen_countries <- c("POL", "KOR", "USA", "DEU", "GBR")
+n <- length(chosen_countries)
+
+# Pozbycie się braków danych
+dane_pisa_merged_final <- dane_pisa_merged_final %>% 
+  filter(!is.na(timing) & !is.na(n.actions) & !is.na(result))
+
+#######################################################################
+result_timing <- dane_pisa_merged_final %>% group_by(item_short, CNT, position) %>% 
+   summarise(min = min(timing, na.rm = TRUE),
+          q1 = quantile(timing, 0.25, na.rm = TRUE),
+          weighted_median = round(weighted.median(timing, W_FSTUWT), 2),
+          weighted_mean = round(weighted.mean(timing, W_FSTUWT, na.rm = TRUE), 2),
+          q3 = quantile(timing, 0.75, na.rm = TRUE),
+          max = max(timing, na.rm = TRUE))
+
+result_timing_subset <- result_timing %>% filter(CNT %in% chosen_countries)
+#######################################################################
+result_result <- dane_pisa_merged_final %>% group_by(item_short, CNT, position) %>% 
+   summarise(full_credit = sum(ifelse(is.na(result), 0, result == 1)),
+             no_credit = sum(ifelse(is.na(result), 0, result == 0)),
+             other = sum(is.na(result)))
+
+result_result_subset <- result_result %>% filter(CNT %in% chosen_countries)
+#######################################################################
+result_n_actions <- dane_pisa_merged_final %>% group_by(item_short, CNT, position) %>% 
+   summarise(min = min(n.actions, na.rm = TRUE),
+             q1 = quantile(n.actions, 0.25, na.rm = TRUE),
+             weighted_median = round(weighted.median(n.actions, W_FSTUWT), 2),
+             weighted_mean = round(weighted.mean(n.actions, W_FSTUWT, na.rm = TRUE), 2),
+             q3 = quantile(n.actions, 0.75, na.rm = TRUE),
+             max = max(n.actions, na.rm = TRUE))
+
+result_n_actions_subset <- result_n_actions %>% filter(CNT %in% chosen_countries)
+#######################################################################
+merged_data <- left_join(result_timing_subset, result_n_actions_subset, 
+                         by = c("item_short", "CNT", "position"),
+                         suffix=c(".time", ".action"))
+merged_data <- left_join(merged_data, result_result_subset, 
+                         by = c("item_short", "CNT", "position"))
+merged_data <- merged_data %>% 
+  mutate(credit_percentage = full_credit/(full_credit + no_credit),
+         Zadanie = stri_sub(item_short, 1, 1)) %>%
+  group_by(CNT, Zadanie, position) 
+
+merged_data$CNT <- factor(merged_data$CNT, levels = unique(merged_data$CNT))
+levels(merged_data$CNT)[which(levels(merged_data$CNT) %in% c("GBR", "DEU", "KOR", "POL", "USA"))] <- 
+  c("Wielka Brytania", "Niemcy", "Korea Południowa", "Polska", "Stany Zjednoczone")
+
+merged_data$Zadanie[which(merged_data$Zadanie == "M")] <- "Matematyka"
+merged_data$Zadanie[which(merged_data$Zadanie == "R")] <- "Czytanie"
+merged_data$Zadanie[which(merged_data$Zadanie == "S")] <- "Nauki przyrodnicze"
+names(merged_data)[which(names(merged_data) == "CNT")] <- "Kraj"
+
+merged_data <- merged_data %>% group_by(Kraj) %>% arrange(desc(Kraj))
+
+merged_data$Kraj <- factor(merged_data$Kraj, 
+                           levels = c("Korea Poludniowa", "Niemcy", "Polska", "Stany Zjednoczone", "Wielka Brytania"))
+
+merged_data$position <- factor(merged_data$position, levels = unique(merged_data$position))
+merged_data <- merged_data[!is.na(merged_data$position),]
+
+```
+
+<br>
+
+# 1. Cel Raportu
+
+Za cel poniższego raportu obraliśmy pokazanie podstawowych statystyk dla zadań, dotyczących wyników i czasów ich rozwiązywania w podziale na kraje i pozycje 1/2/3/4. Aby zawęzić naszą analizę postanowiliśmy skupić się na pięciu wybranych krajach:
+
+   1. Polska,
+   2. Korea Południowa,
+   3. Stany Zjednoczone,
+   4. Niemcy,
+   5. Wielka Brytania.
+
+# 2. Otrzymane wyniki
+
+Wśród otrzymanych wyników rzeczami, na które zwróciliśmy uwagę są:
+
+* Uczniowie dla zadań z nauk przyrodniczych i czytania najwięcej czasu poświęcają dla pozycji 1 oraz 3. Nie przekłada sie to na większą liczbę rozwiązanych zadań.
+* Pozycja danego zdania w kwestionariuszu nie wpływa na jego rozwiązanie.
+* Uczniowie z Korei i Polski wykonują więcej akcji wraz z pozycją dla zadań z matematyki. Natomiast uczniowie z pozostałych krajów pomiędzy pozycjami wykonują podobną liczbę akcji. 
+
+# 3. Analiza i wizualizacja
+
+
+## 3.1. Wykres średnich czasów rozwiązywania zadania
+
+```{r, echo=FALSE}
+data_plot <- merged_data %>% group_by(Kraj, position, Zadanie) %>%
+  summarise(mean_time = mean(weighted_mean.time, na.rm=TRUE),
+            mean_action = mean(weighted_mean.action, na.rm=TRUE),
+            mean_credit = mean(credit_percentage, na.rm=TRUE))
+
+ggplot(data_plot, mapping = aes(x = position, y=mean_time, 
+                                 group=Kraj, color=Kraj))+
+  geom_line(size=1.5)+
+  facet_grid(.~Zadanie)+
+  ggtitle("Średnie czasy rozwiązywania zadań") + 
+  xlab("Pozycja grupy zadań") +
+  ylab("Średnia czasu") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = data_plot$Kraj) +
+  theme(text=element_text(size = 13)) + 
+  theme(plot.title = element_text(hjust = 0))
+```
+
+Na powyższym wykresie zostały przedstawione średnie czasy w podziale na kraj, rodzaj zadania oraz pozycję zadania w grupie. Widzimy, że dla zadań z matematyki mamy raczej tendencję spadkową, czyli dla dalszych zadań z matematyki uczniowie poświęcają mniej czasu. Dla pozostałych zadań nie ma takiej zależności. Możemy zobaczyć również, że uczniowie z Niemiec dla ostatnich zadań z czytania poświęcają bardzo dużo czasu.
+
+## 3.2. Wykres odestku w pełni rozwiązanych zadań
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+label_names <- list(
+  "Korea Poludniowa" = "Korea \nPoludniowa", 
+  "Niemcy" = "Niemcy", 
+  "Polska" = "Polska", 
+  "Stany Zjednoczone" = "Stany \nZjednoczone", 
+  "Wielka Brytania" = "Wielka \nBrytania",
+  "Czytanie" = "Czytanie",
+  "Matematyka" = "Matematyka",
+  "Nauki przyrodnicze" = "Nauki \nprzyrodnicze"
+)
+
+plot_labeller <- function(variable,value){
+  return(label_names[value])
+}
+
+ggplot(data_plot, mapping = aes(x = position, y=mean_credit, 
+                             group=Kraj, fill=Kraj))+
+  geom_bar(stat = "identity")+
+  facet_grid(Zadanie~Kraj, labeller = plot_labeller)+
+  ggtitle("Odsetek w pełni rozwiązanych zadań") + 
+  xlab("Pozycja grupy zadań") +
+  ylab("Odsetek rozwiązań zadań") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1") +
+  theme(text=element_text(size = 13)) + 
+  theme(plot.title = element_text(hjust = 0), legend.position="none")
+```
+
+Na powyższym wykresie został przedstawiony odsetek w pełni rozwiązanych zadań w podziale na kraj, rodzaj zadania oraz pozycję zadania w grupie. Widać, że pozycja zadania w tym przypadku nie ma znaczenia, uczniowie rozwiązują w pełni podobną liczbę zadać na początku kwestionariusza, jak i na końcu.
+
+## 3.3. Wykres średniej liczby akcji
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+label_names <- list(
+  "1" = "1",
+  "2" = "2",
+  "3" = "3",
+  "4" = "4",
+  "Czytanie" = "Czytanie",
+  "Matematyka" = "Matematyka",
+  "Nauki przyrodnicze" = "Nauki \nprzyrodnicze"
+)
+
+plot_labeller <- function(variable,value){
+  return(label_names[value])
+}
+
+ggplot(data_plot, mapping = aes(x = Kraj, y=mean_action, 
+                                group=position, fill=position))+
+  geom_bar(stat = "identity")+
+  geom_text(aes(y=2.5, label=round(mean_credit*100,1)),size=3)+
+  facet_grid(Zadanie~position, labeller = plot_labeller)+
+  ggtitle("Średnia liczba akcji") + 
+  xlab("Kraj") +
+  ylab("Liczba akcji") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1") +
+  theme(text=element_text(size = 13), legend.position="none") + 
+  theme(plot.title = element_text(hjust = 0),
+        axis.text.x = element_text(size=10, hjust=1, vjust = 1, angle=45))
+```
+
+Na powyższym wykresie przedstawiona została średnia liczba akcji w podziale na kraj, rodzaj zadania oraz pozycję zadania w grupie. Podano również procentową wartość w pełni rozwiązanych zadań. Widać, że pomiędzy zadaniami z czytania i nauk przyrodniczych nie ma większych różnic, tzn. pozycja w tych grupach nie ma znaczenia. Dla zadań matematycznych widzimy, że liczba akcji dla uczniów z Korei i Polski rośnie wraz z pozycją.
+
+
+
+<br>
+
+# 4. Wykorzystany kod
+
+```{r, eval = FALSE}
+library(dplyr)
+library(isotone)
+library(knitr)
+library(stringi)
+library(ggplot2)
+
+load("../data/processed_data/dane_pisa_merged_final_26032017.RDA")
+
+# Zamiana timingu na minuty
+dane_pisa_merged_final$timing <- dane_pisa_merged_final$timing / 60000
+
+# Wybór krajów
+chosen_countries <- c("POL", "KOR", "USA", "DEU", "GBR")
+n <- length(chosen_countries)
+
+# Pozbycie się braków danych
+dane_pisa_merged_final <- dane_pisa_merged_final %>% 
+  filter(!is.na(timing) & !is.na(n.actions) & !is.na(result))
+
+```
+
+## 4.1 Czas rozwiązywania zadań
+
+```{r, cache = TRUE, eval=FALSE}
+result_timing <- dane_pisa_merged_final %>% group_by(item_short, CNT, position) %>% 
+   summarise(min = min(timing, na.rm = TRUE),
+          q1 = quantile(timing, 0.25, na.rm = TRUE),
+          weighted_median = round(weighted.median(timing, W_FSTUWT), 2),
+          weighted_mean = round(weighted.mean(timing, W_FSTUWT, na.rm = TRUE), 2),
+          q3 = quantile(timing, 0.75, na.rm = TRUE),
+          max = max(timing, na.rm = TRUE))
+
+result_timing_subset <- result_timing %>% filter(CNT %in% chosen_countries)
+```
+
+## 4.2. Rodzaje zakończenia rozwiązywania zadań
+
+```{r, cache = TRUE, eval=FALSE}
+result_result <- dane_pisa_merged_final %>% group_by(item_short, CNT, position) %>% 
+   summarise(full_credit = sum(ifelse(is.na(result), 0, result == 1)),
+             no_credit = sum(ifelse(is.na(result), 0, result == 0)),
+             other = sum(is.na(result)))
+
+result_result_subset <- result_result %>% filter(CNT %in% chosen_countries)
+```
+
+## 4.3. Liczba akcji potrzebnych do rozwiązania zadań
+
+```{r, cache = TRUE, eval=FALSE}
+result_n_actions <- dane_pisa_merged_final %>% group_by(item_short, CNT, position) %>% 
+   summarise(min = min(n.actions, na.rm = TRUE),
+             q1 = quantile(n.actions, 0.25, na.rm = TRUE),
+             weighted_median = round(weighted.median(n.actions, W_FSTUWT), 2),
+             weighted_mean = round(weighted.mean(n.actions, W_FSTUWT, na.rm = TRUE), 2),
+             q3 = quantile(n.actions, 0.75, na.rm = TRUE),
+             max = max(n.actions, na.rm = TRUE))
+
+result_n_actions_subset <- result_n_actions %>% filter(CNT %in% chosen_countries)
+```
+
+## 4.4 Kody do wykresow
+
+```{r, eval=FALSE}
+merged_data <- left_join(result_timing_subset, result_n_actions_subset, 
+                         by = c("item_short", "CNT", "position"),
+                         suffix=c(".time", ".action"))
+merged_data <- left_join(merged_data, result_result_subset, 
+                         by = c("item_short", "CNT", "position"))
+merged_data <- merged_data %>% 
+  mutate(credit_percentage = full_credit/(full_credit + no_credit),
+         Zadanie = stri_sub(item_short, 1, 1)) %>%
+  group_by(CNT, Zadanie, position) 
+
+merged_data$CNT <- factor(merged_data$CNT, levels = unique(merged_data$CNT))
+levels(merged_data$CNT)[which(levels(merged_data$CNT) %in% c("GBR", "DEU", "KOR", "POL", "USA"))] <- 
+  c("Wielka Brytania", "Niemcy", "Korea Południowa", "Polska", "Stany Zjednoczone")
+
+merged_data$Zadanie[which(merged_data$Zadanie == "M")] <- "Matematyka"
+merged_data$Zadanie[which(merged_data$Zadanie == "R")] <- "Czytanie"
+merged_data$Zadanie[which(merged_data$Zadanie == "S")] <- "Nauki przyrodnicze"
+names(merged_data)[which(names(merged_data) == "CNT")] <- "Kraj"
+
+merged_data <- merged_data %>% group_by(Kraj) %>% arrange(desc(Kraj))
+
+merged_data$Kraj <- factor(merged_data$Kraj, 
+                           levels = c("Korea Poludniowa", "Niemcy", "Polska", "Stany Zjednoczone", "Wielka Brytania"))
+
+merged_data$position <- factor(merged_data$position, levels = unique(merged_data$position))
+merged_data <- merged_data[!is.na(merged_data$position),]
+
+
+# wykres 3.1
+
+data_plot <- merged_data %>% group_by(Kraj, position, Zadanie) %>%
+  summarise(mean_time = mean(weighted_mean.time, na.rm=TRUE),
+            mean_action = mean(weighted_mean.action, na.rm=TRUE),
+            mean_credit = mean(credit_percentage, na.rm=TRUE))
+
+ggplot(data_plot, mapping = aes(x = position, y=mean_time, 
+                                 group=Kraj, color=Kraj))+
+  geom_line(size=1.5)+
+  facet_grid(.~Zadanie)+
+  ggtitle("Średnie czasy rozwiązywania zadań") + 
+  xlab("Pozycja grupy zadań") +
+  ylab("Średnia czasu") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1", breaks = data_plot$Kraj) +
+  theme(text=element_text(size = 13)) + 
+  theme(plot.title = element_text(hjust = 0))
+
+
+# wykres 3.2
+
+label_names <- list(
+  "Korea Poludniowa" = "Korea \nPoludniowa", 
+  "Niemcy" = "Niemcy", 
+  "Polska" = "Polska", 
+  "Stany Zjednoczone" = "Stany \nZjednoczone", 
+  "Wielka Brytania" = "Wielka \nBrytania",
+  "Czytanie" = "Czytanie",
+  "Matematyka" = "Matematyka",
+  "Nauki przyrodnicze" = "Nauki \nprzyrodnicze"
+)
+
+plot_labeller <- function(variable,value){
+  return(label_names[value])
+}
+
+ggplot(data_plot, mapping = aes(x = position, y=mean_credit, 
+                             group=Kraj, fill=Kraj))+
+  geom_bar(stat = "identity")+
+  facet_grid(Zadanie~Kraj, labeller = plot_labeller)+
+  ggtitle("Odsetek w pełni rozwiązanych zadań") + 
+  xlab("Pozycja grupy zadań") +
+  ylab("Odsetek rozwiązań zadań") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1") +
+  theme(text=element_text(size = 13)) + 
+  theme(plot.title = element_text(hjust = 0), legend.position="none")
+
+
+# wykres 3.3
+
+label_names <- list(
+  "1" = "1",
+  "2" = "2",
+  "3" = "3",
+  "4" = "4",
+  "Czytanie" = "Czytanie",
+  "Matematyka" = "Matematyka",
+  "Nauki przyrodnicze" = "Nauki \nprzyrodnicze"
+)
+
+plot_labeller <- function(variable,value){
+  return(label_names[value])
+}
+
+ggplot(data_plot, mapping = aes(x = Kraj, y=mean_action, 
+                                group=position, fill=position))+
+  geom_bar(stat = "identity")+
+  geom_text(aes(y=2.5, label=round(mean_credit*100,1)),size=3)+
+  facet_grid(Zadanie~position, labeller = plot_labeller)+
+  ggtitle("Średnia liczba akcji") + 
+  xlab("Kraj") +
+  ylab("Liczba akcji") +
+  theme_bw() +
+  scale_colour_brewer(palette = "Set1") +
+  theme(text=element_text(size = 13), legend.position="none") + 
+  theme(plot.title = element_text(hjust = 0),
+        axis.text.x = element_text(size=10, hjust=1, vjust = 1, angle=45))
+
+```
+
+<br>
+
+# 5. Informacja o sesji
+
+```{r, echo = FALSE, comment = ""}
+devtools::session_info()
+```
