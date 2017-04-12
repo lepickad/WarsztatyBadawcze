@@ -127,3 +127,4 @@ Oraz jak wyglądałby końcowy ranking PISA gdyby usunąć wpływ stosowanej str
 ### Zadanie na 5 [RaportBadawczy]
 
 Należy przygotować raport w języku angielskim podsumowujący przeprowadzone badanie, razem z odniesieniami do literatury na tematy podobnych badań, z podsumowaniem uzyskanych wyników i dyskusją końcową.
+Raport powinien mieć nie więcej niż 4 strony (licząc wykresy i ewentualne tabele).
