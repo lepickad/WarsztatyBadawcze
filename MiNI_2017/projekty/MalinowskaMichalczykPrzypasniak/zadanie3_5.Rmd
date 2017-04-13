@@ -1,0 +1,725 @@
+---
+title: "zadanie 3.5"
+author: "S. Michalczyk M. Malinowska O. Przypaśniak"
+date: "8 kwietnia 2017"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+## Informacje o skrypcie
+
+Poniższy plik zawiera podstawowe statystyki dla zadań wyznaczonych na podstawie ramki danych $\texttt{table_rms.rds}$ utworzonej po uruchomieniu pliku $\texttt{zadanie0.html}$.
+
+Po uruchomieniu tego skryptu zostaje utworzony plik o nazwie $\texttt{position_statistics.csv}$, który zawiera statystyki średnich ważonych wyników, czasu rozwiązywania oraz liczby akcji w zależności od pozycji w podziale na kraje. [1]
+
+## Wnioski:
+
+- Występują istotne różnice w średnich czasach i średnich wynikach na poszczególnych pozycjach. [2-4]
+- Uczniowie, którzy stresują się przystąpieniem do egzaminu, potrzebują więcej czasu na rozwiązanie zadań na pozycjach 2 i 4. Czas poświęcony na te zadania nie przekłada się jednak na ich wyniki, które są w kolejnych częściach testu coraz gorsze. [5]
+- Polska na tle innych państw wypada bardzo dobrze jeśli chodzi o czas rozwiązywania zadań i liczbę podjętych akcji, w rankingu wyników plasujemy się jednak w drugiej połowie tabeli. [6]
+- Po usunięciu efektu trudności zadań, rodzaj otrzymanego zadania (matematyka, czytanie, nauki przyrodnicze) na poszczególnych pozycjach nie wpływa na średni czas poświęcony na rozwiązanie. Na zadania z pierwszej i trzeciej pozycji uczniowie poświęcają średnio więcej czasu niż na zadania znajdujące się na pozycjach drugiej i czwartej. [7]
+ 
+```{r setup, message=FALSE, warning=FALSE}
+library("dplyr")
+library("tidyr")
+library("plotly")
+library("htmlTable")
+library("matrixStats")
+library("knitr")
+library("reshape2")
+# wczytanie danych:
+dane1 <- readRDS("table_rms.rds")
+
+```
+
+## 1. Przygotowanie danych
+
+W pierwszej kolejności przygotowujemy ramkę danych, która będzie zawierała średni ważony czas, średni ważony wynik oraz średnią ważoną liczbę akcji dla zadań w zależności od tego, na jakiej pozycji zostały rozwiązane przez uczniów. Statystyki zostały policzone dla każdego kraju osobno.
+
+```{r,warning=FALSE}
+
+daneAll <- dane1 %>% group_by(CNT,position) %>% 
+  filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+           !is.na(n.actions) & !is.na(result_num) ) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2),
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+            WMeanNA=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2))
+
+knitr::kable(head(daneAll))
+
+# zapisuje wynik w pliku position_statistics.xlsx
+write.csv(as.data.frame(daneAll), file="position_statistics.csv",
+           col.names = TRUE, row.names = FALSE)
+```
+
+
+## 2. Czas rozwiązania w zależności od pozycji zadania w teście
+
+Tworzymy ramkę danych, która będzie zawierała średni ważony czas rozwiązywania zadań w podziale na pozycję zadania, kraj ucznia oraz rodzaj zadania (matematykę, czytanie, nauki przyrodnicze).
+
+```{r}
+dane <- dane1 %>% select(CNT, clus_short,timing, W_FSTUWT, position) %>%
+  group_by(CNT, clus_short, position) %>% 
+  filter(!is.na(W_FSTUWT) & !is.na(timing)) %>% 
+  summarise(
+    WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2)
+  )
+knitr::kable(head(dane))
+
+```
+
+### Zadania matematyczne 
+
+Z ramki $\texttt{dane}$ wydobywamy dane dotyczące tylko matematyki.
+
+```{r,warning=FALSE}
+daneM <- as.data.frame(dane[which(dane$clus_short=="M"),])
+daneM <- daneM[,-2]
+
+plotM <- data.frame(AUS=daneM[which(daneM$CNT==unique(daneM$CNT)[1]),c(2:3)])
+colnames(plotM) <- c("position", "AUS")
+
+for(i in 2:10){
+  plotM <- cbind(plotM, daneM[which(daneM$CNT==unique(daneM$CNT)[i]),3])
+  colnames(plotM)[i+1]=paste(unique(daneM$CNT)[i])
+}
+
+colnames(plotM) <- c("position","Australia","Austria","Belgium","Brazil","Estonia","Finland","Germany","Greece","Poland","Portugal")
+
+knitr::kable(head(plotM))
+pM <- plot_ly(plotM, x = ~position, y = ~Australia, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~Austria, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~Belgium, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~Brazil, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~Estonia, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~Finland, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~Germany, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~Greece, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~Poland, name = 'Poland', mode = 'lines+markers') %>%
+  add_trace(y = ~Portugal, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", tickangle = -45, dtick=1), yaxis = list(title = 'Ważony średni czas rozwiązywania zadań [min]'),
+         title="Czas rozwiązania w zależności od kolejności dla zadań matematycznych")
+
+pM
+```
+
+#### Komentarz:
+
+Z wykresu można wywnioskować, że dla wszystkich krajów utrzymuje się tendencja spadkowa czasu rozwiązywania zadań matematycznych na kolejnych pozycjach testu. Uczniowie najwięcej czasu poświęcali zadaniom matematycznym, jeśli otrzymali je w pierwszej ćwiartce testu. Dla Brazylii oraz Portugalii widoczny jest też pik dla zadań matematycznych na pozycji trzeciej, dla Estonii na pozycji drugiej, a dla Finlandii na pozycji czwartej. W ogólności uczniowie poświęcali na zadania matematyczne więcej czasu, jeśli zabierali się za nie ze "świeżym umysłem", tj. na początku testu lub po przerwie.
+
+
+### Czytanie
+
+Z ramki $\texttt{dane}$ wydobywamy dane dotyczące tylko czytania.
+
+```{r,warning=FALSE}
+daneR <- as.data.frame(dane[which(dane$clus_short=="R"),])
+daneR <- daneR[,-2]
+
+plotR <- data.frame(AUS=daneR[which(daneR$CNT==unique(daneR$CNT)[1]),c(2:3)])
+colnames(plotR) <- c("position", "AUS")
+
+for(i in 2:10){
+  plotR <- cbind(plotR, daneR[which(daneR$CNT==unique(daneR$CNT)[i]),3])
+  colnames(plotR)[i+1]=paste(unique(daneR$CNT)[i])
+}
+
+colnames(plotR) <- c("position","Australia","Austria","Belgium","Brazil","Estonia","Finland","Germany","Greece","Poland","Portugal")
+
+knitr::kable(head(plotR))
+pR <- plot_ly(plotR, x = ~position, y = ~Australia, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~Austria, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~Belgium, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~Brazil, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~Estonia, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~Finland, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~Germany, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~Greece, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~Poland, name = 'Poland', mode = 'lines+markers') %>%
+  add_trace(y = ~Portugal, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni czas rozwiązywania zadań [min]'),
+         title="Czas rozwiązania w zależności od kolejności dla czytania")
+
+pR
+```
+
+#### Komentarz:
+
+Dla zadań z czytania ze zrozumieniem również widać większe wartości czasu rozwiązań na pierwszej i trzeciej pozycji niż na pozostałych pozycjach.
+Na wykresie wyróżniają się Australia, Austria, Belgia, Finlandia i Niemcy, dla których w kolejnych pozycjach można zauważyć coraz krótszy czas poświęcony na rozwiązanie zadań, bez wyraźniego piku dla zadań z pozycji trzeciej.
+
+
+### Zadanie przyrodnicze 
+
+Z ramki $\texttt{dane}$ wydobywamy dane dotyczące tylko nauk przyrodniczych.
+
+```{r,warning=FALSE}
+daneS <- as.data.frame(dane[which(dane$clus_short=="S"),])
+daneS <- daneS[,-2]
+
+plotS <- data.frame(AUS=daneS[which(daneS$CNT==unique(daneS$CNT)[1]),c(2:3)])
+colnames(plotS) <- c("position", "AUS")
+
+for(i in 2:10){
+  plotS <- cbind(plotS, daneS[which(daneS$CNT==unique(daneS$CNT)[i]),3])
+  colnames(plotS)[i+1]=paste(unique(daneS$CNT)[i])
+}
+
+colnames(plotS) <- c("position","Australia","Austria","Belgium","Brazil","Estonia","Finland","Germany","Greece","Poland","Portugal")
+
+knitr::kable(head(plotS))
+
+pS <- plot_ly(plotS, x = ~position, y = ~Australia, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~Austria, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~Belgium, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~Brazil, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~Estonia, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~Finland, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~Germany, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~Greece, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~Poland, name = 'Poland', mode = 'lines+markers') %>%
+  add_trace(y = ~Portugal, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni czas rozwiązywania zadań [min]'),
+         title="Czas rozwiązania w zależności od kolejności dla zadań przyrodniczych")
+
+pS
+
+```
+
+#### Komantarz:
+
+Średni czas dla zadań przyrodniczych rozkłada się na poszczególnych pozycjach bardzo podobnie do średniego czasu dla czytania. Tak jak poprzednio, w większości krajów na drugiej pozycji uczniowie rozwiązują zadania szybciej niż na pozycji pierwszej, na trzeciej pozycji następuje wzrost średniego czasu i  następnie spadek na pozycji czwartej. 
+W tym przypadku wyjątki stanowią Australia, Austria i Niemcy, dla których średni czas rozwiązywania zadań utrzymuje trend malejący, a na pozycjach drugiej i trzeciej czasy są bardzo zbliżone.
+
+
+
+### Wszystkie typy zadań
+
+Na podstawie ramki $\texttt{daneAll}$ tworzymy wykres przedstawiający średni czas rozwiązaywania zadań uczniów w podziale na pozycje i kraje.
+
+```{r,warning=FALSE}
+
+plotAllt <- data.frame(AUS=daneAll[which(daneAll$CNT==unique(daneAll$CNT)[1]),c(2:3)])
+colnames(plotAllt) <- c("position", "AUS")
+
+for(i in 2:10){
+  plotAllt <- cbind(plotAllt, daneAll[which(daneAll$CNT==unique(daneAll$CNT)[i]),3])
+  colnames(plotAllt)[i+1]=paste(unique(daneAll$CNT)[i])
+}
+
+colnames(plotAllt) <- c("position","Australia","Austria","Belgium","Brazil","Estonia","Finland","Germany","Greece","Poland","Portugal")
+
+
+knitr::kable(head(plotAllt))
+
+pAllt <- plot_ly(plotAllt, x = ~position, y = ~Australia, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~Austria, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~Belgium, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~Brazil, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~Estonia, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~Finland, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~Germany, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~Greece, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~Poland, name = 'Poland', mode = 'lines+markers') %>%
+  add_trace(y = ~Portugal, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni czas rozwiązywania zadań [min]'),
+         title="Czas rozwiązania w zależności od pozycji zadania w teście")
+
+pAllt
+
+```
+
+#### Komentarz:
+
+Patrząc na wszystkie typy zadań jednocześnie można zaobserwować, że uczniom coraz mniej czasu zajmuje rozwiązywanie zadań w każdej kolejnej pozycji. 
+Najwięcej czasu poświęcają zadaniom z początku testu, a najmniej zadaniom z ostatniej pozycji. Można wyodrębnić też wyodrębnić grupę państw, w których uczniowie wracający do testu po przerwie rozwiązują zadania wolniej niż przed przerwą (Brazylia, Grecja, Polska, Portugalia) oraz grupę, w której uczniowie rozwiązują zadania coraz szybciej, utrzymując malejący trend czasu rozwiązań przez cały czas trwania testu (Australia, Austria, Belgia, Estonia, Finlandia, Niemcy).
+
+
+### Test na równość ważonych średnich czasów dla każdego państwa w obrębie danej pozycji.
+
+```{r}
+l_time <- lm(daneAll$WMeanTime~daneAll$CNT*daneAll$position)
+anova(l_time)
+```
+
+Na przyjętym poziomie istotności testu równym 0.05 odrzucamy hipotezę zerową o równości średnich w obrębie krajów i pozycji. Nie ma podstaw do odrzucenia hipotezy zerowej w przypadku interakcji pozycji z krajem. 
+
+
+## 3. Wyniki w zależności od pozycji zadania w teście
+
+Chcemy porównać teraz uzyskane średnie ważone wyniki dla poszczególnych krajów w zależności od pozycji zadania w teście.
+
+```{r,warning=FALSE}
+plotAllr <- data.frame(AUS=daneAll[which(daneAll$CNT==unique(daneAll$CNT)[1]),c(2,4)])
+colnames(plotAllr) <- c("position", "AUS")
+
+for(i in 2:10){
+  plotAllr <- cbind(plotAllr, daneAll[which(daneAll$CNT==unique(daneAll$CNT)[i]),4])
+  colnames(plotAllr)[i+1]=paste(unique(daneAll$CNT)[i])
+}
+
+colnames(plotAllr) <- c("position","Australia","Austria","Belgium","Brazil","Estonia","Finland","Germany","Greece","Poland","Portugal")
+
+knitr::kable(head(plotAllr))
+
+pAllr <- plot_ly(plotAllr, x = ~position, y = ~Australia, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~Austria, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~Belgium, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~Brazil, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~Estonia, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~Finland, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~Germany, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~Greece, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~Poland, name = 'Poland', mode = 'lines+markers') %>%
+  add_trace(y = ~Portugal, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni wynik'),
+         title="Wyniki w zależności od kolejności zadań")
+
+pAllr
+
+```
+
+#### Komentarz:
+
+Na podstawie wykresu można przypuszczać, że dla krajów uzyskujących dobre wyniki, otrzymany wynik nie zależy od tego na jakiej pozycji otrzymali zadania.
+Uzyskane wyniki utrzymują się dla tych krajów na podobnym poziomie dla każdej pozycji.
+
+Natomiast dla krajów, które ogólnie uzyskały złe wyniki (Brazylia oraz Grecja) można zaobserwować, że otrzymują oni coraz gorsze wyniki w kolejnych częściach testu. 
+
+### Test na równość ważonych średnich wyników dla każdego państwa w obrębie danej pozycji.
+
+```{r}
+l_result <- lm(daneAll$WMeanResult~daneAll$CNT*daneAll$position)
+anova(l_result)
+```
+
+Na przyjętym poziomie istotności testu równym 0.05 odrzucamy hipotezę zerową o równości średnich w obrębie krajów i pozycji. Nie ma podstaw do odrzucenia hipotezy zerowej w przypadku interakcji pozycji z krajem. 
+
+## 4. Liczba akcji w zależności od pozycji zadania w teście
+
+
+```{r,warning=FALSE}
+plotAllna <- data.frame(AUS=daneAll[which(daneAll$CNT==unique(daneAll$CNT)[1]),c(2,5)])
+colnames(plotAllna) <- c("position", "AUS")
+
+for(i in 2:10){
+  plotAllna <- cbind(plotAllna, daneAll[which(daneAll$CNT==unique(daneAll$CNT)[i]),5])
+  colnames(plotAllna)[i+1]=paste(unique(daneAll$CNT)[i])
+}
+
+colnames(plotAllna) <- c("position","Australia","Austria","Belgium","Brazil","Estonia","Finland","Germany","Greece","Poland","Portugal")
+
+knitr::kable(head(plotAllna))
+pAllna <- plot_ly(plotAllna, x = ~position, y = ~Australia, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~Austria, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~Belgium, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~Brazil, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~Estonia, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~Finland, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~Germany, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~Greece, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~Poland, name = 'Poland', mode = 'lines+markers') %>%
+  add_trace(y = ~Portugal, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważona średnia liczba akcji'),
+         title="Liczba akcji w zależności od kolejności zadań")
+
+pAllna
+
+```
+
+#### Kometarz:
+
+Dla większości krajów liczba wykonanych akcji rośnie wraz z kolejnymi pozycjami. Tylko dla niektórych krajów, takich jak Portugalia, Australia, Brazylia utrzymuje się schemat zaobserwowany poprzednio (spadek, wzrost, spadek).
+Odbiegającym od tych obserwacji krajem jest Grecja. Dla niej największa liczba akcji została zaobserwowana na pozycji drugiej, a na kolejnych pozycjach następuje spadek liczby akcji.
+
+
+### Test na równość ważonej średniej liczby akcji dla każdego państwa w obrębie danej pozycji.
+
+```{r}
+l_action <- lm(daneAll$WMeanNA~daneAll$CNT*daneAll$position)
+anova(l_action)
+```
+
+Na przyjętym poziomie istotności testu równym 0.05 odrzucamy hipotezę zerową o równości średnich w obrębie krajów. Nie ma podstaw do odrzucenia hipotezy zerowej w przypadku interakcji pozycji z krajem oraz samej pozycji. 
+
+## 5. Wyniki na pozycjach w zależności od poziomu stresu
+
+Chcemy sprawdzić, czy na wyniki uzyskane na poszczególnych pozycjach
+wpływa stopień stresu, z jakim uczniowie podchodzą do testów.
+
+Wykorzystamy w tym celu odpowiedź na pytanie ST118 z kwestionariusza składające się z 5 podpunktów. W każdym z tych podpunktów uczniowie zaznaczali jak bardzo zgadzają się z przedstawionym twierdzeniem. Pytania były skonstruowane w ten sposób, że nie zgodzenie się z nim charakteryzowało ucznia, który nie przejmuje się podchodzeniem do egzaminu, zaś zgodzenie się odzwierciedla ucznia, który bardzo stresuje się podejściem do egzaminu.
+
+Z 5 podpunktów tego zadania chcemy stworzyć jedną zmienną określającą "poziom stresu" ucznia.
+
+W tym celu zamieniamy odpowiedzi typu factor na numeryczne:
+
+- "Strongly disagree" = 1,
+- "Disagree" = 2,
+- "Agree" = 3,
+- "Strongly agree" = 4.
+
+Następnie dla każdego ucznia wyliczamy średnią z odpowiedzi na podpunkty 1-5 i klasyfikujemy uczniów do trzech grup:
+
+- średnia między [1;2] = 'Mało się stresuje',
+- średnia między (2;3] = 'Stresuje się',
+- średnia między (3;4] = 'Bardzo się stresuje'.
+
+
+```{r}
+
+daneStres <- dane1 %>%
+   select(CNT,position,W_FSTUWT,timing,n.actions,result_num,
+          ST118Q01,ST118Q02,ST118Q03,ST118Q04,ST118Q05) %>%
+  filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+         !is.na(n.actions) & !is.na(result_num) ) 
+
+daneStres$Q01 <- ifelse(daneStres$ST118Q01=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q01=="Disagree",2,
+                        ifelse(daneStres$ST118Q01=="Agree",3,
+                        ifelse(daneStres$ST118Q01=="Strongly agree",4,0))))
+
+daneStres$Q02 <- ifelse(daneStres$ST118Q02=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q02=="Disagree",2,
+                        ifelse(daneStres$ST118Q02=="Agree",3,
+                        ifelse(daneStres$ST118Q02=="Strongly agree",4,0))))
+
+daneStres$Q03 <- ifelse(daneStres$ST118Q03=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q03=="Disagree",2,
+                        ifelse(daneStres$ST118Q03=="Agree",3,
+                        ifelse(daneStres$ST118Q03=="Strongly agree",4,0))))
+
+daneStres$Q04 <- ifelse(daneStres$ST118Q04=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q04=="Disagree",2,
+                        ifelse(daneStres$ST118Q04=="Agree",3,
+                        ifelse(daneStres$ST118Q04=="Strongly agree",4,0))))
+
+daneStres$Q05 <- ifelse(daneStres$ST118Q05=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q05=="Disagree",2,
+                        ifelse(daneStres$ST118Q05=="Agree",3,
+                        ifelse(daneStres$ST118Q05=="Strongly agree",4,0))))
+
+daneStres$ST118 <- (daneStres$Q01 + daneStres$Q02 + daneStres$Q03 + daneStres$Q04 + daneStres$Q05)/5
+
+daneStres$sl <- cut(daneStres$ST118, c(0.9,2,3,4), labels=c(1,2,3))
+
+daneStresLevel <- daneStres %>% group_by(sl,position) %>% 
+   summarise( MeanTime = round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),2) ,
+              MeanResult = round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),2),
+              MeanNA = round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),2))
+```
+
+
+### 5.1 Czas
+
+```{r}
+daneStresPlotT <- dcast(data = daneStresLevel, formula = position~sl,fun.aggregate= NULL, value.var = "MeanTime")
+colnames(daneStresPlotT) <- c("position", "poziom1","poziom2","poziom3")
+
+knitr::kable(daneStresPlotT)
+
+plotStresT <- plot_ly(daneStresPlotT, x = ~position, y = ~poziom1, name = 'Mało się stresuje', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~poziom2, name = 'Stresuje się', mode = 'lines+markers') %>%
+  add_trace(y = ~poziom3, name = 'Bardzo się stresuje', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni czas rozwiązywania zadań [min]'),
+         title="Czas rozwiązywania zadań w zależności od poziomu stresu")
+
+plotStresT
+```
+
+### 5.2 Wynik
+
+```{r}
+daneStresPlotR <- dcast(data = daneStresLevel, formula = position~sl,fun.aggregate= NULL, value.var = "MeanResult")
+colnames(daneStresPlotR) <- c("position", "poziom1","poziom2","poziom3")
+
+knitr::kable(daneStresPlotR)
+
+plotStresR <- plot_ly(daneStresPlotR, x = ~position, y = ~poziom1, name = 'Mało się stresuje', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~poziom2, name = 'Stresuje się', mode = 'lines+markers') %>%
+  add_trace(y = ~poziom3, name = 'Bardzo się stresuje', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni wynik'),
+         title="Uzyskany wynik w zależności od poziomu stresu")
+
+plotStresR 
+```
+
+### 5.3 Liczba akcji
+
+```{r}
+daneStresPlotA <- dcast(data = daneStresLevel, formula = position~sl,fun.aggregate= NULL, value.var = "MeanNA")
+colnames(daneStresPlotA) <- c("position", "poziom1","poziom2","poziom3")
+
+knitr::kable(daneStresPlotA)
+
+plotStresA <- plot_ly(daneStresPlotA, x = ~position, y = ~poziom1, name = 'Mało się stresuje', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~poziom2, name = 'Stresuje się', mode = 'lines+markers') %>%
+  add_trace(y = ~poziom3, name = 'Bardzo się stresuje', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważona średnia liczba akcji'),
+         title="Liczba akcji w zależności od poziomu stresu")
+
+plotStresA
+```
+
+### 5.4 Komentarz
+
+Można zaobserwować, że uczniowie, którzy zadeklarowali, że nie stresują się podejściem do egzaminu wyróżniają się na tle pozostałych uczniów.
+Czas w jakim rozwiązują zadania jest krótszy i na kolejnych pozycjach utrzymuje tendencję spadkową. Przekłada się to także na uzyskane wyniki - dostają znacznie lepsze wyniki od pozostałych uczniów. Natomiast uczniowie, którzy się stresują rozwiązują zadania dłużej na pozycjach 1 i 3 niż na pozycjach 2 i 4. Może to oznaczać, że ich stres "spada" wraz z trwaniem egzaminu. Gdy przychodzą po przerwie (pozycja 3) muszą poświęcić więcej czasu na zadania. Wydaje się jednak, że ilość poświęconego czasu na rozwiązania zadań nie przekłada się na wyniki na poszczególnych pozycjach.
+
+
+Można spekulować, że uczniowie, którzy się nie stresują są to uczniowie dobrze przygotowani - rozwiązują zadania stosunkowo szybko i uzyskują dobre wyniki niezależnie od pozycji zadań.
+Natomiast uczniowie stresujący się potrzebują więcej czasu i uzyskują gorsze wyniki.
+
+## 6. Porównanie wyników Polski z innymi krajami na poszczególnych pozycjach
+
+W tej sekcji chcemy porównać wyniki uzyskane przez Polskę na poszczególnych pozycjach w stosunku do pozostałych krajów. W tym celu, dla każdej statystyki (czas, wynik, liczba akcji) od średniego wyniku krajów odejmujemy średni wynik Polski na poszczególnych pozycjach. W ten sposób wartość powyżej 0 oznacza większą średnią wartość statystyki niż uzyskana przez Polskę, a poniżej 0 mniejszą.
+
+```{r}
+danePLt <- dcast(data = daneAll, formula = position ~ CNT,fun.aggregate= NULL, value.var = "WMeanTime")
+
+daneplotT <- cbind(position=danePLt$position,as.data.frame(apply(danePLt[,-1],2,function(x) {x-danePLt$POL})))
+
+plotT <- plot_ly(daneplotT, x = ~position, y = ~ AUS, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~AUT, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~BEL, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~BRA, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~EST, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~FIN, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~DEU, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~GRC, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~PRT, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni czas rozwiązywania zadań [min]'),
+         title="Ważony średni czas rozwiązywania zadań w zależności od kolejności zadań")
+
+plotT
+```
+
+
+```{r}
+danePLr <- dcast(data = daneAll, formula = position ~ CNT,fun.aggregate= NULL, value.var = "WMeanResult")
+
+daneplotR <- cbind(position=danePLr$position,as.data.frame(apply(danePLr[,-1],2,function(x) {x-danePLr$POL})))
+
+plotR <- plot_ly(daneplotR, x = ~position, y = ~ AUS, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~AUT, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~BEL, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~BRA, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~EST, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~FIN, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~DEU, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~GRC, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~PRT, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni wynik'),
+         title="Ważony średni wynik w zależności od kolejności zadań")
+
+plotR
+```
+
+```{r}
+danePLa <- dcast(data = daneAll, formula = position ~ CNT,fun.aggregate= NULL, value.var = "WMeanNA")
+
+daneplotA <- cbind(position=danePLa$position,as.data.frame(apply(danePLa[,-1],2,function(x) {x-danePLa$POL})))
+
+plotA <- plot_ly(daneplotA, x = ~position, y = ~ AUS, name = 'Australia', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~AUT, name = 'Austria', mode = 'lines+markers') %>%
+  add_trace(y = ~BEL, name = 'Belgium', mode = 'lines+markers') %>%
+  add_trace(y = ~BRA, name = 'Brazil', mode = 'lines+markers') %>%
+  add_trace(y = ~EST, name = 'Estonia', mode = 'lines+markers') %>%
+  add_trace(y = ~FIN, name = 'Finland', mode = 'lines+markers') %>%
+  add_trace(y = ~DEU, name = 'Germany', mode = 'lines+markers') %>%
+  add_trace(y = ~GRC, name = 'Greece', mode = 'lines+markers') %>%
+  add_trace(y = ~PRT, name = 'Portugal', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja",dtick=1), yaxis = list(title = 'Ważona średnia liczba akcji'),
+         title="Średnia liczba akcji w zależności od kolejności zadań")
+
+plotA
+```
+
+Uczniowie z Polski w porównaniu do innych krajów rozwiązywali zadania dosyć szybko na każdej pozycji i wykonywali dużą ilość akcji. Jednak nie przekłada się to na uzyskane przez nich wyniki, które wypadają w tym porównaniu gorzej - Polska plasuje się tu w okolicach 6 miejsca spośród 10 rozważanych przez nas państw. 
+
+
+## 7. Analiza bookletów
+
+Każdy booklet charakteryzuje się pewną uporządkowaną kolejnością zadań z dziedzin matematyki, czytania i nauk przyrodniczych.
+Celem analizy jest sprawdzenie, czy kolejność tych typów zadań ma wpływ na uzyskane wyniki na poszczególnych pozycjach.
+
+Przygotowanie danych:
+
+```{r}
+#wydobywamy tylko pełne dane
+dane <- dane1 %>% filter(!is.na(W_FSTUWT) & !is.na(timing) & !is.na(result_num) & !is.na(n.actions) )
+
+boxplot(dane$timing) 
+dane <- dane[-which.max(dane$timing),]
+```
+Jedna obserwacja jest wyraźnie odstająca. Przyjmujemy, że to wynik błędu i usuwamy ją.
+
+### 7.1 Porównanie czasów rozwiązań w 6 grupach bookletów bez normalizacji względem typu zadań
+
+Dzielimy booklety w grupy następująco:
+
+typ1 - numery 31-36 (S,S,R,R)
+
+typ2 - numery 37-42 (R,R,S,S)
+
+typ3 - numery 43-48 (S,S,M,M)
+
+typ4 - numery 49-54 (M,M,S,S)
+
+typ5 - numery 55-60 (S,S,M,R) lub (S,S,R,M)
+
+typ6 - numery 61-66 (R,M,S,S) lub (M,R,S,S)
+
+W nawiasie podano jaki typ zadań występował na pozycjach (1,2,3,4) w danych grupach bookletów, przy czym M-zadania matematyczne, R-czytanie, S-nauki przyrodnicze.
+
+```{r}
+podzial_na_typ <- function(dane, a){
+  pozdbior <- subset(dane, BOOKID2<=max(a) & BOOKID2>=min(a)) # dziele dane na podbiory wzgledem numeru bookletu
+  pozdbior
+}
+
+dane1 <- podzial_na_typ(dane, c(31:36))
+dane1$BOOKtype <- rep(1, nrow(dane1))
+
+dane2 <- podzial_na_typ(dane, c(37:42))
+dane2$BOOKtype <- rep(2, nrow(dane2))
+
+dane3 <- podzial_na_typ(dane, c(43:48))
+dane3$BOOKtype <- rep(3, nrow(dane3))
+
+dane4 <- podzial_na_typ(dane, c(49:54))
+dane4$BOOKtype <- rep(4, nrow(dane4))
+
+dane5 <- podzial_na_typ(dane, c(55:59))
+dane5$BOOKtype <- rep(5, nrow(dane5))
+
+dane6 <- podzial_na_typ(dane, c(60:66))
+dane6$BOOKtype <- rep(6, nrow(dane6))
+
+
+wszystko1 <- rbind(dane1, dane2, dane3, dane4, dane5, dane6)
+
+do_wykresu1 <- wszystko1 %>% group_by(BOOKtype, CNTSTUID) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),10),
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),10),
+            WMeanNA=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),10))
+
+# boxploty czasow w kazdej z 6 grup bookletow
+boxplot(do_wykresu1$WMeanTime~do_wykresu1$BOOKtype)
+```
+
+Na powyższym wykresie widać pewną nierówność w grupach zestawów zadań; zestawy 3 i 4, w których na dwóch pozycjach była matematyka, mają najwyższe czasy rozwiązań.
+
+### 7.2 Analiza bookletów z uwzględnieniem różnej trudności zadań 
+
+Badamy czy typ zadań (M,S,R) w booklecie ma wpływ na profil czasu odpowiedzi. Chcemy przy tym uwzględnić, że każdy z typu zadań ma inny poziom trudności.
+
+W każdej grupie bookletów, w każdym booklecie dzielimy czas, jaki uczeń przeznaczył na dane zadanie,
+przez średni czas rozwiązań uzyskany na dwóch pozycjach, na których występują zadania tego samego typu
+(czas rozwiązania uzyskany przez danego ucznia dla zadania z 1 lub 2 pozycji dzielimy przez średnią z 1 i 2 pozycji, 
+czas zadania z 3 lub 4 pozycji dzielimy przez średnią z 3 i 4 pozycji).
+
+Dzięki unormowaniu będzie można zobaczyć jak zachowują się czasy rozwiązań zadań względem pozycji zadania w teście
+i czy zadanie było rozwiązywane dłużej niż średnio dla tego typu w danej grupie bookletów.
+
+```{r}
+divide_by_sum <- function(dane, a){
+  
+  pozdbior <- subset(dane, BOOKID2<=max(a) & BOOKID2>=min(a))
+  
+  for(i in a){
+    for(j in 1:2){
+      if (j==1) {
+        suma_t <- mean(pozdbior[which(pozdbior$position<=2 & pozdbior$BOOKID2==i),"timing"])
+      
+        temp_t1 <- pozdbior[which(pozdbior$position==1 & pozdbior$BOOKID2==i),"timing"]/suma_t
+        pozdbior[which(pozdbior$position==1 & pozdbior$BOOKID2==i),"timing"] <- temp_t1
+        
+        temp_t2 <- pozdbior[which(pozdbior$position==2 & pozdbior$BOOKID2==i),"timing"]/suma_t
+        pozdbior[which(pozdbior$position==2 & pozdbior$BOOKID2==i),"timing"] <- temp_t2
+    
+      }
+      
+      else {
+        suma_t <- mean(pozdbior[which(pozdbior$position>2 & pozdbior$BOOKID2==i),"timing"])
+        
+        temp_t1 <- pozdbior[which(pozdbior$position==3 & pozdbior$BOOKID2==i),"timing"]/suma_t
+        pozdbior[which(pozdbior$position==3 & pozdbior$BOOKID2==i),"timing"] <- temp_t1
+        
+        temp_t2 <- pozdbior[which(pozdbior$position==4 & pozdbior$BOOKID2==i),"timing"]/suma_t
+        pozdbior[which(pozdbior$position==4 & pozdbior$BOOKID2==i),"timing"] <- temp_t2
+      }
+      
+    }
+  }
+  
+  pozdbior
+}
+
+dane1 <- divide_by_sum(dane, c(31:36))
+dane1$BOOKtype <- rep(1, nrow(dane1))
+
+dane2 <- divide_by_sum(dane, c(37:42))
+dane2$BOOKtype <- rep(2, nrow(dane2))
+
+dane3 <- divide_by_sum(dane, c(43:48))
+dane3$BOOKtype <- rep(3, nrow(dane3))
+
+dane4 <- divide_by_sum(dane, c(49:54))
+dane4$BOOKtype <- rep(4, nrow(dane4))
+
+dane5 <- divide_by_sum(dane, c(55:59))
+dane5$BOOKtype <- rep(5, nrow(dane5))
+
+dane6 <- divide_by_sum(dane, c(60:66))
+dane6$BOOKtype <- rep(6, nrow(dane6))
+
+
+wszystko2 <- rbind(dane1, dane2, dane3, dane4, dane5, dane6)
+```
+
+### 7.3 Porównanie wyników w grupach bookletów, tym razem z danymi unormowanymi względem poziomu trudności danego typu zadań w danym booklecie
+
+```{r}
+do_wykresu2 <- wszystko2 %>% group_by(CNTSTUID, BOOKtype) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),10),
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),10),
+            WMeanNA=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),10))
+
+# boxploty czasow w kazdej z 6 grup bookletow
+boxplot(do_wykresu2$WMeanTime~do_wykresu2$BOOKtype)
+```
+
+Widać, że różnice między grupami bookletów zmniejszyły się.
+
+Chcemy otrzymać wykres średnich ważonych czasów rozwiazań względem pozycji, osobno dla każdej grupy bookletów, ale dla danych znormalizowanych.
+```{r}
+do_wykresu <- wszystko2 %>% group_by(BOOKtype, position) %>% 
+  summarise(WMeanTime=round(weighted.mean(timing,W_FSTUWT,na.rm=TRUE),10), 
+            WMeanResult=round(weighted.mean(result_num,W_FSTUWT,na.rm=TRUE),10),
+            WMeanNA=round(weighted.mean(n.actions,W_FSTUWT,na.rm=TRUE),10))
+
+
+wykres <- data.frame(do_wykresu[which(do_wykresu$BOOKtype==unique(do_wykresu$BOOKtype)[1]),c(2:3)])
+colnames(wykres) <- c("position", "type1")
+
+for(i in 2:6){
+  wykres <- cbind(wykres, do_wykresu[which(do_wykresu$BOOKtype==unique(do_wykresu$BOOKtype)[i]),3])
+  colnames(wykres)[i+1]=paste("type",i, sep = "")
+}
+
+
+p1 <- plot_ly(wykres, x = ~position, y = ~type1, name = 'typ 1', type = 'scatter', mode = 'lines+markers') %>%
+  add_trace(y = ~type2, name = 'typ 2', mode = 'lines+markers') %>%
+  add_trace(y = ~type3, name = 'typ 3', mode = 'lines+markers') %>%
+  add_trace(y = ~type4, name = 'typ 4', mode = 'lines+markers') %>%
+  add_trace(y = ~type5, name = 'typ 5', mode = 'lines+markers') %>%
+  add_trace(y = ~type6, name = 'typ 6', mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Stosunek średniego czasu do średniej dla danego typu zadań'),
+         title="Zależność między czasem rozwiązania a pozycją zadania w teście ")
+
+p1
+```
+
+Komentarz do wykresu: typ otrzymanych zadań nie wpływa na profil odpowiedzi. Najwięcej czasu uczniowie poświęcają na rozwiązania zadań na początku testu/po przerwie, później rozwiązują zadania coraz szybciej.
