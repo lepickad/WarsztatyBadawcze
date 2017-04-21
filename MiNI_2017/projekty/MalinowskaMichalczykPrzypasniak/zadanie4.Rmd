@@ -1,0 +1,606 @@
+---
+title: "zadanie 4"
+author: "S. Michalczyk M. Malinowska O. Przypaśniak"
+date: "20 kwietnia 2017"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+## Informacje o skrypcie
+
+Poniższy plik zawiera analizę strategii związanych z rozwiązywaniem testu przez uczniów opracowaną na podstawie ramki danych $\texttt{table_rms.rds}$ utworzonej po uruchomieniu skryptu $\texttt{zadanie0.html}$ .
+
+## Wnioski:
+
+- W każdym z rozważanych krajów występuje duża liczba uczniów, którym brakuje czasu na rozwiązanie zadań na pozycji 4.
+
+- W krajach plasujących się wysoko w rankingach PISA dużą grupę uczniów stanowią ci, którzy szybko rozwiązują zadania i otrzymują dobre wyniki.
+W pozostałych krajach dużą grupę tworzą uczniowie, którzy dłużej rozwiązują zadania na początku testu i szybciej pod koniec testu.
+
+- Wśród uczniów nie stresujących się podejściem do testów dużą grupę stanowią ci, którzy rozwiązują zadania szybko na każdej pozycji i otrzymują dobre wyniki.
+Natomiast wśród uczniów, którzy się stresują, liczną grupę stanowią ci, którzy na początku testu rozwiązują zadania długo, a pod koniec szybko.
+
+ 
+```{r setup, message=FALSE, warning=FALSE}
+library("dplyr")
+library("tidyr")
+library("plotly")
+library("htmlTable")
+library("matrixStats")
+library("knitr")
+library("reshape2")
+
+# wczytanie danych:
+dane <- readRDS("table_rms.rds")
+```
+
+## Strategie
+
+### Wstęp
+
+Strategie, które chcemy przypisać uczniom to:
+
+- nr 1: Uczniowie poświęcają dużo czasu  na zadania, które potrafią rozwiązać, a mało czasu na te, których nie potrafią.
+- nr 2: Uczniowie poświęcają mało czasu na zadania, które potrafią rozwiązać, a dużo na te, których nie potrafią.
+- nr 3: Uczniowie poświęcają dużo czasu na zadania z początku testu (pozycje 1,2,3) i nie zdążają rozwiązać zadań z ostatniej części testu (mają wartość NA na wyniku)
+- nr 4: Uczniowie poświęcają dużo czasu na początku testu (pozycje 1,2,3) i szybko rozwiązują zadania pod koniec testu.
+- nr 5: Uczniowie poświęcają mało czasu na rozwiązywanie zadań na każdej pozycji i otrzymują dobre wyniki.
+- nr 6: Uczniowie poświęcają mało czasu na rozwiązywanie zadań na każdej pozycji i otrzymują słabe wyniki.
+- nr 7: inne stretegie
+
+### Strategia nr 1
+
+**Uczniowie dużo czasu poświęcają na zadania, które potrafią rozwiązać, a mało czasu na te, których nie potrafią.**
+
+Strategię przypisujemy w następujący sposób:
+
+sprawdzamy czy uczeń długo rozwiązywał poszczególne zadania, tzn. patrzymy czy czas rozwiązania konkretnego zadania jest dłuższy od ważonej mediany czasów rozwiązywania zadań wszystkich uczniów. Jeśli czas rozwiązania zadania jest dłuższy od mediany, to stwierdzamy, że uczeń poświęcił dużo czasu na zadanie. (zmienna czy_krotki_czas)
+
+Następnie tworzymy zmienną czas_wynik, która jest wyznaczona dla każdego zadania oddzielnie i przyjmuje wartości:
+
+- 1 jeśli czas rozwiązania krótki (czy_krotki_czas=1) i uzyskany wynik z rozwiązania zadania był zły (result_num=1)
+- 2 jeśli czas rozwiązania długi (czy_krotki_czas=0) i uzyskany wynik z rozwiązania zadania był dobry (result_num>1)
+- 0 dla pozostałych zadań
+
+W następnym kroku zliczamy dla każdego ucznia ile zadań rozwiązał sposobem 1,2 i 0.
+Przypisujemy uczniowi strategię nr 1 jeśli liczba zadań rozwiązanych sposobem 1 lub 2 to co najmniej 70% wszystkich rozwiązanych przez ucznia zadań.
+
+```{r}
+dane_str1 <- dane %>%   filter(
+           !is.na(W_FSTUWT) & !is.na(timing) & 
+           !is.na(n.actions) & !is.na(result_num) 
+           ) 
+
+# zmienna mediana_czas = ważona mediana wszystkich uczniow
+dane_str1$mediana_czasu <- rep(dane_str1 %>%  
+   summarise( mediana_czasu=round(weightedMedian(timing,W_FSTUWT,na.rm=TRUE),2)) , nrow(dane_str1))
+
+# zmienna czy_krotki_czas = okresla czy czas rozwiazania zadania krotki 1 (tzn mniejszy od mediany) czy dlugi 0 (wiekszy od mediany)
+dane_str1$czy_czas_krotki <- ifelse(dane_str1$timing <= dane_str1$mediana_czasu,1,0)
+  
+dane_str1$czas_wynik <- ifelse(dane_str1$czy_czas_krotki==1 & dane_str1$result_num==1,1,
+               ifelse(dane_str1$czy_czas_krotki==0 & dane_str1$result_num>1,2,0))
+
+# zliczamy ile zadań student rozwiązał w krótkim czasie ze zlym wynikiem (krotki_czas_zly_wynik)
+# ile zadan rozwiazywal dlugo z dobrym wynikiem (dlugi_czas_dobry_wynik)
+# i w inny sposób (inne)
+
+dane_str11 <- dane_str1 %>% group_by(CNTSTUID) %>% summarise(
+       krotki_czas_zly_wynik=count(czas_wynik==1),
+       dlugi_czas_dobry_wynik=count(czas_wynik==2),
+       inne=count(czas_wynik==0)
+       )
+
+# studenta zaliczamy do strategii 1 jeśli więcej niż 70% zadań rozwiązywał tą strategią
+
+dane_str11$str1 <- ifelse( (dane_str11$krotki_czas_zly_wynik + dane_str11$dlugi_czas_dobry_wynik)/(dane_str11$krotki_czas_zly_wynik + dane_str11$dlugi_czas_dobry_wynik+dane_str11$inne) >0.7,1,0)
+
+
+knitr::kable(head(dane_str11))
+table(dane_str11$str1)
+# 173 uczniów ze strategią nr 1
+
+```
+
+### Strategia nr 2
+
+**Uczniowie, którzy mało czasu poświęcają na zadania, które potrafią rozwiązać, a dużo na te, których nie potrafią.**
+
+Strategię nr 2 przypisujemy analogicznie jak strategię nr 1 z wyjątkiem przypisania zmiennej czas_wynik, która w tym przypadku przyjmuje wartości:
+
+- 1 jeśli czas rozwiązania krótki (czy_krotki_czas=1) i uzyskany wynik z rozwiązania zadania był dobry (result_num>1)
+- 2 jeśli czas rozwiązania długi (czy_krotki_czas=0) i uzyskany wynik z rozwiązania zadania był zły (result_num=1)
+- 0 dla pozostałych zadań
+
+```{r}
+
+dane_str2<- dane_str1
+dane_str2$czas_wynik <- ifelse(dane_str2$czy_czas_krotki==1 & dane_str2$result_num>1,1,
+               ifelse(dane_str2$czy_czas_krotki==0 & dane_str2$result_num==1,2,0))
+
+# zliczamy ile zadań student rozwiązał w krótkim czasie z dobrym wynikiem (krotki_czas_dobry_wynik)
+# ile zadan rozwiazywal dlugo ze zlym wynikiem (dlugi_czas_zly_wynik)
+# i w inny sposób (inne)
+
+dane_str22 <- dane_str2 %>% group_by(CNTSTUID) %>% summarise(
+       krotki_czas_dobry_wynik=count(czas_wynik==1),
+       dlugi_czas_zly_wynik=count(czas_wynik==2),
+       inne=count(czas_wynik==0)
+       )
+
+# studenta zaliczamy do strategii 1 jeśli więcej niż 70% zadań rozwiązywał tą strategią
+
+dane_str22$str2 <- ifelse( (dane_str22$krotki_czas_dobry_wynik + dane_str22$dlugi_czas_zly_wynik)/(dane_str22$krotki_czas_dobry_wynik + dane_str22$dlugi_czas_zly_wynik+dane_str22$inne) >0.7,1,0)
+
+knitr::kable(head(dane_str22))
+table(dane_str22$str2)
+# 335 uczniów ze strategią nr 1
+
+```
+
+### Strategia nr 3
+
+**Uczniowie, którzy poświęcają dużo czasu na początku testu (pozycje 1,2,3) i nie zdążają rozwiązać zadań z pozycji 4. (mają wartość NA na wyniku).**
+
+```{r}
+
+dane_str3 <- dane %>%   filter( !is.na(W_FSTUWT) ) 
+
+# zmienna mediana_czas = ważona mediana wszystkich uczniow
+dane_str3$mediana_czasu <- rep(dane_str3 %>%  
+   summarise( mediana_czasu=round(weightedMedian(timing,W_FSTUWT,na.rm=TRUE),2)) , nrow(dane_str3))
+
+# zmienna czy_krotki_czas = okresla czy czas rozwiazania zadania krotki 1 (tzn mniejszy od mediany) czy dlugi 0 (wiekszy od mediany)
+dane_str3$czy_czas_krotki <- ifelse(dane_str3$timing <= dane_str3$mediana_czasu,1,0)
+
+# dla każdego ucznia wyznaczamy ilosc zadań rozwiązanych krótko/długo na poszczególnych pozycjach
+dane_str33 <- dane_str3 %>% group_by(CNTSTUID,position) %>% summarise(
+       krotki_czas=count(czy_czas_krotki==1),
+       dlugi_czas=count(czy_czas_krotki==0)
+       )
+
+#uznajemy, że uczeń rozwiązywał zadania krótko na danej pozycji jeżeli zadania rozwiązywane krótko stanowią większą część (>50%) rozwiązanych przez niego zadań na danej pozycji
+dane_str33$czy_krotki_czas_na_pozycji <- ifelse(dane_str33$krotki_czas/(dane_str33$krotki_czas+dane_str33$dlugi_czas)>0.5,1,0)
+
+dane_str33a <- dcast(data = dane_str33, formula = CNTSTUID~position,fun.aggregate= NULL, value.var = "czy_krotki_czas_na_pozycji")
+colnames(dane_str33a) <- c("CNTSTUID", "poz1","poz2","poz3","poz4")
+
+knitr::kable(head(dane_str33a))
+
+# teraz patrzymy na ilość braków danych zmiennej result_num na 4 pozycji
+
+dane_str33b <- dane_str3 %>% group_by(CNTSTUID) %>% 
+   filter(position==4) %>% summarise(
+       braki_poz4=count(is.na(result_num))/n()
+       )
+
+# uznajemy, że nie zdąrzył rozwiązać zadań na pozycji 4 jeśli ilość braków danych większa niż 20% zadań na tej pozycji
+dane_str33b$czy_nie_zdarzyl <- ifelse(dane_str33b$braki_poz4>0.2, 1, 0)
+
+dane_str33ab <- left_join(dane_str33a,dane_str33b, by="CNTSTUID")
+
+#przypisanie pozycji nr 3:
+dane_str33ab$str3 <- ifelse(dane_str33ab$poz1==0 & dane_str33ab$poz2==0 & dane_str33ab$poz3==0& dane_str33ab$czy_nie_zdarzyl==1,1,0)
+
+table(dane_str33ab$str3)
+# 1027 uczniów ze strategią nr 3
+
+```
+
+
+### Strategia nr 4
+
+**Uczniowie, którzy poświęcają dużo czasu na początku testu (pozycje 1,2,3) i szybko rozwiązują zadania z pozycji 4.**
+
+```{r}
+
+dane_str4 <- dane %>%   filter( !is.na(W_FSTUWT) & !is.na(timing)  ) 
+
+# zmienna mediana_czas = ważona mediana wszystkich uczniow
+dane_str4$mediana_czasu <- rep(dane_str4 %>%  
+   summarise( mediana_czasu=round(weightedMedian(timing,W_FSTUWT,na.rm=TRUE),2)) , nrow(dane_str4))
+
+# zmienna czy_krotki_czas = okresla czy czas rozwiazania zadania krotki 1 (tzn mniejszy od mediany) czy dlugi 0 (wiekszy od mediany)
+dane_str4$czy_czas_krotki <- ifelse(dane_str4$timing <= dane_str4$mediana_czasu,1,0)
+
+dane_str44 <- dane_str4 %>% group_by(CNTSTUID,position) %>% summarise(
+       krotki_czas=count(czy_czas_krotki==1),
+       dlugi_czas=count(czy_czas_krotki==0)
+       )
+
+dane_str44$czy_krotki_czas_na_pozycji <- ifelse(dane_str44$krotki_czas/(dane_str44$krotki_czas+dane_str44$dlugi_czas)>0.5,1,0)
+
+dane_str44 <- dcast(data = dane_str44, formula = CNTSTUID~position,fun.aggregate= NULL, value.var = "czy_krotki_czas_na_pozycji")
+colnames(dane_str44) <- c("CNTSTUID", "poz1","poz2","poz3","poz4")
+
+knitr::kable(head(dane_str44))
+
+#przypisanie strategii nr 4
+
+dane_str44$str4 <- ifelse(dane_str44$poz1==0 & dane_str44$poz2==0 & dane_str44$poz3==0& dane_str44$poz4==1,1,0)
+
+table(dane_str44$str4)
+# 537 uczniów ze strategią nr 4
+
+```
+
+### Strategia nr 5
+
+**Uczniowie poświęcają mało czasu na rozwiązywanie zadań na każdej pozycji i otrzymują dobre wyniki.**
+
+Możemy utożsamiać to z uczniami, którzy są bardzo dobrze przygotowani do testu - rozwiązują zadania sprawnie i otrzymują dobre wyniki.
+
+```{r}
+dane_str5 <- dane %>%   filter( !is.na(W_FSTUWT) & !is.na(timing)  & !is.na(result) ) 
+
+# zmienna mediana_czas = ważona mediana wszystkich uczniow
+dane_str5$mediana_czasu <- rep(dane_str5 %>%  
+   summarise( mediana_czasu=round(weightedMedian(timing,W_FSTUWT,na.rm=TRUE),2)) , nrow(dane_str5))
+
+# zmienna czy_krotki_czas = okresla czy czas rozwiazania zadania krotki 1 (tzn mniejszy od mediany) czy dlugi 0 (wiekszy od mediany)
+dane_str5$czy_czas_krotki <- ifelse(dane_str5$timing <= dane_str5$mediana_czasu,1,0)
+
+dane_str55 <- dane_str5 %>% group_by(CNTSTUID,position) %>% summarise(
+       krotki_czas=count(czy_czas_krotki==1),
+       dlugi_czas=count(czy_czas_krotki==0),
+       wynik=round(mean(result_num,na.rm=TRUE),2)
+       )
+
+dane_str55$czy_krotki_czas_na_pozycji <- ifelse(dane_str55$krotki_czas/(dane_str55$krotki_czas+dane_str55$dlugi_czas)>0.5,1,0)
+
+
+# dobry wynik jeśli sredni wynik na pozycji >= od 2
+dane_str55$czy_dobry_wynik_na_pozycji <- ifelse(dane_str55$wynik>=2,1,0)
+
+dane_str55$czas_wynik <- ifelse(dane_str55$czy_krotki_czas_na_pozycji==1 & dane_str55$czy_dobry_wynik_na_pozycji==1,1,0)
+
+
+dane_str55b <- dcast(data = dane_str55, formula = CNTSTUID~position,fun.aggregate= NULL, value.var = "czas_wynik")
+colnames(dane_str55b) <- c("CNTSTUID", "poz1","poz2","poz3","poz4")
+
+knitr::kable(head(dane_str55b))
+
+# studenta zaliczamy do strategii 5 jeśli na każdej pozycji ma krotki czas i dobry wynik
+
+dane_str55b$str5 <- ifelse( dane_str55b$poz1==1 & dane_str55b$poz2==1 & dane_str55b$poz3==1 & dane_str55b$poz4==1,1,0)
+
+table(dane_str55b$str5)
+# 363 uczniów ze strategią nr 5
+
+```
+
+### Strategia nr 6
+
+**Uczniowie poświęcają mało czasu na rozwiązywanie zadań na każdej pozycji i otrzymują słabe wyniki**
+
+Możemy utożsamiać to z uczniami, którzy w ogóle nie przykładają się do testu i tylko "przeklikują" zadania.
+
+
+```{r}
+dane_str6<-dane_str55
+dane_str6$czas_wynik <- ifelse(dane_str6$czy_krotki_czas_na_pozycji==1 & dane_str6$czy_dobry_wynik_na_pozycji==0,1,0)
+
+
+dane_str66 <- dcast(data = dane_str6, formula = CNTSTUID~position,fun.aggregate= NULL, value.var = "czas_wynik")
+colnames(dane_str66) <- c("CNTSTUID", "poz1","poz2","poz3","poz4")
+
+knitr::kable(head(dane_str66))
+
+# studenta zaliczamy do strategii 6 jeśli na każdej pozycji ma krotki czas i słaby wynik
+
+dane_str66$str6 <- ifelse( dane_str66$poz1==1 & dane_str66$poz2==1 & dane_str66$poz3==1 & dane_str66$poz4==1,1,0)
+
+table(dane_str66$str6)
+# 233 uczniów ze strategią nr 6
+
+```
+
+
+### Łączenie strategii
+
+Chcemy przypisać jedną strategię każdemu uczniowi.
+
+```{r}
+
+strategie_12 <- left_join(dane_str11[,c("CNTSTUID","str1")],dane_str22[,c("CNTSTUID","str2")], by="CNTSTUID")
+
+strategie_123 <- left_join(strategie_12,dane_str33ab[,c("CNTSTUID","str3")], by="CNTSTUID")
+strategie_1234 <- left_join(strategie_123,dane_str44[,c("CNTSTUID","str4")], by="CNTSTUID")
+strategie_12345 <- left_join(strategie_1234,dane_str55b[,c("CNTSTUID","str5")], by="CNTSTUID")
+
+strategie <- left_join(strategie_12345,dane_str66[,c("CNTSTUID","str6")], by="CNTSTUID")
+
+strategie$sum <- apply(strategie[,c("str1","str2","str3","str4","str5","str6")], 1, sum, na.rm = T)
+
+```
+
+Popatrzmy jak wielu uczniów ma przypisaną więcej niż jedną strategię:
+
+```{r}
+sum(strategie$sum==0)
+sum(strategie$sum==1)
+sum(strategie$sum>1)
+
+sum(strategie$sum>1)/nrow(strategie)
+```
+
+Ponad 11% studentów otrzymało więcej niż jedną strategię.
+
+```{r}
+# rozpatruje tylko tych, ktorzy otrzymali wiecej niz jedna strategie
+tmp <- strategie %>% filter(sum>1)
+
+ilosc <- matrix(0,ncol=6,nrow=6)
+j <- 1
+for ( i in c("str1","str2","str3","str4","str5","str6")){
+
+   t <- tmp[which(tmp[,i]==1),]
+   ilosc[j,1] <- sum(t[,"str1"]==1,na.rm = TRUE )
+   ilosc[j,2] <- sum(t[,"str2"]==1,na.rm = TRUE)
+   ilosc[j,3] <- sum(t[,"str3"]==1,na.rm = TRUE)
+   ilosc[j,4] <- sum(t[,"str4"]==1,na.rm = TRUE)
+   ilosc[j,5] <- sum(t[,"str5"]==1,na.rm = TRUE)
+   ilosc[j,6] <- sum(t[,"str6"]==1,na.rm = TRUE)
+   j <- j+1
+}
+
+ilosc
+
+```
+
+Widać, że najczęściej:
+
+-jeżeli ktoś otrzymał strategię nr 1, to otrzymał też strategię nr 6
+(1: dużo czasu na zadania, które potrafią rozwiązać, a mało czasu na te, których nie potrafią) i (6: mało czasu na każdej pozycji i słabe wyniki)
+
+-jeżeli ktoś otrzymał strategię nr 2, to otrzymał też strategię nr 5 
+(2: mało czasu poświęcają na zadania, które potrafią rozwiązać, a dużo na te których nie potrafią) i (5: mało czasu na rozwiązywania zadań na każdej pozycji i dobre wyniki)
+
+-jeżeli ktoś otrzymał strategię nr 3, to otrzymał też strategię nr 4
+(3: dużo czasu na początku testu (tj na pozycjach 1,2,3), a na 4 nie zdążają rozwiązać zadań) i (4: dużo czasu na początku testu (tj na pozycjach 1,2,3), a na 4 mało czasu)
+
+### Strategia nr 7
+
+Jeżeli uczniowi nie została przyporządkowana żadna z rozważanych wcześniej strategii, to przypisujemy mu strategię "inne".
+
+```{r}
+strategie$str7 <- ifelse(strategie$str1==0 & strategie$str2==0 &
+                            strategie$str3==0 &
+                            strategie$str4==0 &
+                            strategie$str5==0 &
+                            strategie$str6==0 ,1,0)
+
+ilosc_str <- strategie %>% 
+   summarise(
+   st1=round(sum(str1,na.rm=TRUE)/n(),2),
+   st2=round(sum(str2,na.rm=TRUE)/n(),2),
+   st3=round(sum(str3,na.rm=TRUE)/n(),2),
+   st4=round(sum(str4,na.rm=TRUE)/n(),2),
+   st5=round(sum(str5,na.rm=TRUE)/n(),2),
+   st6=round(sum(str6,na.rm=TRUE)/n(),2),
+   st7=round(sum(str7,na.rm=TRUE)/n(),2)
+   )
+
+sum(ilosc_str)
+
+```
+
+## Rozkład strategii w krajach 
+
+```{r}
+dane_uczn <- unique(dane %>% select(CNT, CNTSCHID, CNTSTUID))
+dane_strategie <- left_join(dane_uczn, strategie[,c("CNTSTUID","str1","str2","str3","str4","str5","str6","str7")], by="CNTSTUID")
+
+ilosc_str <- dane_strategie  %>% group_by(CNT) %>%
+   summarise(
+   st1=round(sum(str1,na.rm=TRUE)/n(),2),
+   st2=round(sum(str2,na.rm=TRUE)/n(),2),
+   st3=round(sum(str3,na.rm=TRUE)/n(),2),
+   st4=round(sum(str4,na.rm=TRUE)/n(),2),
+   st5=round(sum(str5,na.rm=TRUE)/n(),2),
+   st6=round(sum(str6,na.rm=TRUE)/n(),2),
+   st7=round(sum(str7,na.rm=TRUE)/n(),2)
+   )
+
+knitr::kable(head(ilosc_str))
+
+p1 <- plot_ly(ilosc_str, x = ~CNT, y = ~st1*100, name = 'strategia1', type = 'scatter', mode = 'lines+markers',              
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na zadania, które potrafią rozwiązać, a mało czasu na te, których nie potrafią")) %>%
+  add_trace(y = ~st2*100, name = 'strategia2', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadania, które potrafią rozwiązać, a dużo na te, których nie potrafią")) %>%
+  add_trace(y = ~st3*100, name = 'strategia3', mode = 'lines+markers',        
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na początku testu, a na 4poz nie zdążają rozwiązać zadań")) %>%
+  add_trace(y = ~st4*100, name = 'strategia4', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na początku testu, a na 4poz szybko rozwiązują zadania")) %>%
+  add_trace(y = ~st5*100, name = 'strategia5', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadań na każdej pozycji i dobre wyniki")) %>%
+  add_trace(y = ~st6*100, name = 'strategia6', mode = 'lines+markers',        
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadań na każdej pozycji i złe wyniki")) %>%
+   add_trace(y = ~st7*100, name = 'strategia7', mode = 'lines+markers',          
+             hoverinfo = 'text',
+             text = ~paste("inne")) %>%
+  layout(xaxis = list(title = "Kraj", dtick=1), 
+         yaxis = list(title = 'Procent uczniów'),
+         title="Procent uczniów w poszczególnych krajach z daną strategią")
+
+p1
+
+```
+
+### Komentarz:
+
+Możemy zaobserwować, że w każdym kraju jest duża liczba uczniów, którzy poświęcają dużo czasu na zadania z pozycji 1, 2 i 3 a na zadania z pozycji 4 nie starcza im czasu.
+
+W Australii, Austrii, Niemczech, Estonii i w Finlandii dużą grupę uczniów tworzą też uczniowie, którzy (strategia 5) szybko rozwiązaują zadania i otrzymują dobre wyniki (w Finlandii liczność tej grupy przewyższa nieznacznie wcześniej opisaną grupę).
+
+Dla pozostałych krajów dużą grupą są uczniowie reprezentujący strategię nr 4, tj. na początku testu rozwiązują zadania długo, a na koniec testu szybko.
+
+W większości krajów najmniej stosowaną strategią jest strategia nr 1.
+
+## Rozkład strategii w szkołach
+
+```{r}
+ilosc_str_szk <- dane_strategie  %>% group_by(CNT,CNTSCHID) %>%
+   summarise(
+   st1=round(sum(str1,na.rm=TRUE)/n(),2),
+   st2=round(sum(str2,na.rm=TRUE)/n(),2),
+   st3=round(sum(str3,na.rm=TRUE)/n(),2),
+   st4=round(sum(str4,na.rm=TRUE)/n(),2),
+   st5=round(sum(str5,na.rm=TRUE)/n(),2),
+   st6=round(sum(str6,na.rm=TRUE)/n(),2),
+   st7=round(sum(str7,na.rm=TRUE)/n(),2)
+   )
+
+knitr::kable(head(ilosc_str_szk))
+
+dane_szkola_w_krajach <- ilosc_str_szk %>% group_by(CNT) %>%
+      summarise(
+   st1=round(sum(st1>0,na.rm=TRUE)/n(),2),
+   st2=round(sum(st2>0,na.rm=TRUE)/n(),2),
+   st3=round(sum(st3>0,na.rm=TRUE)/n(),2),
+   st4=round(sum(st4>0,na.rm=TRUE)/n(),2),
+   st5=round(sum(st5>0,na.rm=TRUE)/n(),2),
+   st6=round(sum(st6>0,na.rm=TRUE)/n(),2),
+   st7=round(sum(st7>0,na.rm=TRUE)/n(),2)
+   )
+
+
+p2 <- plot_ly(dane_szkola_w_krajach, x = ~CNT, y = ~st1*100, name = 'strategia1', type = 'scatter', mode = 'lines+markers',              
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na zadania, które potrafią rozwiązać, a mało czasu na te, których nie potrafią")) %>%
+  add_trace(y = ~st2*100, name = 'strategia2', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadania, które potrafią rozwiązać, a dużo na te, których nie potrafią")) %>%
+  add_trace(y = ~st3*100, name = 'strategia3', mode = 'lines+markers',        
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na początku testu, a na 4poz nie zdążają rozwiązać zadań")) %>%
+  add_trace(y = ~st4*100, name = 'strategia4', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na początku testu, a na 4poz szybko rozwiązują zadania")) %>%
+  add_trace(y = ~st5*100, name = 'strategia5', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadań na każdej pozycji i dobre wyniki")) %>%
+  add_trace(y = ~st6*100, name = 'strategia6', mode = 'lines+markers',        
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadań na każdej pozycji i złe wyniki")) %>%
+   add_trace(y = ~st7*100, name = 'strategia7', mode = 'lines+markers',          
+             hoverinfo = 'text',
+             text = ~paste("inne")) %>%
+  layout(xaxis = list(title = "Kraj", dtick=1), 
+         yaxis = list(title = 'Procent szkół'),
+         title="Procent szkół w poszczególnych krajach z daną strategią ")
+
+p2
+
+```
+
+### Komentarz:
+
+Patrząc na udział szkół w strategiach w poszczególnych krajach utrzymuje się tendencja z poprzedniego podpunktu.
+
+## Rozkład strategii względem poziomu stresu
+
+Przygotowanie danych:
+```{r}
+daneStres <- dane %>%
+   select(CNT,position,W_FSTUWT,timing,n.actions,result_num,CNTSCHID,CNTSTUID,
+          ST118Q01,ST118Q02,ST118Q03,ST118Q04,ST118Q05) %>%
+  filter(!is.na(W_FSTUWT) & !is.na(timing) & 
+         !is.na(n.actions) & !is.na(result_num) ) 
+
+daneStres$Q01 <- ifelse(daneStres$ST118Q01=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q01=="Disagree",2,
+                        ifelse(daneStres$ST118Q01=="Agree",3,
+                        ifelse(daneStres$ST118Q01=="Strongly agree",4,0))))
+
+daneStres$Q02 <- ifelse(daneStres$ST118Q02=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q02=="Disagree",2,
+                        ifelse(daneStres$ST118Q02=="Agree",3,
+                        ifelse(daneStres$ST118Q02=="Strongly agree",4,0))))
+
+daneStres$Q03 <- ifelse(daneStres$ST118Q03=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q03=="Disagree",2,
+                        ifelse(daneStres$ST118Q03=="Agree",3,
+                        ifelse(daneStres$ST118Q03=="Strongly agree",4,0))))
+
+daneStres$Q04 <- ifelse(daneStres$ST118Q04=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q04=="Disagree",2,
+                        ifelse(daneStres$ST118Q04=="Agree",3,
+                        ifelse(daneStres$ST118Q04=="Strongly agree",4,0))))
+
+daneStres$Q05 <- ifelse(daneStres$ST118Q05=="Strongly disagree",1,
+                        ifelse(daneStres$ST118Q05=="Disagree",2,
+                        ifelse(daneStres$ST118Q05=="Agree",3,
+                        ifelse(daneStres$ST118Q05=="Strongly agree",4,0))))
+
+daneStres$ST118 <- (daneStres$Q01 + daneStres$Q02 + daneStres$Q03 + daneStres$Q04 + daneStres$Q05)/5
+
+daneStres$sl <- cut(daneStres$ST118, c(0.9,2,3,4), labels=c(1,2,3))
+
+daneStresLevel <- unique(daneStres %>% select(sl,CNT, CNTSCHID, CNTSTUID))
+```
+
+```{r}
+dane_strategie <- left_join(daneStresLevel, strategie[,c("CNTSTUID","str1","str2","str3","str4","str5","str6","str7")], by="CNTSTUID")
+
+ilosc_str <- dane_strategie  %>% group_by(sl) %>%
+   summarise(
+   st1=round(sum(str1,na.rm=TRUE)/n(),2),
+   st2=round(sum(str2,na.rm=TRUE)/n(),2),
+   st3=round(sum(str3,na.rm=TRUE)/n(),2),
+   st4=round(sum(str4,na.rm=TRUE)/n(),2),
+   st5=round(sum(str5,na.rm=TRUE)/n(),2),
+   st6=round(sum(str6,na.rm=TRUE)/n(),2),
+   st7=round(sum(str7,na.rm=TRUE)/n(),2)
+   )
+
+knitr::kable(head(ilosc_str))
+
+plotStres <- plot_ly(ilosc_str, x = ~sl, y = ~st1*100, name = 'strategia1', type = 'scatter', mode = 'lines+markers',              
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na zadania, które potrafią rozwiązać, a mało czasu na te, których nie potrafią")) %>%
+  add_trace(y = ~st2*100, name = 'strategia2', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadania, które potrafią rozwiązać, a dużo na te, których nie potrafią")) %>%
+  add_trace(y = ~st3*100, name = 'strategia3', mode = 'lines+markers',        
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na początku testu, a na 4poz nie zdążają rozwiązać zadań")) %>%
+  add_trace(y = ~st4*100, name = 'strategia4', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("dużo czasu na początku testu, a na 4poz szybko rozwiązują zadania")) %>%
+  add_trace(y = ~st5*100, name = 'strategia5', mode = 'lines+markers',           
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadań na każdej pozycji i dobre wyniki")) %>%
+  add_trace(y = ~st6*100, name = 'strategia6', mode = 'lines+markers',        
+         hoverinfo = 'text',
+         text = ~paste("mało czasu na zadań na każdej pozycji i złe wyniki")) %>%
+   add_trace(y = ~st7*100, name = 'strategia7', mode = 'lines+markers',          
+             hoverinfo = 'text',
+             text = ~paste("inne")) %>%
+  layout(xaxis = list(title = "poziom stresu", dtick=1), 
+         yaxis = list(title = 'Procent uczniów'),
+         title="Procent uczniów z poszczególnym poziomem stresu z daną strategią")
+
+plotStres
+
+
+```
+
+### Komentarz:
+
+Z powyższego wykresu można zauważyć, że dużej liczbie uczniów brakuje czasu na rozwiązanie zadań na pozycji 4 (strategia 3).
+
+Dla najmniejszego poziomu stresu kolejną liczną grupę uczniów stanowią ci, którzy rozwiązują zadania szybko na każdej pozycji i otrzymują dobre wyniki.
+
+Dla uczniów, którzy się stresują, liczną grupę stanowią ci, którzy na początku testu rozwizują zadania długo, a na końcu rozwiązują zadania szybko.
+
+
+

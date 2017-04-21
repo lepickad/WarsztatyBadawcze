@@ -1,0 +1,195 @@
+---
+title: "Raport z zadania na 3.5"
+author: "Marta Jóźwik, Ewa Baranowska"
+date: "12 kwietnia 2017"
+output:
+  html_notebook:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: united
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/E540/Desktop/PISA 2015/zadanie3.5")
+library(knitr)
+library(ggplot2)
+```
+
+
+# Wizualizacje
+
+Rozważymy teraz średnie czasy rozwiązywania zadań w zależności od pozycji, na której znajdywały się pytania.
+
+```{r ,warning=FALSE,echo=FALSE}
+
+load("stat29.rda")
+load("stat30.rda")
+
+ggplot(stat29,aes(x=pozycja,y=TimeAvgSek))+
+  geom_bar(stat="identity")+ggtitle("Średni czas rozwiązywania zadań w zależności od ich pozycji")+ylab("Średni czas w min")+xlab("Pozycja")
+
+stat30$pozycja<-as.factor(stat30$pozycja)
+ggplot(stat30,aes(x=rodzaj,y=TimeAvgSek,fill=pozycja))+
+  geom_bar(stat="identity",position = "dodge")+ggtitle("Średni czas rozwiązywania zadań w zależności od ich typu")+ylab("Średni czas w min")+xlab("Rodzaj zadań")
+```
+
+Widać, że zadania na pozycji 1 są średnio rozwiązywane dłużej niż pozostałe, następnie nastepuje skrócenie czasu (możliwe że uczniowie są już wprawieni), potem znów wzrost (np. z powodu zmęczenia),a te na pozycji 4 są rozwiązywane najkrócej (np. uczniowe spieszą się ponieważ zbliża sie koniec egzaminu). Rozbijając zadania na poszczególne typy widzimy identyczną zależność. 
+
+
+Również wykresy dla wybranych krajów, podziału na płeć i poziom zdenerwowania wyglądają identycznie. Widać, że dalej widzimy takie samo rozmieszczenie czasów rozwiązywania zadań: najdłużej na pozycji 1, potem szybciej pozycja 2, następnie znów dłużej pozycja 3 i najkrócej 4.
+```{r ,warning=FALSE,echo=FALSE}
+
+load("stat32.rda")
+
+stat32$pozycja<-as.factor(stat32$pozycja)
+ggplot(stat32,aes(x=CNT,y=TimeAvgSek,fill=pozycja))+
+  geom_bar(stat="identity",position="dodge")+
+  ggtitle("Średni czas rozwiązywania zadań w zależności od ich pozycji\ndla wybranych krajów")+ylab("Średni czas w min")+xlab("Kraj")
+
+```
+
+```{r ,warning=FALSE,echo=FALSE}
+
+load("stat34.rda")
+
+stat34$pozycja<-as.factor(stat34$pozycja)
+stat34$ST004D01T<-as.factor(stat34$ST004D01T)
+ggplot(stat34,aes(x=ST004D01T,y=TimeAvgSek,fill=pozycja))+
+  geom_bar(stat="identity",position="dodge")+
+  ggtitle("Średni czas rozwiązywania zadań w zależności od ich pozycji\nw podziale na płeć")+ylab("Średni czas w min")+xlab("Płec")+scale_x_discrete(breaks=c(1,2),labels=c("dziewczynki","chłopcy"))
+
+load("stat36.rda")
+
+stat36$ST118Q03NA<-as.factor(stat36$ST118Q03NA)
+stat36<-stat36[!is.na(stat36$ST118Q03NA),]
+stat36$pozycja<-as.factor(stat36$pozycja)
+stat36$ST118Q03NA<-as.factor(stat36$ST118Q03NA)
+ggplot(stat36,aes(x=ST118Q03NA,y=TimeAvgSek,fill=pozycja))+
+  geom_bar(stat="identity",position="dodge")+
+  ggtitle("Średni czas rozwiązywania zadań\nw zależności od ich pozycji i stopnia zdenerwowania")+ylab("Sredni czas w min")+xlab("Poziom zdenerwowania")+scale_x_discrete(breaks=c(1,2,3,4),labels=c("niski","średni","duzy","bardzo duży"))
+
+
+```
+
+# Testowanie dla typów zadań
+
+Zbadałyśmy też różnicę w średnich czasach w 4 klastrach dla każdego z typów zadań. Zostało to zrobione przy użyciu 3-krotnie jednoczynnikowej ANOVY dla 4 grup (całośc kodu w skrypcie Z3_5.r)
+
+Czasy nie miały rozkładu normalnego, zatem zostały przekształcone dla każdego ze zbiorów transformacją Boxa-Coxa (lambda dla matematyki: 0.292, czytania: 0.25, przyrody: 0.276). Potem wykonałyśmy 3-krotnie ANOVĘ  otrzymując następujące średnie w klastrach (średnie liczone z czasów przekształconych) i poziomy krytyczne (stat. testowa, mająca rozkład Snedecora miała parametry: 3 (4 - 1 klastry) oraz drugi parametr: sumie wag dla danego zbioru -3 ) :
+
+
+matematyka: p-wartość: 0.9972367 
+```{r}
+load("Z3_5_srednie_czas_klastry_matem.rda")
+kable(srednie_matem)
+```
+czytanie: p-wartość: 0.9979847
+```{r}
+load("Z3_5_srednie_czas_klastry_read.rda")
+kable(srednie_read)
+```
+
+przyroda: p-wartość: 0.9938741
+```{r}
+load("Z3_5_srednie_czas_klastry_science.rda")
+kable(srednie_science)
+```
+
+Widać zatem, że dla żadnego typu zadań nie występuje istotna statystycznie różnica między klastrami w średnich czasach.
+
+# Skrypty
+
+### Z3_5.r
+
+```{r,eval=F}
+setwd("C:/Users/E540/Desktop/PISA 2015/zadanie0")
+load("Z0_matem_w.rda")
+load("Z0_read_w.rda")
+load("Z0_science_w.rda")
+
+czyIstotne <- function(zbior){
+            
+            require(dplyr)
+            require(car)
+            require(plotrix)
+         # wybieranie kolumn
+         zbior %>% dplyr::select(timing, W_FSTUWT, pozycja) -> dane
+         
+         # histogram
+         
+         #weighted.hist(dane$timing, w =dane$W_FSTUWT, xlim = c(0,1000000), breaks = 1000)
+         
+         # usuwanie odstających czasów
+         
+         # usuwanie czasow wiekszych niz 10 minut
+         dane <- dane %>% filter(timing < 600000)
+         
+         # szukanie transformacji
+         lambda <- powerTransform(dane$timing, weights= dane$W_FSTUWT)$lambda
+         dane$poprawione <- bcPower(dane$timing, lambda= lambda)
+         
+         # histogram poprawionych danych
+         #weighted.hist(dane$poprawione, w =dane$W_FSTUWT, breaks = 1000)
+         
+         
+         # liczenie srednich w grupach i po calosci
+         dane %>% group_by(pozycja) %>% summarise( srednia = weighted.mean(poprawione, W_FSTUWT)) -> srednie
+         dane %>% summarise( srednia = weighted.mean(poprawione, W_FSTUWT)) -> srednia_calosc
+         
+         # liczenie statystyki ANOVU
+         SST <- sum( (dane$poprawione - srednia_calosc$srednia)^2 * dane$W_FSTUWT )
+         
+         roznica1 <- dane %>% filter(pozycja ==1 ) %>% summarise( roznica = sum((poprawione - as.numeric(srednie[1,2]))^2 * W_FSTUWT ))
+         roznica2 <- dane %>% filter(pozycja ==2 ) %>% summarise( roznica = sum((poprawione - as.numeric(srednie[2,2]))^2 * W_FSTUWT ))
+         roznica3 <- dane %>% filter(pozycja ==3 ) %>% summarise( roznica = sum((poprawione - as.numeric(srednie[3,2]))^2 * W_FSTUWT ))
+         roznica4 <- dane %>% filter(pozycja ==4 ) %>% summarise( roznica = sum((poprawione - as.numeric(srednie[4,2]))^2 * W_FSTUWT ))
+         
+         SSE <-  roznica1$roznica + roznica2$roznica + roznica3$roznica + roznica4$roznica
+         
+         wagi <- dane %>%  group_by(pozycja) %>% summarise( roznica = sum( W_FSTUWT ))
+         
+         SSM <- sum( (srednie$srednia - srednia_calosc$srednia)^2 * wagi$roznica )
+         
+         # sprawdzenie 
+         #SSM + SSE == SST #TRUE
+         
+         wagi_calosc <- dane %>% summarise( roznica = sum( W_FSTUWT ))
+         wagi_calosc  <- round(wagi_calosc$roznica)
+         F_stat <- SSM/SSE
+         
+         return(list(pvalue= (1 -pf(F_stat, 3, wagi_calosc - 3)),srednie =srednie, lambda=lambda))
+         #qf(0.05, 3, wagi_calosc -3)
+}
+
+# matematyka
+wyniki_matem <- czyIstotne(Z0_matem) 
+wyniki_matem$pvalue #0.9972367
+srednie_matem <- wyniki_matem$srednie
+save(srednie_matem, file="Z3_5_srednie_czas_klastry_matem.rda")
+rm(Z0_matem)
+
+# czytanie
+wyniki_read <- czyIstotne(Z0_read) 
+wyniki_read$pvalue #0.9979847
+srednie_read <- wyniki_read$srednie
+save(srednie_read, file="Z3_5_srednie_czas_klastry_read.rda")
+rm(Z0_read)
+
+# przyroda
+wyniki_science <- czyIstotne(Z0_science)
+wyniki_science$pvalue #0.9938741
+srednie_science <- wyniki_science$srednie
+save(srednie_science, file="Z3_5_srednie_czas_klastry_science.rda")
+rm(Z0_science)
+
+
+```
+
+
+
+
+
+

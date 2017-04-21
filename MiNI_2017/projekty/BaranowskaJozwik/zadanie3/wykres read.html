@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-  <title>Dziewczyny górą?</title>
+  <title>PISA 2015</title>
 
 
    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
@@ -42,27 +42,25 @@
         font-family: 'Raleway', sans-serif;
      }
 
+   .legend{
+     font-size: 12px;
+   }
 
-/* do tooltipow */
+
+
   #tooltip { 
-    position: fixed;  /* jest pozycjonowana pikselami ktore zostaly podane */  
+    position: fixed; 
     height: auto;
     width:  auto;       
     padding: 5px;       
     font: 10px sans-serif;  
     text-align: left;      
-    background: white; /* tlo */
-    border: 10px;    /* obramowanie */
-    border-radius: 10px;    /* obramowanie zaokrąglone */ 
+    background: white;
+    border: 10px;    
+    border-radius: 10px;   
     box-shadow:  0px 0px 10px 3px rgba(0,0,0,0.57); 
-    pointer-events: none;/*zeby nie reagował na najechanie na niego myszką, to co my robimy to tworzymy tooltipa i potem
-    go ukrywamy lub nie, jest niewidoczny ale jest, wiec mozna na niego najechac myszka, jesli najedziemy na niego,
-    to nie mamy dostepu do elementow pod nim, mozna by było po prostu tworzyc i usuwac go w .on */
-      
+    pointer-events: none;
   }
-
-
-
 
     </style>
      
@@ -74,132 +72,120 @@
 
 <script type="text/javascript">
 
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-/* +++++++++++++++++++++++++++++++++++++ USTAWIENIA POCZĄTKOWE +++++++++++++++++++++++++++++++++++++++++++++++++++ */
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
+
+
+//********************************************************************************* DANE
+
+// DO KÓŁEK
 
 var jsonik = [{"CNT":"ARE","M":46.5398,"F":54.69,"czyIstotny":true,"nazwa":"United Arab Emirates","GII":0.232},{"CNT":"AUS","M":58.5314,"F":64.6766,"czyIstotny":true,"nazwa":"Australia","GII":0.12},{"CNT":"AUT","M":58.6373,"F":63.0145,"czyIstotny":true,"nazwa":"Austria","GII":0.073},{"CNT":"BEL","M":62.0705,"F":64.6789,"czyIstotny":true,"nazwa":"Belgium","GII":0.073},{"CNT":"BGR","M":50.0001,"F":59.0164,"czyIstotny":true,"nazwa":"Bulgaria","GII":0.223},{"CNT":"BRA","M":45.2303,"F":50.363,"czyIstotny":true,"nazwa":"Brazil","GII":0.414},{"CNT":"CAN","M":62.105,"F":67.4165,"czyIstotny":true,"nazwa":"Canada","GII":0.098},{"CNT":"CHE","M":59.5147,"F":64.5393,"czyIstotny":true,"nazwa":"Switzerland","GII":0.04},{"CNT":"CHL","M":57.686,"F":60.4249,"czyIstotny":true,"nazwa":"Chile","GII":0.322},{"CNT":"COL","M":48.6196,"F":50.4334,"czyIstotny":false,"nazwa":"Colombia","GII":0.393},{"CNT":"CRI","M":48.8619,"F":52.8429,"czyIstotny":true,"nazwa":"Costa Rica","GII":0.308},{"CNT":"CZE","M":59.72,"F":63.9035,"czyIstotny":true,"nazwa":"Czech Republic","GII":0.129},{"CNT":"DEU","M":63.3321,"F":67.0257,"czyIstotny":true,"nazwa":"Germany","GII":0.066},{"CNT":"DNK","M":60.9837,"F":65.8326,"czyIstotny":true,"nazwa":"Denmark","GII":0.041},{"CNT":"DOM","M":36.0576,"F":42.9322,"czyIstotny":true,"nazwa":"Dominican Republic","GII":0.47},{"CNT":"ESP","M":59.7619,"F":62.3129,"czyIstotny":true,"nazwa":"Spain","GII":0.081},{"CNT":"EST","M":61.6545,"F":67.8268,"czyIstotny":true,"nazwa":"Estonia","GII":0.131},{"CNT":"FIN","M":62.5195,"F":71.155,"czyIstotny":true,"nazwa":"Finland","GII":0.056},{"CNT":"FRA","M":60.9901,"F":66.3923,"czyIstotny":true,"nazwa":"France","GII":0.102},{"CNT":"GBR","M":59.2447,"F":64.0553,"czyIstotny":true,"nazwa":"United Kingdom","GII":0.131},{"CNT":"GRC","M":53.7607,"F":58.9745,"czyIstotny":true,"nazwa":"Greece","GII":0.119},{"CNT":"HKG","M":64.8117,"F":69.7871,"czyIstotny":true,"nazwa":"Hong Kong","GII":0},{"CNT":"HRV","M":56.6266,"F":62.1204,"czyIstotny":true,"nazwa":"Croatia","GII":0.141},{"CNT":"HUN","M":56.6478,"F":61.701,"czyIstotny":true,"nazwa":"Hungary","GII":0.252},{"CNT":"IRL","M":63.0249,"F":65.7894,"czyIstotny":true,"nazwa":"Ireland","GII":0.127},{"CNT":"ISL","M":53.7828,"F":63.0717,"czyIstotny":true,"nazwa":"Iceland","GII":0.051},{"CNT":"ISR","M":57.3343,"F":60.8437,"czyIstotny":true,"nazwa":"Israel","GII":0.103},{"CNT":"ITA","M":59.0382,"F":61.8544,"czyIstotny":true,"nazwa":"Italy","GII":0.085},{"CNT":"JPN","M":65.7563,"F":67.4256,"czyIstotny":false,"nazwa":"Japan","GII":0.116},{"CNT":"KOR","M":62.9415,"F":69.9308,"czyIstotny":true,"nazwa":"Korea","GII":0.067},{"CNT":"LTU","M":52.9168,"F":60.9583,"czyIstotny":true,"nazwa":"Lithuania","GII":0.121},{"CNT":"LUX","M":57.7661,"F":60.7469,"czyIstotny":true,"nazwa":"Luxembourg","GII":0.075},{"CNT":"LVA","M":55.1657,"F":63.5666,"czyIstotny":true,"nazwa":"Latvia","GII":0.191},{"CNT":"MAC","M":58.8725,"F":65.5235,"czyIstotny":true,"nazwa":"Macao","GII":0},{"CNT":"MEX","M":46.5759,"F":50.7945,"czyIstotny":true,"nazwa":"Mexico","GII":0.345},{"CNT":"MNE","M":48.9957,"F":55.5372,"czyIstotny":true,"nazwa":"Montenegro","GII":0.156},{"CNT":"NLD","M":60.9563,"F":65.1189,"czyIstotny":true,"nazwa":"Netherlands","GII":0.044},{"CNT":"NOR","M":61.7818,"F":67.6979,"czyIstotny":true,"nazwa":"Norway","GII":0.053},{"CNT":"NZL","M":60.3937,"F":65.6335,"czyIstotny":true,"nazwa":"New Zealand","GII":0.158},{"CNT":"PER","M":44.6433,"F":47.1912,"czyIstotny":true,"nazwa":"Peru","GII":0.385},{"CNT":"POL","M":60.5362,"F":65.8785,"czyIstotny":true,"nazwa":"Poland","GII":0.137},{"CNT":"PRT","M":61.4834,"F":64.2912,"czyIstotny":true,"nazwa":"Portugal","GII":0.091},{"CNT":"QAT","M":42.1479,"F":50.2888,"czyIstotny":true,"nazwa":"Qatar","GII":0.542},{"CNT":"QCH","M":60.7378,"F":63.969,"czyIstotny":true,"nazwa":"B-S-J-G (China)","GII":0.164},{"CNT":"QES","M":59.524,"F":62.8778,"czyIstotny":true,"nazwa":"Spain (Regions)","GII":0.081},{"CNT":"QUC","M":63.7498,"F":67.5482,"czyIstotny":false,"nazwa":"Massachusettes (USA)","GII":0},{"CNT":"QUE","M":57.968,"F":61.698,"czyIstotny":true,"nazwa":"North Carolina (USA)","GII":0},{"CNT":"RUS","M":56.6875,"F":61.4971,"czyIstotny":true,"nazwa":"Russian Federation","GII":0.271},{"CNT":"SGP","M":65.4021,"F":68.5632,"czyIstotny":true,"nazwa":"Singapore","GII":0.068},{"CNT":"SVK","M":53.0044,"F":58.2127,"czyIstotny":true,"nazwa":"Slovak Republic","GII":0.179},{"CNT":"SVN","M":60.0754,"F":68.1975,"czyIstotny":true,"nazwa":"Slovenia","GII":0.053},{"CNT":"SWE","M":59.5846,"F":67.718,"czyIstotny":true,"nazwa":"Sweden","GII":0.048},{"CNT":"TAP","M":60.0681,"F":64.2662,"czyIstotny":true,"nazwa":"Chinese Taipei","GII":0},{"CNT":"THA","M":39.9367,"F":46.2818,"czyIstotny":true,"nazwa":"Thailand","GII":0.366},{"CNT":"TUN","M":38.8797,"F":44.8585,"czyIstotny":true,"nazwa":"Tunisia","GII":0.289},{"CNT":"TUR","M":45.8707,"F":51.4811,"czyIstotny":true,"nazwa":"Turkey","GII":0.328},{"CNT":"URY","M":52.7482,"F":56.8837,"czyIstotny":true,"nazwa":"Uruguay","GII":0.284},{"CNT":"USA","M":57.9837,"F":61.06,"czyIstotny":true,"nazwa":"United States","GII":0.203}]
-// ustawienia obszaru rysowania
+
+// DO LINII ŚREDNICH
+var total = [ 59.52187, 55.65790];
+
+// TYTUŁ I PODTYTUŁ
+var tytulik = "Dziewczyny górą?";
+var podtytulik = "Procent poprawnych odpowiedzi w dziale czytania w podziale na płeć i kraje";
+
+//********************************************************************************* USTAWIENIA OBSZARU RYSOWANIA
+
 var margin = {top: 100, right: 260, bottom: 60, left: 60};
 
 var width = 980 - margin.left - margin.right,
     height = 560 - margin.top - margin.bottom;
 
-// cała grafika
+// CAŁA GRAFIKA
 var svg=d3.select("#chart")  
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
 
-// obszar wykresu
+// OBSZAR WYKRESU
 var g = svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-/* +++++++++++++++++++++++++++++++++++++  SKALE, OSIE, KÓŁKA   +++++++++++++++++++++++++++++++++++++++++++++++++++ */
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+//********************************************************************************* SKALE
+
+// SKALA X
+
+// oś Y i X maja miec ta sama skale wiec szukam max i min z obu zmiennych aby je ustawic jako min i max z osi
+var maxik = d3.max(  [  d3.max(jsonik, function(d){ return d["F"]}),
+            d3.max(jsonik, function(d){ return d["M"]})
+            ]
+           ) + 10;
 
 
-
-// skale 
-  var zmiennaX = "F";
-  var zmiennaY = "M";
-
-  var skalaX = d3.scale.linear(); /* czy zmienić na linear i  dlaczego? */
-
-  skalaX.range([0, width]);   
-
-var max = d3.max([d3.max(jsonik,function(d){ return d[zmiennaX];}), d3.max(jsonik,function(d){ return d[zmiennaY];})])
-
-var min = 0//d3.min([d3.min(jsonik,function(d){ return d[zmiennaX];}), d3.min(jsonik,function(d){ return d[zmiennaY];})])-10
+var minik = d3.min(  [  d3.min(jsonik, function(d){ return d["F"];}),
+            d3.min(jsonik, function(d){ return d["M"];})
+            ]
+           ) - 10;
 
 
-  skalaX.domain( [min,  max ] ) /* 2 by oddalić max od końca */
+var zmiennaX = "F";
 
-  
+var skalaX = d3.scale.linear(); 
 
-  var skalaY= d3.scale.linear(); /* czy zmienić na linear i  dlaczego? */
+  skalaX.range( [0, width]);   
+  skalaX.domain( [minik, maxik] );
+
+//SKALA Y
+
+var zmiennaY = "M";
+
+var skalaY= d3.scale.linear();
 
   skalaY.range([height,0]);   
+  skalaY.domain( [minik,  maxik] );
 
-
-  skalaY.domain( [min,  max ] ) /* 2 by oddalić max od końca */
-
+// SKALA KOLOR
 
 var zmiennaKolor = "czyIstotny";
 
-var skalaKolor= d3.scale.ordinal(); /* czy zmienić na linear i  dlaczego? */
+var skalaKolor= d3.scale.ordinal(); 
 
-  skalaKolor.range(["#F69685","#D4EFFC"]);   
-//#D4EFFC#F69685
-//range(["#E11B16","#007EA8"]);   
-  skalaKolor.domain( [true,  false ] ) /* 2 by oddalić max od końca */
+  skalaKolor.range(["#F69685","#D4EFFC"]);    
+  skalaKolor.domain( [true,  false ] ); 
 
+// SKALA WIELKOŚĆ
 
 var zmiennaR = "GII";
 
-var skalaR= d3.scale.sqrt(); /* czy zmienić na linear i  dlaczego? */
+var skalaR= d3.scale.sqrt(); 
 
   skalaR.range([2,10]);   
+  skalaR.domain( [0, d3.max(jsonik,function(d){return d[zmiennaR]}) ] ); 
 
 
-  skalaR.domain( [0, d3.max(jsonik,function(d){return d[zmiennaR]}) ] ) /* 2 by oddalić max od końca */
+//********************************************************************************* OSIE
 
-
-
-
-
-// osie
-
-
-
-//----------------------- KOD 2
-
-
-//-------------- 1
+// OŚ X
 
   var xAxis = d3.svg.axis()
                     .scale(skalaX)
                     .orient("bottom")
-                    .outerTickSize(0)
-                    //.innerTickSize(-height) 
+                    .outerTickSize(0)       
                     .tickPadding(10)
                     
                     
-
-
   var xAxisG = g.append("g")
                   .attr("class", "axis x") 
                   .attr("transform", "translate(0," + height + ")")
 
+
   xAxisG.call(xAxis);
 
-//-------------- 2
 
- // tytul osi X
   xAxisG.append("text")
         .attr("text-anchor", "end")
         .attr("x", width)
         .attr("y", margin.bottom*(2/3))
           .text("Dziewczyny [%]")
 
-//-------------- 3
 
 
-
-
-
-/* ----------------------ZADANIE 2  
-
-Dodaj oś Y do wykresu. Podpowiedzi: .orient("left"), bez formatowania ticków , bez translate dla g, 
-za to z np. .attr("transform", "translate (-40,0) rotate(-90)")  dla tekstu tytułu osi
-
-
-  */
-
-
+// OŚ Y
 
   var yAxis = d3.svg.axis()  
                     .scale(skalaY) 
@@ -209,47 +195,21 @@ za to z np. .attr("transform", "translate (-40,0) rotate(-90)")  dla tekstu tytu
                     .tickPadding(10)
         
 
-
-
-  var yAxisG = g.append("g") /* */
-                  .attr("class", "axis y") /* */
+  var yAxisG = g.append("g") 
+                  .attr("class", "axis y") 
 
 
   yAxisG.call(yAxis);
 
-  // tytul osi Y
+
   yAxisG.append("text")
           .attr("transform", "translate (-40,0) rotate(-90)") 
           .attr("text-anchor", "end")
           .text("Chłopcy [%]")
              
 
+//********************************************************************************* TYTUŁY, ŹRÓDŁO
 
-
-//----------------------- KOD 3
-
-
-//-------------- 1
-
-
-//-------------- 2
-
-
-
-
-
-
-
-
-/* ----------------------ZADANIE 3  
-
-Dodaj do wykresu tytuł, podtytuł oraz źródło danych.
-
-  */
-
-
-
-// tytuły i zrodlo
 var tytuly = svg.append("g")
                  .attr("class", "tytuly")
 
@@ -257,13 +217,13 @@ var tytul = tytuly.append("text")
               .attr("x", margin.left)             
               .attr("y", (margin.top)*(1/3))
               .style("font-size", "28px")  
-              .text("Dziewczyny górą?");
+              .text(tytulik);
 
 var podtytul = tytuly.append("text")
               .attr("x", margin.left)             
               .attr("y", (margin.top)*(2/3))
               .style("font-size", "16px")  
-              .text("Procent poprawnych odpowiedzi w dziale czytania w podziale na płeć i kraje");
+              .text(podtytulik);
 
 var zrodlo = tytuly.append("text")
               .attr("x", margin.left)             
@@ -272,41 +232,42 @@ var zrodlo = tytuly.append("text")
               .text("Źródło: PISA 2015, UNDP: GII 2015");
 
 
+//********************************************************************************* LINIE ŚREDNICH I LINIA GŁÓWNA
 
-// linia
+
+// LINIA GŁÓWNA
 
 var liniaGlowna = g.append("line")
-           .attr("x1",skalaX(min)) // !!! getter 
-           .attr("y1", skalaY(min))
-           .attr("x2", skalaX(max)) // !!! getter 
-           .attr("y2", skalaY(max))
-                   .style("stroke","black")
-                    .style("solid-width","2px")
+           .attr("x1",skalaX(minik)) 
+           .attr("y1", skalaY(minik))
+           .attr("x2", skalaX(maxik))  
+           .attr("y2", skalaY(maxik))
+           .style("stroke","black")
+           .style("solid-width","2px")
 
-var total = [ 59.52187, 55.65790];
-
+// LINIA M
 
 var liniaM = g.append("line")
-           .attr("x1",skalaX(min)) // !!! getter 
+           .attr("x1",skalaX(minik)) 
            .attr("y1", skalaY(total[1]))
-           .attr("x2", skalaX(max)) // !!! getter 
+           .attr("x2", skalaX(maxik)) 
            .attr("y2", skalaY(total[1]))
                    .style("stroke","black")
                    .style("opacity",0.7)
                    .style("stroke-dasharray",3)
 
-
+// LINIA F
 
 var liniaF = g.append("line")
-           .attr("y1",skalaY(min)) // !!! getter 
+           .attr("y1",skalaY(minik)) 
            .attr("x1", skalaX(total[0]))
-           .attr("y2", skalaY(max)) // !!! getter 
+           .attr("y2", skalaY(maxik)) 
            .attr("x2", skalaX(total[0]))
                    .style("stroke","black")
                    .style("opacity",0.7)
                    .style("stroke-dasharray",3)
 
-// teksty
+// TEKSTY NA LINIACH
 
 var tekstM = g.append("text")
           .attr("class", "tytuly")
@@ -324,19 +285,25 @@ var tekstF = g.append("text")
 
 
 
-// dodawanie kółek
+//********************************************************************************* KÓŁKA I KWADRACIKI
+
+// KOŁKA
 
   var kolka = g.selectAll("circle")
-                  .data(jsonik)
+                  .data(
+                    jsonik.filter(function(d){ // obserwacje z GII - brak danych, mają ustalone GII jako 0, więc te odflitrowujemy tutaj
+                      return d[zmiennaR] != 0 ;
+                    })
+                    )
                   .enter()
                   .append("circle");
                   
 
   kolka.attr("cx",function(d){return skalaX(d[zmiennaX]);}) 
-/* ? */       .attr("cy",function(d){return skalaY(d[zmiennaY]);})
-/* ? */       .attr("r",function(d){return skalaR(d[zmiennaR]);})
-/* ? */       .attr("fill", function(d){return skalaKolor(d[zmiennaKolor]); })
-              .style("stroke", function(d){
+           .attr("cy",function(d){return skalaY(d[zmiennaY]);})
+           .attr("r",function(d){return skalaR(d[zmiennaR]);})
+           .attr("fill", function(d){return skalaKolor(d[zmiennaKolor]); })
+               .style("stroke", function(d){
 
                   if(d[zmiennaKolor]){
                     return "#E11B16";
@@ -347,15 +314,43 @@ var tekstF = g.append("text")
               })
               .attr("stroke-width", "1px")
 
-//range(["#E11B16","#007EA8"]);
+// KWADRACIKI
 
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-/* +++++++++++++++++++++++++++++++++++++     INTERAKTYWNOŚĆ    +++++++++++++++++++++++++++++++++++++++++++++++++++ */
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+var kwadraciki = g.selectAll("rect")
+                  .data(
+                    jsonik.filter(function(d){ // obserwacje z GII - brak danych, mają ustalone GII jako 0, więc te bierzemy tutaj
+                      return d[zmiennaR] == 0 ;
+                    })
+                    )
+                  .enter()
+                  .append("rect");
+            
+   var a = skalaR(0.1);      //szerokosc kwadratu
+
+  kwadraciki.attr("x",function(d){return skalaX(d[zmiennaX])-a/2;}) // x i y oznaczaja polozenie punktu w gornym lewym boku kwadratu, poprawiamy ja o szerokosc
+           .attr("y",function(d){return skalaY(d[zmiennaY])-a/2;})
+         .attr("height", a)
+         .attr("width",a)
+           .attr("fill", function(d){return skalaKolor(d[zmiennaKolor]); })
+               .style("stroke", function(d){
+
+                  if(d[zmiennaKolor]){
+                    return "#E11B16";
+                  }else{
+                    return "#007EA8";
+                  }
+
+              })
+              .attr("stroke-width", "1px")
+
+
+
+
+//********************************************************************************* TOOLTIPY
 
 var doRozmiaru = function(d){
 
-  if(d ==0){
+  if(d == 0){
     return "brak danych";
   }else{
     return d.toFixed(2);
@@ -393,6 +388,7 @@ var tooltipki=d3.select("#chart").append("div").attr("id", "tooltip").style("opa
       }
 
     )
+
 kolka
 .on("mouseout", function(d){
 
@@ -425,16 +421,66 @@ kolka.attr("class", function(d){
        })
 
 
+ kwadraciki
+  .on("mouseover", function(d){
+
+
+      tooltipki.html( "<b>" + d[zmiennaEtykiety] +"</b>" + "<br/>"+
+          "Procent popr. odp. u dziewczyn: " + "<b>" + d[zmiennaX].toFixed(2) + "% </b>" +"<br/>"+
+          "Procent popr. odp. u chłopców: " +"<b>" + d[zmiennaY].toFixed(2) + "% </b>" +"<br/>" +
+          "Indeks nierówności płci: " +"<b>" + doRozmiaru(d[zmiennaR]) + " </b>" +"<br/>" 
+           )
+      .style("left", (d3.event.pageX ) + "px") /* ustalamy pozycje elementu tam gdzie zostanie akcja podjeta */
+      .style("top", (d3.event.pageY) + "px")
+      .transition()
+      .duration(200)
+      .style("opacity",1);
+    
+
+      d3.select(this)
+            .transition()
+            .duration(200)
+            .style("stroke-width", "3px");
+
+
+
+      }
+
+    )
+
+kwadraciki
+.on("mouseout", function(d){
+
+    
+      d3.select(this)
+        .transition()
+        .duration(200)
+        .style("stroke-width", "1px");
+
+      tooltipki
+      .transition()
+      .duration(200)
+      .style("opacity", 0);
+              
+ 
+
+      }
+    );
+//********************************************************************************* LINIA DLA POLSKI 
+// (w danych zawsze ma indeks GII, wiec odwolujemy sie do niej jako do kółka)
+
+// LINIA 
+
 var liniaPolska = g.append("line")
-           .attr("x1", d3.select(".kolkoPolska").attr("cx")) // !!! getter 
+           .attr("x1", d3.select(".kolkoPolska").attr("cx")) 
            .attr("y1", d3.select(".kolkoPolska").attr("cy"))
-           .attr("x2", d3.select(".kolkoPolska").attr("cx")) // !!! getter 
-                   .attr("y2", skalaY(30)-15)
+           .attr("x2", d3.select(".kolkoPolska").attr("cx")) 
+                   .attr("y2", skalaY(minik+10))
                    .style("stroke","grey")
                    .style("stroke-dasharray",8)
                    .style("opacity", 1)
 
-
+// TEKST
 
 var adnotacja = g.append("text")
                   .attr("class","adnotacja")
@@ -443,19 +489,26 @@ var adnotacja = g.append("text")
                   .attr("font-size", "14px")
                   .style("stroke", "grey")
                   .style("opacity", 0.9)
-                  .attr("y", skalaY(30))
+                  .attr("y", skalaY(minik+10)+10)
                   .text("Polska")
               
 
+
+//********************************************************************************* LEGENDY
+
+
+// LEGENDA KOLOR
+
 var legendaKolor = svg.append("g")
     .attr("class", "legend kolor")
-    .attr("transform", "translate(" + (width + margin.left + 60 )  + "," + (margin.top+90) + ")") //ustalam pozycje x i y dla calej grupy
-    .selectAll("g")
-    .data([true,false])
-    .enter()
-    .append("g")
+    .attr("transform", "translate(" + (width + margin.left + 60 )  + "," + (margin.top+90) + ")") 
+
+ var legendaKolorEtykiety = legendaKolor.selectAll("g")
+                      .data([true,false])
+                      .enter()
+                      .append("g")
     
-  legendaKolor.append("circle")
+  legendaKolorEtykiety.append("circle")
               .attr("fill", function(d){ return skalaKolor(d);})
               .style("stroke", function(d){
 
@@ -470,9 +523,9 @@ var legendaKolor = svg.append("g")
               .attr("cy", function(d,i){ return 35*i; })
               .attr("r",8)
 
-  var tekst = legendaKolor.append("text")
-              .attr("x", 20) // odsuwam od prostoków w prawo o 20px
-              .attr("y", function(d,i){ return 35*i+4; }) // 10 to szerokosc kwadratu
+  legendaKolorEtykiety.append("text")
+              .attr("x", 20)
+              .attr("y", function(d,i){ return 35*i+4; }) 
               .text(function(d){
 
                   if(d){
@@ -483,112 +536,106 @@ var legendaKolor = svg.append("g")
 
                 ;})
 
-var legendaTekst = svg.append("text")
-    .attr("class", "legend kolor")
-    .attr("x", width + margin.left + 50 ) 
-    .attr("y", margin.top+30)
+
+legendaKolor.append("text")
+  .attr("x",-8)
+    .attr("y", -45)
     .text("Wynik testu równości proporcji")
     
 
-var legendaTekst = svg.append("text")
-    .attr("class", "legend kolor")
-    .attr("x", width + margin.left + 50 ) 
-    .attr("y", margin.top+50)
+legendaKolor.append("text")
+  .attr("x",-8)
+    .attr("y", -25)
     .text("popr. odpowiedzi:")    
 
 
+// LEGENDA WIELKOŚĆ
 
-svg.append("text")
+
+var legendaWielkosc = svg.append("g")
     .attr("class", "legend r")
-    .attr("x", width + margin.left + 50 ) 
-    .attr("y", margin.top+200)
+    .attr("transform", "translate(" + (width + margin.left + 60 )  + "," + (margin.top+250) + ")") 
+
+ var legendaWielkoscEtykiety = legendaWielkosc.selectAll("g")
+                      .data([0.5, 0.05])
+                      .enter()
+                      .append("g")
+    
+  legendaWielkoscEtykiety.append("circle")
+           .attr("class", "legend r")
+                 .attr("fill", "none")
+           .style("stroke-dasharray", 0.7)
+           .style("stroke","black")
+                 .attr("cx", 0)
+                 .attr("cy", function(d,i){ return 35*i; })
+                 .attr("r", function(d){ return skalaR(d);})
+
+
+
+  legendaWielkoscEtykiety.append("text")
+              .attr("x", 20)
+              .attr("y", function(d,i){ return 35*i+4; }) 
+              .text(function(d){
+
+                  if(d == 0.5){
+                    return "indeks = 0.5";
+                  }else{
+                    return "indeks = 0.05";
+                  }
+
+                ;})
+
+
+// dodajemy kropki pomiedzy kołkami
+
+
+legendaWielkosc.selectAll("circle:not(.legend)")
+  .data([1,2,3])
+  .enter()
+  .append("circle")
+    .attr("cx", 0 ) 
+    .attr("cy", function(d){ return d*5+skalaR(0.5);})
+    .attr("r", 0.5)
+    .attr("fill", "black")
+    .style("stroke","black")
+
+
+
+
+// dodajemy kwadracik
+
+
+var legendaWielkoscEtykietyKwadrat = legendaWielkosc.append("g");
+
+legendaWielkoscEtykietyKwadrat.append("rect")
+          .attr("fill", "none")
+          .style("stroke-dasharray", 0.7)
+          .style("stroke","black")
+        .attr("x",function(d){return -a/2;}) 
+            .attr("y",function(d){return 35*2-a/2;})
+          .attr("height", a)
+          .attr("width",a)
+
+
+legendaWielkoscEtykietyKwadrat.append("text")
+                .attr("x", 20 ) 
+                .attr("y", 35*2+4)
+                .text("indeks = brak danych")
+
+
+
+
+
+legendaWielkosc.append("text")
+  .attr("x",-8)
+    .attr("y", -45)
     .html("Wielkość kółka odpowiada")
     
-svg.append("text")
-    .attr("class", "legend r")
-    .attr("x", width + margin.left + 50 ) 
-    .attr("y", margin.top+220)
+legendaWielkosc.append("text")
+  .attr("x",-8)
+    .attr("y", -25)
     .html("wartości indeksu nierówności płci:")
     
- var dane_legenda_kolka = [0.5, 0.05];
-
-svg.append("circle")
-    .attr("class", "legend r")
-    .attr("cx", width + margin.left + 50 + 10 ) 
-    .attr("cy", margin.top + height*(2/3))
-    .attr("r", skalaR(0.5))
-    .attr("fill", "none")
-    .style("stroke-dasharray", 1)
-    .style("stroke","black")
-    
-svg.append("circle")
-    .attr("class", "legend r")
-    .attr("cx", width + margin.left + 50 + 10 ) 
-    .attr("cy", margin.top + height*(2/3)+40)
-    .attr("r", skalaR(0.05))
-    .attr("fill", "none")
-    .style("stroke-dasharray", 1)
-    .style("stroke","black")
-
- svg.append("text")
-    .attr("class", "legend r")
-    .attr("x", width + margin.left + 50 + 30 ) 
-    .attr("y", margin.top + height*(2/3)+5)
-    .text("indeks = 0.5")
-  
-
-  svg.append("text")
-    .attr("class", "legend r")
-    .attr("x", width + margin.left + 50 + 30 ) 
-    .attr("y", margin.top + height*(2/3)+45)
-    .text("indeks = 0.05")
-
-
-svg.append("circle")
-    .attr("class", "legend r")
-    .attr("cx", width + margin.left + 50 + 10 ) 
-    .attr("cy", margin.top + height*(2/3)+75)
-    .attr("r", skalaR(0))
-    .attr("fill", "none")
-    .style("stroke-dasharray", 1)
-    .style("stroke","black")
-
-
-
-  svg.append("text")
-    .attr("class", "legend r")
-    .attr("x", width + margin.left + 50 + 30 ) 
-    .attr("y", margin.top + height*(2/3)+80)
-    .text("indeks = brak danych")
-
-
-// krpoki pomiędzy w legendzie
-
-svg.append("circle")
-    .attr("class", "legend r")
-    .attr("cx", width + margin.left + 50 + 10 ) 
-    .attr("cy", margin.top + height*(2/3)+27)
-    .attr("r", 0.5)
-    .attr("fill", "black")
-    .style("stroke","black")
-
-
-
-svg.append("circle")
-    .attr("class", "legend r")
-    .attr("cx", width + margin.left + 50 + 10 ) 
-    .attr("cy", margin.top + height*(2/3)+22)
-    .attr("r", 0.5)
-    .attr("fill", "black")
-    .style("stroke","black")
-
-svg.append("circle")
-    .attr("class", "legend r")
-    .attr("cx", width + margin.left + 50 + 10 ) 
-    .attr("cy", margin.top + height*(2/3)+17)
-    .attr("r", 0.5)
-    .attr("fill", "black")
-    .style("stroke","black")
 
 
 </script>
@@ -597,3 +644,4 @@ svg.append("circle")
 
 
 </html>
+

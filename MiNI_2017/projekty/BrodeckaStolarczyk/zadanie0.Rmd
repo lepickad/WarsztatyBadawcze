@@ -12,6 +12,7 @@ library(tidyr)
 library(stringi)
 library(data.table)
 library(readxl)
+library(foreign)
 ```
 # Wczytanie danych
 
@@ -225,7 +226,7 @@ ss %>%
     left_join(scc, by = "comb") %>%  
     group_by(BOOKID, position, CBASCI) %>%
     arrange(pos) %>%
-    summarise(cluster = ifelse(position[1] %% 2 == 0,
+    summarise(cluster = ifelse(position[1] %% 2 == 1,
                                cluster[1],
                                cluster[2])) %>%
     ungroup() %>%
