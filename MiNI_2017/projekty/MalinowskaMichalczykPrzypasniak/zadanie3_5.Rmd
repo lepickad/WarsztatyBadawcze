@@ -19,7 +19,7 @@ Po uruchomieniu tego skryptu zostaje utworzony plik o nazwie $\texttt{position_s
 - Występują istotne różnice w średnich czasach i średnich wynikach na poszczególnych pozycjach. [2-4]
 - Uczniowie, którzy stresują się przystąpieniem do egzaminu, potrzebują więcej czasu na rozwiązanie zadań na pozycjach 2 i 4. Czas poświęcony na te zadania nie przekłada się jednak na ich wyniki, które są w kolejnych częściach testu coraz gorsze. [5]
 - Polska na tle innych państw wypada bardzo dobrze jeśli chodzi o czas rozwiązywania zadań i liczbę podjętych akcji, w rankingu wyników plasujemy się jednak w drugiej połowie tabeli. [6]
-- Po usunięciu efektu trudności zadań, rodzaj otrzymanego zadania (matematyka, czytanie, nauki przyrodnicze) na poszczególnych pozycjach nie wpływa na średni czas poświęcony na rozwiązanie. Na zadania z pierwszej i trzeciej pozycji uczniowie poświęcają średnio więcej czasu niż na zadania znajdujące się na pozycjach drugiej i czwartej. [7]
+- Typ otrzymanego testu nie wpływa na profil czasu odpowiedzi. Na zadania z pierwszej i trzeciej pozycji uczniowie poświęcają więcej czasu niż na zadania znajdujące się na pozycjach drugiej i czwartej, niezależnie od tego jakiego typu zadania otrzymają i w jakiej kolejności. [7]
  
 ```{r setup, message=FALSE, warning=FALSE}
 library("dplyr")
@@ -489,7 +489,7 @@ plotT <- plot_ly(daneplotT, x = ~position, y = ~ AUS, name = 'Australia', type =
   add_trace(y = ~DEU, name = 'Germany', mode = 'lines+markers') %>%
   add_trace(y = ~GRC, name = 'Greece', mode = 'lines+markers') %>%
   add_trace(y = ~PRT, name = 'Portugal', mode = 'lines+markers') %>%
-  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni czas rozwiązywania zadań [min]'),
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Średni czas rozwiązania - różnica między danym krajem a Polską [min]'),
          title="Ważony średni czas rozwiązywania zadań w zależności od kolejności zadań")
 
 plotT
@@ -510,7 +510,7 @@ plotR <- plot_ly(daneplotR, x = ~position, y = ~ AUS, name = 'Australia', type =
   add_trace(y = ~DEU, name = 'Germany', mode = 'lines+markers') %>%
   add_trace(y = ~GRC, name = 'Greece', mode = 'lines+markers') %>%
   add_trace(y = ~PRT, name = 'Portugal', mode = 'lines+markers') %>%
-  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni wynik'),
+  layout(xaxis = list(title = "Pozycja", dtick=1), yaxis = list(title = 'Ważony średni wynik - różnica między danym krajem a Polską'),
          title="Ważony średni wynik w zależności od kolejności zadań")
 
 plotR
@@ -530,7 +530,7 @@ plotA <- plot_ly(daneplotA, x = ~position, y = ~ AUS, name = 'Australia', type =
   add_trace(y = ~DEU, name = 'Germany', mode = 'lines+markers') %>%
   add_trace(y = ~GRC, name = 'Greece', mode = 'lines+markers') %>%
   add_trace(y = ~PRT, name = 'Portugal', mode = 'lines+markers') %>%
-  layout(xaxis = list(title = "Pozycja",dtick=1), yaxis = list(title = 'Ważona średnia liczba akcji'),
+  layout(xaxis = list(title = "Pozycja",dtick=1), yaxis = list(title = 'Ważona średnia liczba akcji - różnica między danym krajem a Polską'),
          title="Średnia liczba akcji w zależności od kolejności zadań")
 
 plotA
@@ -571,7 +571,7 @@ typ5 - numery 55-60 (S,S,M,R) lub (S,S,R,M)
 
 typ6 - numery 61-66 (R,M,S,S) lub (M,R,S,S)
 
-W nawiasie podano jaki typ zadań występował na pozycjach (1,2,3,4) w danych grupach bookletów, przy czym M-zadania matematyczne, R-czytanie, S-nauki przyrodnicze.
+W nawiasie podano jaki typ zadań występował na pozycjach (1,2,3,4) w danych grupach bookletów, przy czym M to zadania matematyczne, R-czytanie, S-nauki przyrodnicze.
 
 ```{r}
 podzial_na_typ <- function(dane, a){
@@ -613,15 +613,14 @@ Na powyższym wykresie widać pewną nierówność w grupach zestawów zadań; z
 
 ### 7.2 Analiza bookletów z uwzględnieniem różnej trudności zadań 
 
-Badamy czy typ zadań (M,S,R) w booklecie ma wpływ na profil czasu odpowiedzi. Chcemy przy tym uwzględnić, że każdy z typu zadań ma inny poziom trudności.
+Badamy czy typ zadań (M,S,R) w booklecie ma wpływ na profil czasu odpowiedzi. Chcemy wyeliminować wpływ poziomu trudności danego bookletu na profil czasu rozwiązania testów.
 
-W każdej grupie bookletów, w każdym booklecie dzielimy czas, jaki uczeń przeznaczył na dane zadanie,
-przez średni czas rozwiązań uzyskany na dwóch pozycjach, na których występują zadania tego samego typu
+W  każdym booklecie dzielimy czas, jaki uczeń przeznaczył na dane zadanie, przez średni czas rozwiązań uzyskany na dwóch pozycjach, na których występują zadania tego samego typu
 (czas rozwiązania uzyskany przez danego ucznia dla zadania z 1 lub 2 pozycji dzielimy przez średnią z 1 i 2 pozycji, 
 czas zadania z 3 lub 4 pozycji dzielimy przez średnią z 3 i 4 pozycji).
 
 Dzięki unormowaniu będzie można zobaczyć jak zachowują się czasy rozwiązań zadań względem pozycji zadania w teście
-i czy zadanie było rozwiązywane dłużej niż średnio dla tego typu w danej grupie bookletów.
+i czy czas rozwiązania był dłuższy/krótszy niż średni czas dla tego typu zadań w danym booklecie.
 
 ```{r}
 divide_by_sum <- function(dane, a){
@@ -722,4 +721,5 @@ p1 <- plot_ly(wykres, x = ~position, y = ~type1, name = 'typ 1', type = 'scatter
 p1
 ```
 
-Komentarz do wykresu: typ otrzymanych zadań nie wpływa na profil odpowiedzi. Najwięcej czasu uczniowie poświęcają na rozwiązania zadań na początku testu/po przerwie, później rozwiązują zadania coraz szybciej.
+Komentarz do wykresu: typ otrzymanych zadań wydaje się nie wpływać na profil odpowiedzi, tzn. że uczniowie podchodzą do testu podobnie, niezależnie od tego jaki typ zestawu pytań otrzymali. Najwięcej czasu uczniowie poświęcają na rozwiązania zadań na początku testu/po przerwie, później rozwiązują zadania coraz szybciej. Nie ma znaczenia czy zaczynają test od zadań z czytania ze zrozumieniem, matematyki, czy też nauk przyrodniczych. 
+Jak wykazano w poprzednich podpunktach, większy wpływ na profil czasu odpowiedzi wydają się mieć inne czynniki takie jak poziom stresu.
