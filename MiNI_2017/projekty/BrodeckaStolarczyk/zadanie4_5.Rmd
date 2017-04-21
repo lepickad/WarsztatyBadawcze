@@ -1,0 +1,149 @@
+---
+title: "Zadanie 4.5"
+author: "A.Brodecka, M.Stolarczyk"
+date: "18 kwietnia 2017"
+output: 
+    html_document:
+        toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning =  FALSE, messages = FALSE)
+library(dplyr)
+```
+
+# Podsumowanie 
+
+Na podstawie analizy wariancji możemy stwierdzić, że istnieją istotne różnice
+w proporcji poprawnie rozwiązanych zadań między studentami stosującymi różne strategie.
+W każdej dziedzinie pytań, najlepiej sobie radzą studenci, którzy szybko rozwiązują
+zadania na początku testu, a wolno na końcu testu. Najsłabsze wyniki osiągają osoby,
+które wolno rozwiązują zadania na początku testu, a szybko na końcu.
+
+Na końcu dokumentu prezentujemy rankingi państw po względem poprawności rozwiązywania
+zadań, oczyszczone z wpływu stosowanej strategii rozwiązywania zadań.
+
+# Przygotowanie danych
+## Wczytanie danych
+Wczytujemy wyniki zadania 0 i zadania 4 oraz łączymy je w jedną tabelę.
+```{r results="hide", messages=FALSE, warning=FALSE}
+library(dplyr)
+library(stringi)
+library(ggplot2)
+library(DT)
+library(tidyr)
+
+dane <- readRDS("zadanie0_wynik.rds")
+dane <- filter(dane, BOOKID >= 31 & BOOKID <= 61, !is.na(position))
+klastry <- readRDS("klastry.rds")
+dane %>% left_join(klastry, by="CNTSTUID") %>%
+    filter(!is.na(type_final), type_final != "oth") -> 
+    dane2
+```
+
+## Frakcje poprawnie rozwiązanych zadań przez studentów
+Dla każdego studenta obliczamy frakcję poprawnie rozwiązanych zadań.
+```{r}
+dane2 %>%
+    mutate(group = stri_sub(item, 2, 2)) %>%
+    mutate(result = 0 + (result == "Full credit")) %>%
+    group_by(group, CNTRYID, CNTSTUID) %>%
+    summarise(result = mean(result, na.rm = TRUE),
+              W_FSTUWT = unique(W_FSTUWT),
+              type_final = unique(type_final)) %>%
+    ungroup() ->
+    student_results
+
+head(student_results)
+```
+
+# Wpływ strategii na końcowy wynik
+Aby sprawdzić, czy stosowana strategia wpływa na wyniki testów, stosujemy analizę 
+wariancji. Sprawdzamy istotność strategii i państwa oraz interakcji tych dwóch czynników.
+
+## Matematyka
+```{r}
+student_results %>%
+    filter(group == "M") %>%
+    aov(result ~ type_final * CNTRYID, ., weights = W_FSTUWT) ->
+    anova_math
+
+summary(anova_math)
+```
+
+
+## Czytanie
+```{r}
+student_results %>%
+    filter(group == "R") %>%
+    aov(result ~ type_final * CNTRYID, ., weights = W_FSTUWT) ->
+    anova_read
+
+summary(anova_read)
+```
+
+## Nauki przyrodnicze
+```{r}
+student_results %>%
+    filter(group == "S") %>%
+    aov(result ~ type_final * CNTRYID, ., weights = W_FSTUWT) ->
+    anova_sci
+
+summary(anova_sci)
+```
+
+Dla każdej dziedziny pytań strategia, państwo oraz interakcje
+mają wpływ na wynik.
+
+# Oszacowanie wpływu strategii na końcowy wynik
+Aby oszacować wpływ strategii na wyniki testów, oczysczamy wyniki z wpływu państw,
+tj. odejmujemy od wyniku każdego studenta średni wynik w jego kraju i dodajemy 
+średni wynik w całym badaniu. Następnie liczymy średnią z wyników w grupach wyznaczonych 
+przez stosowaną strategię. Każda średnia jest ważona.
+
+
+```{r}
+student_results %>% 
+    mutate(type_final = ordered(type_final, levels=c("01", "11", "00", "10"),
+                                labels=c("wolno-szybko", "wolno-wolno",
+                                         "szybko-szybko", "szybko-wolno"))) %>%
+    mutate(group = ordered(group, levels=c("M", "S", "R"))) %>%
+    group_by(group, CNTRYID) %>%
+    mutate(result_cleaned = result - weighted.mean(result, W_FSTUWT, na.rm = TRUE)) %>%
+    group_by(group) %>%
+    mutate(result_cleaned = result_cleaned + weighted.mean(result, W_FSTUWT, na.rm = TRUE)) %>%
+    group_by(group, type_final) %>%
+    summarise(result_cleaned = weighted.mean(result_cleaned, W_FSTUWT, na.rm = TRUE)) %>%
+    ggplot(aes(x=type_final, y = result_cleaned, group = group, fill = group)) +
+    geom_bar(stat="identity", position=position_dodge()) +
+    xlab("strategia") +
+    ylab("średni wynik") + 
+    scale_fill_discrete(name = "Rodzaj pytań")
+
+```
+
+
+
+# Ranking państw po usunięciu wpływu strategii
+Analogicznie do poprzedniego punktu, oczyszczamy wyniki z wpływu strategi i
+uśredniamy w grupach.
+
+```{r}
+student_results %>%
+    group_by(group, type_final) %>%
+    mutate(result_cleaned = result - weighted.mean(result, W_FSTUWT, na.rm = TRUE)) %>%
+    group_by(group) %>%
+    mutate(result_cleaned = result_cleaned + weighted.mean(result, W_FSTUWT, na.rm = TRUE)) %>%
+    group_by(group, CNTRYID) %>%
+    summarise(result_cleaned = weighted.mean(result_cleaned, W_FSTUWT, na.rm = TRUE)) %>%
+    ungroup() ->
+    ranking
+    
+ranking %>% 
+    mutate(group = c("M"="Matematyka", 
+                     "R"="Czytanie",
+                     "S"="Nauki przyrodnicze")[as.character(group)]) %>%
+    spread(group, result_cleaned) %>%
+    datatable()
+```
+
