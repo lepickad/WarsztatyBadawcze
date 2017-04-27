@@ -1,0 +1,176 @@
+---
+title: "Zadanie 3"
+author: "Aliaksandr Panimash, Witold Kociński"
+date: "20 kwietnia 2017"
+output: 
+  html_document:
+    toc: true 
+    theme: united
+---
+# Wnioski
+
+W danej częsci analizy  przedstawilismy podział państw na segmenty względem ważonych statystyk czasów rozwiązań zadań, liczbę akcji w podziale na płeć,wynik rozwiązania i przedmiot. Do grupowania państw użyliśmy algorytm analizy skupień `k-means`. 
+
+Analizując wyniki segmentacji w podziale na 3 klastry zauważyliśmy:
+
+* dla dobrze rozwiązanych zadań z matematyki kraje z Europy trafiły do jednej grupy wraz 
+USA i Rosją. 
+* kraje takie jak Rosja, USA i Polska okazały się w jednym segmencie gdy weźmiemy źle rozwiązane zadania chłopaków z przedmiotu czytania. Z kolei Argentyna, Peru, Tunezja tworzą dla danego przypadku oddzielny segment. W 3-iej grupie znalazły się Australia, Kostaryka, Dominikana, Turcja itd. Podobne segmenty zaobserwowaliśmy dla dziewczyn.
+* Dla dobrze rozwiązanych zadań z nauk przyrodniczych dla dziewczyn kraje Chile i Turcją tworzą dwupaństwowy segment. Dla chłopaków algorytm stworzył pojedyńczy segment z krajem Australią, a Rosja, Wielka Brytania i Niemcy znalazły się także w tym samym segmencie. 
+
+Podsumowując, możemy na podstawie podstawowych statystyk policzonych dla każdego państwa stwierdzić, że zazwyczaj kraje z wysokim rozwojem gospodarczym tworzą jedną grupę. 
+
+# Analiza
+
+* Dla każdego kraju policzone były ważone statystyki dla czasu rozwiązań zadań oraz liczbę wykonanych akcji w podziale na chłopaków i dziewczyn, przedmiot i wynik rozwiązania zadania. 
+* Dla ustalonej płci, przedmiotu i wyniku  obliczylismy segmenty krajów jakie tworzą za pomocą metody `k-means.`
+* Dla lepszej przejrzystości otrzymanych wyników zwizualizowaliśmy segmenty na mapie za pomocą aplikacji `shiny`. Żeby uruchomić aplikację klikni [https://sashapanimash.shinyapps.io/newww/](https://sashapanimash.shinyapps.io/newww/).
+
+# Kody
+
+```{r, warning=FALSE,message=FALSE,eval=FALSE}
+library(dplyr)
+setwd("C:\\Users\\Alex\\Documents\\pisa\\student_question_cntpart")
+a<-list.files("C:\\Users\\Alex\\Documents\\pisa\\student_question_cntpart")
+ramka_0_w<- data.frame(matrix(,ncol=13))
+ramka_0_w<- data.frame(ramka_0_w,CNT=as.character(c(NA)))
+colnames(ramka_0_w)<-c("TMin","T1","T3","TMean_w","TMed","TMax","AMin","A1","A3","AMean_w","AMed","AMax","coun","CNT")
+
+
+ramka_1_w<- data.frame(matrix(,ncol=13))
+ramka_1_w<- data.frame(item_short=as.character(c(NA)),ramka_1_w,CNT=as.character(c(NA)))
+colnames(ramka_1_w)<-c("item_short","TMin","T1","T3","TMean_w","TMed","TMax","AMin","A1","A3","AMean_w","AMed","AMax","coun","CNT")
+
+ramka_2_w<- data.frame(matrix(,ncol=13))
+ramka_2_w<- data.frame(item_short=as.character(c(NA)),result=as.character(c(NA)),ramka_2_w,CNT=as.character(c(NA)))
+colnames(ramka_2_w)<-c("item_short","result","TMin","T1","T3","TMean_w","TMed","TMax","AMin","A1","A3","AMean_w","AMed","AMax","coun","CNT")
+
+
+
+ramka_1_w_p<- data.frame(matrix(,ncol=13))
+ramka_1_w_p<- data.frame(item_short=as.character(c(NA)),ramka_1_w_p,CNT=as.character(c(NA)))
+colnames(ramka_1_w_p)<-c("item_short","TMin","T1","T3","TMean_w","TMed","TMax","AMin","A1","A3","AMean_w","AMed","AMax","coun","CNT")
+
+
+ramka_1_w_s<- data.frame(matrix(,ncol=13))
+ramka_1_w_s<- data.frame(ST004D01T=as.character(c(NA)),item_short=as.character(c(NA)),result=as.character(c(NA)),ramka_1_w_s,CNT=as.character(c(NA)))
+colnames(ramka_1_w_s)<-c("ST004D01T","item_short","result","TMin","T1","T3","TMean_w","TMed","TMax","AMin","A1","A3","AMean_w","AMed","AMax","coun","CNT")
+
+
+
+for( i in 1:length(a))
+{
+ 
+  plik <- read.csv(a[i])
+  
+  if (all(is.na(plik$timing))!=T)
+  {
+    #statysyki dla każdego kraju
+    plik %>%
+      summarise(TMin = round(min(timing, na.rm = TRUE)/1000,2),
+                T1 = round(quantile(timing, 0.25, na.rm = TRUE)/1000,2),
+                T3 = round(quantile(timing, 0.75, na.rm = TRUE)/1000,2),
+                TMean_w = round(weighted.mean(timing,W_FSTUWT, na.rm = TRUE)/1000,2),
+                TMed = round(median(timing, na.rm = TRUE)/1000,2),
+                TMax = round(max(timing, na.rm = TRUE)/1000,2),
+                
+                AMin = min(n.actions, na.rm = TRUE),
+                A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+                A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+                AMean_w = weighted.mean(n.actions,W_FSTUWT, na.rm = TRUE),
+                AMed = median(n.actions, na.rm = TRUE),
+                AMax = max(n.actions, na.rm = TRUE),
+                coun=n()
+      ) -> statystyki_0
+    ramka_0_w<-rbind(ramka_0_w,data.frame(statystyki_0,CNT=trimws(as.character(plik$CNT[1]))))
+    
+    # dla kazdego kraju, dla kazdego zadania
+    plik %>%
+      group_by(item_short) %>%
+      summarise(TMin = round(min(timing, na.rm = TRUE)/1000,2),
+                T1 = round(quantile(timing, 0.25, na.rm = TRUE)/1000,2),
+                T3 = round(quantile(timing, 0.75, na.rm = TRUE)/1000,2),
+                TMean_w = round(weighted.mean(timing,W_FSTUWT, na.rm = TRUE)/1000,2),
+                TMed = round(median(timing, na.rm = TRUE)/1000,2),
+                TMax = round(max(timing, na.rm = TRUE)/1000,2),
+                
+                AMin = min(n.actions, na.rm = TRUE),
+                A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+                A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+                AMean_w = weighted.mean(n.actions,W_FSTUWT, na.rm = TRUE),
+                AMed = median(n.actions, na.rm = TRUE),
+                AMax = max(n.actions, na.rm = TRUE),
+                coun=n()
+      ) -> statystyki_1
+    
+    ramka_1_w <- rbind(ramka_1_w,data.frame(statystyki_1,CNT=trimws(as.character(plik$CNT[1]))))
+    
+    # dla kazdego kraju, dla kazdego zadania i uzyskanego wyniku 
+    plik %>%
+      group_by(item_short,result) %>%
+      summarise(TMin = round(min(timing, na.rm = TRUE)/1000,2),
+                T1 = round(quantile(timing, 0.25, na.rm = TRUE)/1000,2),
+                T3 = round(quantile(timing, 0.75, na.rm = TRUE)/1000,2),
+                TMean_w = round(weighted.mean(timing,W_FSTUWT, na.rm = TRUE)/1000,2),
+                TMed = round(median(timing, na.rm = TRUE)/1000,2),
+                TMax = round(max(timing, na.rm = TRUE)/1000,2),
+                
+                AMin = min(n.actions, na.rm = TRUE),
+                A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+                A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+                AMean_w = weighted.mean(n.actions,W_FSTUWT, na.rm = TRUE),
+                AMed = median(n.actions, na.rm = TRUE),
+                AMax = max(n.actions, na.rm = TRUE),
+                coun=n()) -> statystyki_2
+    ramka_2_w<-rbind(ramka_2_w,data.frame(statystyki_2,CNT=trimws(as.character(plik$CNT[1]))))
+    
+
+    
+    # w podziale na przedmioty: R- reading, S-science, M-math 
+    przedmiot<- substr(plik$item_short,1,1)
+    
+    plik_0 <- plik
+    plik_0$item_short <- przedmiot
+    plik_0 %>%
+      group_by(item_short) %>%
+      summarise(TMin = round(min(timing, na.rm = TRUE)/1000,2),
+                T1 = round(quantile(timing, 0.25, na.rm = TRUE)/1000,2),
+                T3 = round(quantile(timing, 0.75, na.rm = TRUE)/1000,2),
+                TMean_w = round(weighted.mean(timing,W_FSTUWT, na.rm = TRUE)/1000,2),
+                TMed = round(median(timing, na.rm = TRUE)/1000,2),
+                TMax = round(max(timing, na.rm = TRUE)/1000,2),
+                
+                AMin = min(n.actions, na.rm = TRUE),
+                A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+                A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+                AMean_w = weighted.mean(n.actions,W_FSTUWT, na.rm = TRUE),
+                AMed = median(n.actions, na.rm = TRUE),
+                AMax = max(n.actions, na.rm = TRUE),
+                coun=n()
+      ) -> statystyki_1_p
+    
+    ramka_1_w_p <- rbind(ramka_1_w_p,data.frame(statystyki_1_p,CNT=trimws(as.character(plik_0$CNT[1]))))
+    
+    plik_0 %>%
+      group_by(ST004D01T,item_short,result) %>%
+      summarise(TMin = round(min(timing, na.rm = TRUE)/1000,2),
+                T1 = round(quantile(timing, 0.25, na.rm = TRUE)/1000,2),
+                T3 = round(quantile(timing, 0.75, na.rm = TRUE)/1000,2),
+                TMean_w = round(weighted.mean(timing,W_FSTUWT, na.rm = TRUE)/1000,2),
+                TMed = round(median(timing, na.rm = TRUE)/1000,2),
+                TMax = round(max(timing, na.rm = TRUE)/1000,2),
+                
+                AMin = min(n.actions, na.rm = TRUE),
+                A1 = quantile(n.actions, 0.25, na.rm = TRUE),
+                A3 = quantile(n.actions, 0.75, na.rm = TRUE),
+                AMean_w = weighted.mean(n.actions,W_FSTUWT, na.rm = TRUE),
+                AMed = median(n.actions, na.rm = TRUE),
+                AMax = max(n.actions, na.rm = TRUE),
+                coun=n()) -> statystyki_1_s
+    ramka_1_w_s <- rbind(ramka_1_w_s,data.frame(statystyki_1_s,CNT=trimws(as.character(plik_0$CNT[1]))))
+    
+  }
+  remove(plik)
+}
+
+```
