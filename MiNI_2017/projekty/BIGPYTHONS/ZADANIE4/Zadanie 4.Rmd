@@ -4,10 +4,11 @@ author: "Aliaksandr Panimash, Witold Kociński"
 date: "20 kwietnia 2017"
 output: 
   html_document:
+    number_sections: true
     toc: true 
     theme: united
 ---
-# 1.Cel
+# Cel
 W tym zadaniu, na podstawie danych opracowaliśmy podział strategii uczniów na 4 segmenty.
 Segmenty: 
 

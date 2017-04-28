@@ -124,15 +124,15 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
-<li><a href="#cel">1.Cel</a></li>
-<li><a href="#wnioski">Wnioski</a></li>
-<li><a href="#analiza">Analiza</a></li>
-<li><a href="#kod">Kod</a></li>
+<li><a href="#cel"><span class="toc-section-number">1</span> Cel</a></li>
+<li><a href="#wnioski"><span class="toc-section-number">2</span> Wnioski</a></li>
+<li><a href="#analiza"><span class="toc-section-number">3</span> Analiza</a></li>
+<li><a href="#kod"><span class="toc-section-number">4</span> Kod</a></li>
 </ul>
 </div>
 
 <div id="cel" class="section level1">
-<h1>1.Cel</h1>
+<h1><span class="header-section-number">1</span> Cel</h1>
 <p>W tym zadaniu, na podstawie danych opracowaliśmy podział strategii uczniów na 4 segmenty. Segmenty:</p>
 <ul>
 <li><p>“Szybcy i wsciekli”- uczniowie, którzy wszystkie zadania mają źle rozwiązania oraz czas rozwiązania jest poniżej mediany.</p></li>
@@ -143,11 +143,11 @@ $(document).ready(function () {
 </ul>
 </div>
 <div id="wnioski" class="section level1">
-<h1>Wnioski</h1>
+<h1><span class="header-section-number">2</span> Wnioski</h1>
 <p>Po wprowadzeniu odpowiedniego podziału na strategii rozwiązania uczniów możemy wywnioskować, że kraje Półudniowej Ameryki posiadają najwiekszą ilość uczniów w szkołach, którzy przy rozwiązaniu testu <code>PISA</code> stosują strategię szybkich lub wolnych niepoprawnych odpowiedzi. Z kolei kraje z zachodniej częsci Europy posiadają największą liczbę uczniów, którzy poprawnie i szybko rozwiązują zadania.</p>
 </div>
 <div id="analiza" class="section level1">
-<h1>Analiza</h1>
+<h1><span class="header-section-number">3</span> Analiza</h1>
 <p>W celu policzenia liczności studentów w podziale na segmenty dla każdego kraju zostały policzone mediany czasów rozwiązań zadań dla każdej pozycji. Dla każdego zadania zostały dodane odpowiednie wagi względem pozycji i czasu rozwiązania. Dalej sumując wagi dla każdego studenta dostajemy odpowiedni segment danego ucznia.</p>
 <p>Kraje, które mają najwiekszą ilość studentów o kategorii “Szybcy i wsciekli”.</p>
 <table>
@@ -311,7 +311,7 @@ $(document).ready(function () {
 <p>Widzimy, że kraje takie jak Tunezja, Bułgaria, Portugalia posiadają najwięcej uczniów prawidłowo rozwiązujących test i z dłuższym zastanawianie się wsród innych krajów.</p>
 </div>
 <div id="kod" class="section level1">
-<h1>Kod</h1>
+<h1><span class="header-section-number">4</span> Kod</h1>
 <pre class="r"><code>library(&quot;dplyr&quot;)
 setwd(&quot;C:\\Users\\Alex\\Documents\\pisa\\student_question_cntpart&quot;)
 
