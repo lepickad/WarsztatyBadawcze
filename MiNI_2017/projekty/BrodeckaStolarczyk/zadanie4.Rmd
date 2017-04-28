@@ -1,0 +1,307 @@
+---
+title: "Zadanie4"
+author: "A.Brodecka, M.Stolarczyk"
+date: "25 marca 2017"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning =  FALSE, messages = FALSE)
+```
+
+# 1.WNIOSKI
+
+1.1. Rodzaj przyjêtej strategii wp³ywa na wynik rozwi¹zania zadañ. Proporcja rozwi¹zanych zadañ jest
+zmienia siê w obrêbie 4 rozwa¿anych strategii. Jest to zmiana obserwowana w ogólnym wyniku testu jak i w poszczególnych segmentach czyli naukach przyrodnicznych, czytaniu i matematyce.
+
+1.2. Uczniowie, którzy przyjêli strategiê 'szybko-wolno' wyró¿niaj¹ siê najwiêksz¹ proporcj¹ dobrze rozwi¹zanych zadañ. Mo¿e to oznaczaæ sytuacjê, w której uczniowie szybko rozwi¹zuj¹ zadania na pocz¹tku testu dziêki czemu maj¹ wiêcej czasu na koñcowe zadania. Jest to korzystna sytuacja, gdy¿ pod koniec testu dochodzi zmêczenie ucznia. Nadmiar czasu zaoszczêdzony w pierwszej czêœci testu pozwala im siê nie denerowowaæ i spokojnie skupiæ na rzetelnym rozwi¹zaniu ostatnich zadañ w arkuszu.
+
+1.3. Strategie 'wolno-wolno' lub 'szybko-szybko' maj¹ zbli¿one proporcje dobrze rozwi¹zanych zadañ. 
+W ka¿dej z dziedzin osi¹gaj¹ bardzo podobne rezultaty, strategia 'wolno - wolno' ma jednak wiêkszy rozrzut.
+Wiêksza wariancja w propocji 'wolno-wolno' mo¿e wynikaæ z czêœci uczniów którzy nerwowo, zatem i szybko podchodza do rozwi¹zania zadañ co rzutuje na gorszy wynik koñcowy.
+Natomiast podobieñstwo strategii szybkiego lub wolnego rozwi¹zania zadañ podczas ca³ego testu mo¿e wynikaæ z wyæwiczenia ucznia przez szko³ê okreœlonego sposobu rozwi¹zywania zadañ. Przyk³adowo: zastanów siê na spokojnie zanim zaznaczysz dobr¹ odpowiedŸ (strategia wolno-wolno) lub je¿eli jesteœ pewny to nie traæ czasu i rób dalej zadania (strategia szybko-szybko). 
+
+
+
+# 2.WYNIKI
+
+## 2.1. PODZIA£ UCZNIÓW NA STRATEGIE
+
+Dokonujemy podzia³u uczniów na 4 strategie:
+
+* szybko-szybko - uczniowie rozwi¹zuj¹cy wiêkszoœæ zadañ w czasie wiêkszym ni¿ wa¿ona mediana czasów rozwi¹zañ odpowiednio na pozycji 1 i 4 
+
+* wolno-szybko -uczniowie rozwi¹zuj¹cy wiêkszoœæ zadañ w czasie wiêkszym ni¿ wa¿ona mediana czasów rozwi¹zañ odpowiednio na pozycji 1  oraz w czasie mniejszym ni¿ wa¿ona mediana czasów rozwi¹zañ na pozycji 4
+
+* szybko-wolno -uczniowie rozwi¹zuj¹cy wiêkszoœæ zadañ w czasie mnieszym ni¿ wa¿ona mediana czasów rozwi¹zañ odpowiednio na pozycji 1  oraz w czasie wiêkszym ni¿ wa¿ona mediana czasów rozwi¹zañ na pozycji 4
+
+* wolno-wolno - uczniowie rozwi¹zuj¹cy wiêkszoœæ zadañ w czasie mniejszym ni¿ wa¿ona mediana czasów rozwi¹zañ odpowiednio na pozycji 1 i 4 
+
+* pozostali - uczniowie nie zaklasyfikowani do powyzszych grup ze wzglêdu na braki danych w rozwi¹zaniach
+
+
+
+## 2.2. PRZEDSTAWIENIE SPOSOBU PODZIA£U
+
+1) Liczymy medianê wa¿on¹ w podziale na pozycje i pytania
+
+2) Sprawdzamy czy dany uczeñ rozwi¹za³ i-te pytanie na j-tej pozycji w jego arkuszu w czasie szybszym czy wolniejszym ni¿ mediana czasu rozwi¹zania i-tego zadania na j-tej pozycji
+
+3) Sprawdzamy czy wiêkszoœæ zadañ z j-tej pozycji uczeñ rozwi¹zywa³ w czasie szybszym ni¿ wolniejszym (koszystaj¹c z punktu 2)
+
+4) Je¿eli wiêkszoœæ zadañ uczeñ rozwi¹za³ szybciej na j-tej pozycji to otzymuje strategiê 'szybko', je¿eli nie 'wolno'
+
+5) Poszczególne strategie: 'szybko-szybko' polegaj¹ za z³¹czeniu wyników strategii otrzymanych z punktu 4.  
+obliczonych na pozycjach 1 i 4.
+
+```{r, echo = FALSE, include= FALSE}
+
+
+library(dplyr)
+library(matrixStats)
+library(stringi)
+library(knitr)
+library(tidyr)
+
+```
+
+
+```{r, echo = FALSE}
+
+setwd('h:\\Windows7\\Desktop\\ola')
+dane <- readRDS('zadanie0_wynik.rds')
+
+dane <- filter(dane, BOOKID >= 31 & BOOKID <= 61, !is.na(position))
+
+```
+
+
+
+```{r, echo = FALSE}
+dane %>% 
+  select(item, timing, W_FSTUWT, position) %>% 
+  group_by(item,  position) %>%
+  summarise(TimeMed = weightedMedian(timing, W_FSTUWT, na.rm = TRUE)) ->
+  statystyki
+```
+
+
+
+```{r, echo = FALSE}
+dane %>% filter(position %in% c(1,4)) %>% left_join(statystyki, by = c('item' = 'item', 'position' = 'position')) %>%
+  mutate(type_poz = (timing < TimeMed )) %>% group_by(CNTSTUID, position) %>%
+  summarize(all = n(), good = sum(type_poz)) %>% mutate(type = as.integer(0.5 * all <= good )) %>%
+  select(CNTSTUID, type, position) %>% spread(position, type) %>% 
+  mutate(type_final = paste0(`1`, `4`)) %>%
+  mutate(type_final = ifelse(regexpr('NA', type_final)[1] < 0 ,type_final, 'oth' )) -> st
+
+st$type_final <- as.factor(st$type_final)
+
+
+
+
+```
+
+```{r, echo = FALSE, include= FALSE}
+library(plyr)
+```
+
+```{r, echo = FALSE}
+st$type_final <- revalue(st$type_final, c("11"="wolno-wolno", "10"="wolno-szybko",
+                         "01" = "szybko-wolno", "00" = "szybko-szybko",
+                         "oth" = "poz."))
+
+detach("package:plyr", unload=TRUE)  
+```
+
+
+```{r, echo = FALSE, include= FALSE}
+library(ggplot2)
+```
+
+
+## 2.2. UZYSKANE WYNIKI:
+
+Poni¿sza tabela zawiera licznoœci uczniów przyporz¹dkowanych do jednej z czterech strategii:
+
+```{r, echo = FALSE}
+table(st$type_final)
+```
+
+Najwiêksze licznoœci osi¹gaj¹ uczniowie, którzy maj¹ podobny czas rozwi¹zywania zadañ w obu czêœciach testu. 
+Najmniejsz¹ popularnoœci¹ cieszy siê strategia 'wolno-szybko', mo¿e to wynikaæ z tego, ¿e jest najmniej poleca w szko³ach co przek³ada siê na sposób rozwi¹zywania zadañ przez uczniów.
+
+
+
+```{r, echo = FALSE}
+dane$result[dane$result == 'Partial credit'] <- 'No credit'
+
+
+dane %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods
+
+```
+
+
+
+```{r, echo = FALSE}
+ggplot(pods, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Wszystkie kategorie ") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+```
+
+Powy¿szy wykres prezentuje rozk³ad proporcji dobrze rozwi¹zanych zadañ w podziale na strategie przyjête przez uczniów. Wiêkszoœæ obserwacji ze strategii 'szybko-wolno' osiaga wynik miêdzy 50 a 75 procent. Jest to grupa o najmniejszej wariancji. Najwiêkszy rozrzut jest prezentowany przez strategiê 'szybko-szybko'. Mo¿liwe, ze strategia 'szybko-szybko' obejmuje geniuszy, którzy zadania rozwi¹zuj¹ szybko i dobrze (zatem maj¹ du¿¹ propocjê poprawnych rozwi¹zañ) oraz leniwców, czyli osób, które chc¹ szybko zakoñczyæ test, nie przejmuj¹c siê wynikiem i takie osoby zani¿aj¹ wyniki dla tej strategii.
+
+
+```{r, echo = FALSE}
+
+dane %>%  filter(substr(item, 2,2) == "S") %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods_1
+
+ggplot(pods_1, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Nauki przyrodnicze") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+```
+
+Powy¿szy wykres pokazuje uzyskane rezultaty ograniczaj¹ce siê wy³¹cznie do nauk przyrodniczych. Trend siê nie zmienia w stosunku do poprzedniego wykresu. Najlepiej radz¹ sobie uczniowie ze strategii 'szybko-wolno', œrednio ze strategii 'wolno-wolno' i 'szybko-szybko', najgorzej zaœ ze strategii 'wolno-szybko'.
+
+```{r, echo = FALSE}
+
+dane %>%  filter(substr(item, 2,2) == "M") %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods_1
+
+ggplot(pods_1, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Matematyka") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+```
+
+Zaprezentowany powy¿ej wykres równie¿ nasuwa ciekawy wniosek. W kategorii matematyka ka¿da ze strategii charakteryzuje sie podobn¹ wariancj¹. Mediany poprawnie udzielonych odpowiedzi odpowiednio spadaj¹ w ka¿dej grupie. Obie zale¿noœci mog¹ nasuwaæ konkluzjê, ¿e zadania z matematyki by³y najtrudniejsz¹ czêœci¹ w teœcie, sprawia³y najwiêcej problemów i najbardziej ró¿nicowa³y uczniów pod wzglêdem dobrych odpowiedzi. 
+
+
+```{r, echo = FALSE}
+
+dane %>%  filter(substr(item, 2,2) == "R") %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods_3
+
+ggplot(pods_3, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Czytanie") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+```
+
+Ostatni wykres pokazuje zale¿noœci w kategorii czytanie. Strategia 'wolno-wolno' mo¿e byæ bardziej korzystniejsza w omawianej kategorii. Dok³adne przeczytanie teksu powinno skutkowaæ lepszym wynikiem ni¿ szybka analiza tekstu. Jest to obserwowane w mniejszym rozrzucie danych ni¿ w kategorii 'wolno-wolno'. 
+Warto zwróciæ uwagê, ¿e wy³¹cznie w kategorii czytanie mediany wszystkich strategii s¹ wiêksze ni¿ 0.5.
+
+
+# KODY R
+
+```{r, eval = F}
+library(dplyr)
+library(matrixStats)
+library(ggplot2)
+library(stringi)
+library(knitr)
+library(tidyr)
+
+dane <- readRDS('zadanie0_wynik.rds')
+
+dane <- filter(dane, BOOKID >= 31 & BOOKID <= 61, !is.na(position))
+
+dane %>% 
+  select(item, timing, W_FSTUWT, position) %>% 
+  group_by(item,  position) %>%
+  summarise(TimeMed = weightedMedian(timing, W_FSTUWT, na.rm = TRUE)) ->
+  statystyki
+
+dane %>% filter(position %in% c(1,4)) %>% left_join(statystyki, by = c('item' = 'item', 'position' = 'position')) %>%
+  mutate(type_poz = (timing < TimeMed )) %>% group_by(CNTSTUID, position) %>%
+  summarize(all = n(), good = sum(type_poz)) %>% mutate(type = as.integer(0.5 * all <= good )) %>%
+  select(CNTSTUID, type, position) %>% spread(position, type) %>% 
+  mutate(type_final = paste0(`1`, `4`)) %>%
+  mutate(type_final = ifelse(regexpr('NA', type_final)[1] < 0 ,type_final, 'oth' )) -> st
+
+table(st$type_final)
+
+dane$result[dane$result == 'Partial credit'] <- 'No credit'
+
+dane %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods
+
+ggplot(pods, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Wszystkie kategorie ") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+dane %>%  filter(substr(item, 2,2) == "S") %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods_1
+
+ggplot(pods_1, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Nauki przyrodnicze") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+
+
+dane %>%  filter(substr(item, 2,2) == "M") %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods_1
+
+ggplot(pods_1, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Matematyka") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+
+
+dane %>%  filter(substr(item, 2,2) == "R") %>% inner_join(st, by = c('CNTSTUID' = 'CNTSTUID')) %>% 
+  mutate(if_full = ifelse(result == 'Full credit',1,0),
+         if_no = ifelse(result == 'No credit',1,0)) %>% group_by(CNTSTUID, type_final) %>%
+    summarize(prop_full =  sum(if_full)/n(),
+              prop_no = sum(if_no)/n()) -> pods_3
+
+ggplot(pods_3, aes(x = type_final, y = prop_full, fill = type_final)) + geom_boxplot() +
+  ggtitle("Czytanie") +
+  labs(x = 'Strategia', y = 'Proporcja') +
+  theme(title = element_text(size = 15), axis.title = element_text(size = 12),
+        legend.position = 'none')
+
+```
+
+
