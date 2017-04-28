@@ -1,8 +1,11 @@
 ---
-title: "Zadanie 3,5"
+title: "Zadanie 3,5: Uwzględnienie pozycji w analizie wyników testów"
 author: "Witold Kociński, Aleksander Panimash"
 date: "19 kwietnia 2017"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    theme: united
 ---
 
 ```{r, include=FALSE}
@@ -59,17 +62,13 @@ extreme_question_position_dependence <- function(dane){
   
   grid.arrange(p1, p2, nrow=2, top=as.character(dane$CNT[1]))
 }
-
 ```
 
-# Uwzględnienie pozycji w analizie wyników testów
-
 ```{r, include=FALSE}
-
-#wczytanie używanych pakietów
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(knitr)
 
 #zmienne 'globalne'
 home_path <- "C://Users//Witek//Documents//10sem//pisa//"
@@ -78,22 +77,52 @@ kraje <- c("FIN", "JPN", "POL", "USA", "ESP")
 
 ```
 
-**Uwaga:** Dla przejrzystości rozważamy 5 krajóW: 
+# 1. Wnioski
 
-* Finlandia
-* Japonia
-* Polska
-* Stany Zjednoczone
-* Hiszpania
+W celu zbadania wpływu pozycji zadania w formularzu na wyniki w danym kraju oraz czas rozwiązywania zadań wybraliśmy pięć krajów:
 
-*Problem:* Czu pozycja pytań ma wpływ na wyniki testu oraz na czas rozwiązywania zadań? Jeśli tak to jaki?
+* Finlandia,
+* Japonia,
+* Polska,
+* Stany Zjednoczone,
+* Hiszpania.
 
-## 1. Zależność wyników od pozycji zadań
+Po przeanalizowaniu uzyskanych wyników stwierdzamy, że pozycja zadania w formularzu ma znaczenie zarówno ze względu na ilość poprawnych rozwiązań w każdym kraju jak i czas rozwiązań zadań. 
+
+## Punkt 2)
+
+Wykres w punkcie 2) wskazuje, że zadania na pozycjci 1 oraz 3 rozwiązywane są w każdym z wybranych krajóW najlepiej. Z drugiej strony zmiany we frakcji poprawnie rozwiązanych zadań są niewielkie (rzędy kilku punktów procentowych). Widzimy, że najlepsze wyniki na każdej pozycji uzyskała Japonia a najgorsze USA. Co więcej porządek wśród frakcji poprawnie rozwiązanych zadań nie zmieniał się wraz z kolejnymi pozycjami. W ziwązku z tym możemy stwierdzić, że pozycja wpływa na wynik dla każdego kraju, jednak wydaje się że pozycja zadań nie wpływa na róznice wyników pomiędzy krajami. Pozostają one w takim samym stosunku jak średnia ilośc poprawnie rozwiązanych zadań w danym kraju.
+
+## Punkt 3)
+
+Wykres z punktu 3) prezentuje czas rozwiązywania zadań w zależności od ich pozycjoi dla każDego z wybranych krajów. Widzimy, że uczniowie z Finlandii rozwiązują zadania wyraźnie szybiciej. Natomiast dla reszty krajów czasy są zbliżone, przy czym najwolniej zadani rozwiązują uczniowe z Hiszpanii. Zauważmy, że trend czasóW roziwązań jest podbny dla wszystkich krajów. Najwięcej czasu uczniowie poświęcają na pierwsze zadanie. Następne względem czasu poświeconego na rozwiązanie jest zadanie trzecie. Zauważmy, że taki rozkład czasóW pomiędzy zadania w pewnyum stopniu oddany jest przez krzywe z punktu 2). Poniżej wykresu prezentujemy wyniki testu Kruskalla-Wallisa, kolejno na :
+
+* zależność czasu poświęconego na zadanie od jego miejsca, dla każdego kraju. Test na poziomie istotności 0.05.
+* zależnośc czasu poświęconego na zadanie od kraju, dla każdego miejsca. Jeżeli
+test odrzuci hipotezę o braku zależności na danej pozycji test przeprowadzamy dla kzdej pary krajów. W związku z występowaniem poróWnań wielokrotnych stosujemy poprawkę Bonferroniego.
+
+W pierwszej tabeli zaprezentowane są wartości krytyczne dla testów zależności czasu rozwiązań od pozycji. Odrzucamy hipotezę o braku zależności dla każdego testu co potwierdza intuicję z wykresu o tym, że w każdym kraju ma ona wpływ na czas roziwązania zadań.
+
+Na wykresie w punkcie 3) widzimy, że profile zależności czasu rozwiązań od pozycji zdań są dla kązdego kraju podobne. Stąd zdajemy pytanie czy w ogóle róznią się one między krajami. W tabeli zaprezentowano te pary krajów, dla któych na danej pozycji średnie ważopne czasy rozwiązań zadań różnią sie istonie (tj. kraj jako kategoria ma nzaczenie). O kierunku tej zależności decydujemy na podstawie wykresu. Na pozycji 1 Hiszpanie rozwiązują zdania istonie wolniej od Finów oraz Japończyków. Wynik testu dla pozycji drugiej, Polski i USA budzi wątpliwości ponieważ na wykresie widzimy,  że średnie czasy rozwiązań dla tych krajów są niemal identyczne. 
+Wykres ważonej średniej czasu rozwiązań zadań na każdej z pozycji potwierdza intuicję, że im bliżej końc testu studenci pod wpływem stresu/zmęczenia poświecają na ostatnie zadania mniej czasu.
+
+Wykresy widniejące w punkcie 4) są wynikiem rozważań na temat wpływu pozycji danego zadania na jego trudność. Dla ustalenia uwagi rozwaząmy zadania ekstrymalne w każdej grupie zadań (R/M/S) w każdym kraju. 
+
+## Punkt 4)
+
+Po pierwsze stwierdzamy, że dla zadań najłatwiejszych niezależnie od ich pozycji w formularzu oraz ich kategorii wyniki się znacząco nie zmieniają. 
+Sytuacja jest mniej jednozanczna dla zadań sprawiających studentom w danych krajch najwięcej trudnosći. Wykresy dla zadań z matematyki nie sugreują żadnej zależności wspólnej dla krajów. Na przykład dwa kraje, które wśród wybranych osiągały ogólnie najlepsze wyniki - Finlandia i Japonia - wskazują dwa odwrotne trendy. Podobnie dla krajów na końcu stawki - Stanów i Hiszpani. 
+Wyniki dla zadań z czytania poprawiają się im dalej zadanie jest w formularzu. Może być to związane z tym, że mogą one być postrzegane jako stosunkowo najłatwiejsze spośród kategorii i gdy znajdują się bliżej początku uczniowie poświęcają na nie mniej czasu. Zadania z nauk przyrodniczych wyróżniają się stosunkową równomiernością wyników w zależności od pozycji (z wyjątkiem USA). Może być to związane z tym, że ich rozwizanie silnie zależy od konkretnej wiedzy treoretycznej i jej brak nie może być zastapiony niższym poziomem stresu lub większą ilością czasu na nie poświęcone.
+
+# 2. Zależność wyników od pozycji zadań
+
+Na poniższym wykresie zaprezentowano zależność wyników (jako frakcja poprawnie rozwiązanych zadań) od pozycji zadania. Wykres wskazuje zależność, w szczególności sugeruje, że zadanie 3 idzie uczniom we wszytskich rozważanych krajach najlepiej.Jednakże wpływ pozycji na wynik nie wydaje się znaczący ponieważ średnie na pozycjach nie są znacząco odchylone od średniej dla kraju (linia przerywana).
 
 ```{r, include=FALSE}
 w <- list(1)
 kwt <- list(1)
 i <- 1
+
 for(k in kraje){
   
   df <- read.csv(paste0(home_path, dir, k, "_sq.csv"))
@@ -102,16 +131,12 @@ for(k in kraje){
     select(CNT, position, result, timing, W_FSTUWT) %>%
     filter(!is.na(position)) %>%
     mutate(result = as.integer(result== "Full credit"),
-           timing = timing/1000) %>%
+           timing = timing/1000) -> kwt[[i]]
+  
+  kwt[[i]] %>%  
     group_by(CNT, position) %>%
     summarise(sr_tm_poz  = weighted.mean(timing, W_FSTUWT, na.rm = TRUE),
               sr_rs_poz = weighted.mean(result, W_FSTUWT, na.rm = TRUE)) -> w[[i]]
-  
-  df %>%
-    select(CNT, position, result, timing, W_FSTUWT) %>%
-    filter(!is.na(position)) %>%
-    mutate(result = as.integer(result== "Full credit"),
-           timing = timing/1000) -> kwt[[i]]
   
   i <- i+1
 }
@@ -121,20 +146,27 @@ kwt <- do.call("rbind", kwt)
 ```
 
 ```{r, echo=FALSE}
+#licze frakcje poprawnych wynikow dla krajow
+kwt %>% 
+  group_by(CNT) %>%
+  summarise(sr_w = weighted.mean(result, W_FSTUWT, na.rm = TRUE)) -> tmp
+
 plot(w$sr_rs_poz[1:4], col = 2, type = "l", xaxt = "n",
      xlab = "pozycja", ylab = "% score", 
      main = "zmiana % poprawnych rozwiazan\nw zależności od pozycji",
      ylim = c(min(w$sr_rs_poz)-0.1, max(w$sr_rs_poz)+0.1))
+abline(h = tmp[1,2], lty = "dashed", col = 2)
 axis(1, 1:4)
 for(i in 1:(length(kraje)-1)){
   lines(w$sr_rs_poz[(1+i*4):(4+i*4)], col = i+2)
+  abline(h = tmp[i+1,2], lty = "dashed", col = i+2)
 }
 legend("topright", unique(w$CNT), col = 2:6, lty = 1, cex = 0.5)
 ```
 
-Poniższy wykres sugeruje, że wyniki nie są monotonicznie zależne od pozycji zadnia. Ponadto możemy zauwazyć, że dla wszytskich krajów zadani znajdujące się na pozycji nr. 3 średnio idą lepiej niż zadani sąsiednie.
+# 3. Zależność czasu rozwiązania od pozycji zadań
 
-## 2. Zależność czasu rozwiązania od pozycji zadań
+Poniżej widzimy wykres zależnosci średnich ważonych czasów rozwiązań w zależnośći od pozycji zadania dla każdego z krajów. 
 
 ```{r, echo=FALSE}
 plot(w$sr_tm_poz[1:4], col = 2, type = "l", xaxt = "n",
@@ -148,16 +180,25 @@ for(i in 1:(length(kraje)-1)){
 legend("topright", unique(w$CNT), col = 2:6, lty = 1, cex = 0.5)
 ```
 
-Wykres ważonej średniej czasu rozwiązań zadań na każdej z pozycji potwierdza intuicję, że im bliżej końc testu studenci pod wpływem stresu/zmęczenia poświecają na ostatnie zadania mniej czasu. Poniżej prezentujemy wyniku testu Kruskalla-Wallisa na zależność czasu rozwiązań od pozycji zadania dla danego kraju.
+Poniżej prezentujemy wyniku testu Kruskalla-Wallisa na zależność czasu rozwiązań od pozycji zadania dla danego kraju.
 
 ```{r, echo=FALSE}
+tab <- list(1)
+i <- 1
 for(c in unique(kwt$CNT)){
   t <- kruskal.test(kwt[kwt$CNT == c,"timing"], kwt[kwt$CNT == c, "position"])
-  cat("kraj: ", c, "p.wartosc: ", t$p.value, "\n")
+  tab[[i]] <- c(c, t$p.value)
+  i <- i +1
 }
+tab <- do.call("rbind", tab)
+colnames(tab) <- c("kraj", "p-wartosc")
 ```
 
-Poniżej badamy czy dla ustalonej pozycji dowolne dwa wybrane powyżej kraje isotnie rozwiązują zdania w różnym czasie. Ze względu na porównania wielokrotne stosujemy poprawkę Bonferroniego.
+```{r, echo=FALSE, results='asis'}
+kable(tab, caption = "Test Kruskalla-Wallisa zależności czasu od pozycji")
+```
+
+Poniżej badamy czy dla ustalonej pozycji dowolne dwa wybrane powyżej kraje isotnie rozwiązują zdania w różnym czasie. Ze względu na porównania wielokrotne stosujemy poprawkę Bonferroniego. Jeżeli dla danej pozycji dla dwóch wybranych krajów odrzucamy hipotezę o braku zależności to o kierunku tej zależności informuje wykres powyżej (w punkcie 3)). 
 
 ```{r, echo=FALSE}
 test.result <- list(1)
@@ -186,47 +227,236 @@ for(pos in unique(kwt$position)){
 }
 
 test.result <- do.call("rbind", test.result)
-colnames(test.result) <- c("kraj 1", "kraj 2", "wartosc", "pozycja")
-print(test.result[which(test.result[,3] < 0.05/poprawka),])
+colnames(test.result) <- c("kraj 1", "kraj 2", "p-wartosc", "pozycja")
+kable(test.result[which(test.result[,3] < 0.05/poprawka),], caption = "Kraje dla których na danej pozycji kraj ma znaczenie.")
 ```
 
-## 3. Jak pozycja danego zadania wpływa na jego trudność 
+# 4. Jak pozycja danego zadania wpływa na jego trudność 
 
-Możemy zastanawiać się jak na 'łatwość' zadania (tj. procent poprawnych odpowiedzi na nie udzielonych) wpływa jego umiejscowienie w teście. Poniżej dla każdego kraju wybrane zostały zadania z każdej kategori (R/M/S), które okazały się średnio najłatwiejsze bądź najtrudniejsze. Następnie dla każdego z nich policzony został procent poprawnych odpowiedzi zależnie od pozycji zadania.
+Poniżej dla każdego kraju wybrane zostały zadania z każdej kategorii (R/M/S), które okazały się średnio najłatwiejsze ('max' - największe śrenie frakcje poprawnie rozwiązanych zadań) bądź najtrudniejsze ('min' - najmniejsze średnie frakcje poprawnie rozwiązanych zadań). Następnie dla każdego z nich policzony został procent poprawnych odpowiedzi zależnie od pozycji zadania.
 
 ***
+
+## Finlandia
 
 ```{r, echo=FALSE}
 df <- read.csv(paste0(home_path, dir, kraje[1], "_sq.csv"))
 extreme_question_position_dependence(df)
 ```
 
+Dla zadań, z których wyniki były najgorsze ('min') widzimy, że dla zdanaia z matematyki procent dobrych rozwiązań jest analogiczny do wykresu z punktu 2). Najlepiej idzie ono gdy jest pierwsze lub trzecie w formularzu. 
+Zadanie z czytania wraz ze wzrostem pozycji idzie coraz lepiej.
+Z zadania z nauk przyrodniczych najlepsze wyniki osiągano gyd było ono na pozycji piuerwszej bądź czwartej.
+Zadania najłatwiejsze, tj. te z których wyniki były najlepsze niezależnie od kategorii i pozycji rozwiązywane były jednakowo dobrze.
+
 ***
+
+## Japonia
 
 ```{r, echo=FALSE}
 df <- read.csv(paste0(home_path, dir, kraje[2], "_sq.csv"))
 extreme_question_position_dependence(df)
 ```
 
+W Japoni, wsród zadań najrudniejszych pozycja podobnie wpływa na jakość rozwiązań dla zadań z matematyki i nauk przyrodniczych. Lepiej idą one gdy są na pozycji drugiej lub czwartej. Zadanie z czytania idzie lepiej im dalej jest w formularzu.
+Podbnie jak w przypadku Finlandii zadania najłatwiejsze w każdej kategorii rozwiązywane są pdobnie niezależnie od pozycji w formularzu. 
+
 ***
+
+## Polska
 
 ```{r, echo=FALSE}
 df <- read.csv(paste0(home_path, dir, kraje[3], "_sq.csv"))
 extreme_question_position_dependence(df)
 ```
 
+Dla zadań truniejszych ('min') procent poprawnych odpowiedzi rośnie wraz z pozycją zadań z czytania i matematyki. Wyniki z zadania z nauk przyrodniczych w zależności od pozycji zachowują się podobnie do średnich wyników ze wszytskich zadań na każdej z pozycji.
+Zadania najłatwiejsze ('max') idą dobrze niezależnie od pozycji.
+
 ***
+
+## Stany Zjednoczone
 
 ```{r, echo=FALSE}
 df <- read.csv(paste0(home_path, dir, kraje[4], "_sq.csv"))
 extreme_question_position_dependence(df)
 ```
 
+Wśród zadań najtrudniejszych ('min') dla matematyki jedynie na pozycji trzeciej obserwujemy poprawę. Oddaje to trend zaobserwowany dla wszytskich zadań. Zadanie z czytanie najlepiej idzie gdy jest na pierwszej pozycji w formularzu. Z kolei zdanie z nauk przyrodniczych jest rozwiązywane wyraźnie lpeiej gdy umieszczone jest na pozycji drugiej lub czwartej.
+Zadania najłatwiejsze ('max') nie sugerują zależności od ich umiejscowienia w formularzu.
+
 ***
+
+## Hiszpania 
 
 ```{r, echo=FALSE}
 df <- read.csv(paste0(home_path, dir, kraje[5], "_sq.csv"))
 extreme_question_position_dependence(df)
 ```
 
-Powyższe wykresy sugerują, że dla wybranych państw i zadań w danym państwie rozwiązywanych najlepiej kolejnośc nie ma znaczenia. Z kolei dla zadań 'najtrudniejszych' zauważamy, znaczące wahania ilości poprawnych odpowiedzi jednak brak zauważalnego tredndu wspoólnego dla wszystkich krajóW bądź typów pytań. 
+Dla zadań najtrudniejszych ('min') zadanie z matematyki było rozwizywane najlepiej gdy znajdywało sie na pozycji dtugiej, a wraz z kolejnymi pozycjami ilość dobrych rozwiązań spada. Podbnie jest w przypadku zadania z czytania , choć tu ogólnie wyniki są gorsze niż dla matematyki. Z kolei zadanie z nauk przyrodniczych było ogólnie dobrze rozwiązywane co najwyżej przez 20% uczniów na pozycji trzeciej.
+Także dla Hiszpanii dla zadań najłatwiejszych ('max') pozycja nie ma znaczącego wpływu na ilość dobrych rozwiązań.
+
+# Kody 
+
+## Punkt 2)
+
+```
+#przygotowanie tabel używanych w do stworzenia wykresow
+w <- list(1)
+kwt <- list(1)
+i <- 1
+
+for(k in kraje){
+  df <- read.csv(paste0(home_path, dir, k, "_sq.csv"))
+  df %>% 
+    select(CNT, position, result, timing, W_FSTUWT) %>%
+    filter(!is.na(position)) %>%
+    mutate(result = as.integer(result== "Full credit"),
+           timing = timing/1000) -> kwt[[i]]
+  kwt[[i]] %>%  
+    group_by(CNT, position) %>%
+    summarise(sr_tm_poz  = weighted.mean(timing, W_FSTUWT, na.rm = TRUE),
+              sr_rs_poz = weighted.mean(result, W_FSTUWT, na.rm = TRUE)) -> w[[i]]
+  i <- i+1
+}
+
+w <- do.call("rbind", w)
+kwt <- do.call("rbind", kwt)
+
+#wygenerowanie wykresu zaleznosci wynikow od pozycji
+#licze frakcje poprawnych wynikow dla krajow
+kwt %>% 
+  group_by(CNT) %>%
+  summarise(sr_w = weighted.mean(result, W_FSTUWT, na.rm = TRUE)) -> tmp
+
+plot(w$sr_rs_poz[1:4], col = 2, type = "l", xaxt = "n",
+     xlab = "pozycja", ylab = "% score", 
+     main = "zmiana % poprawnych rozwiazan\nw zależności od pozycji",
+     ylim = c(min(w$sr_rs_poz)-0.1, max(w$sr_rs_poz)+0.1))
+abline(h = tmp[1,2], lty = "dashed", col = 2)
+axis(1, 1:4)
+for(i in 1:(length(kraje)-1)){
+  lines(w$sr_rs_poz[(1+i*4):(4+i*4)], col = i+2)
+  abline(h = tmp[i+1,2], lty = "dashed", col = i+2)
+}
+legend("topright", unique(w$CNT), col = 2:6, lty = 1, cex = 0.5)
+```
+
+## Punkt 3)
+
+```
+#wygenerowanie wykresu zlaeznosci czasu rozwiazan od pozycji
+plot(w$sr_tm_poz[1:4], col = 2, type = "l", xaxt = "n",
+     xlab = "pozycja", ylab = "czas [s]", 
+     main = "zmiana czasu rozwiazan\nw zależności od pozycji",
+     ylim = c(min(w$sr_tm_poz)-5, max(w$sr_tm_poz)+5))
+axis(1, 1:4)
+for(i in 1:(length(kraje)-1)){
+  lines(w$sr_tm_poz[(1+i*4):(4+i*4)], col = i+2)
+}
+legend("topright", unique(w$CNT), col = 2:6, lty = 1, cex = 0.5)
+
+#test Kruskalla-Wallisa na zależnosc czasu od pozcyji dla kazdego kraju
+tab <- list(1)
+i <- 1
+for(c in unique(kwt$CNT)){
+  t <- kruskal.test(kwt[kwt$CNT == c,"timing"], kwt[kwt$CNT == c, "position"])
+  tab[[i]] <- c(c, t$p.value)
+  i <- i +1
+}
+tab <- do.call("rbind", tab)
+colnames(tab) <- c("kraj", "p-wartosc")
+
+#testy Kruskalla-Wallisa dla kolejnych par krajow na danej pozycji
+test.result <- list(1)
+i <- 1
+for(pos in unique(kwt$position)){
+  t <- kruskal.test(kwt[kwt$position == pos, "timing"], 
+                    kwt[kwt$position == pos, "CNT"])
+  #cat(pos, ": ", t$p.value, "\n")
+  if(t$p.value < 0.05){
+    j <- 2
+    poprawka <- 1
+    for(c1 in unique(kwt$CNT)[1:4]){
+      for(c2 in unique(kwt$CNT)[j:5]){
+        x <- kwt[kwt$position == pos & kwt$CNT %in% c(c1,c2), "timing"]
+        cl <- kwt[kwt$position == pos & kwt$CNT %in% c(c1,c2), "CNT"]
+        if(length(unique(cl)) != 1){
+          t <- kruskal.test(x,cl)
+          test.result[[i]] <- c(c1, c2, t$p.value, pos)
+          i <- i+1
+          poprawka <- poprawka + 1 
+        }
+      }
+      j <- j+1
+    }
+  }
+}
+
+test.result <- do.call("rbind", test.result)
+colnames(test.result) <- c("kraj 1", "kraj 2", "p-wartosc", "pozycja")
+kable(test.result[which(test.result[,3] < 0.05/poprawka),], caption = "Kraje dla których na danej pozycji kraj ma znaczenie.")
+```
+
+## Punkt 4)
+
+```
+#definuje funkcje pomocnicza do rysowania wykresu w ggplot2
+extreme_question_position_dependence <- function(dane){
+  
+  # wybieram z kazdej grupy zadan te ktore srednio szly najgorzej i najlepiej
+  dane %>%
+    select(item_short, result, timing, W_FSTUWT) %>%
+    mutate(typ = substr(item_short, 1, 1),
+           result = as.integer(result == "Full credit"),
+           timing = timing/1000) %>%
+    group_by(typ, item_short) %>%
+    summarise(sr_r = weighted.mean(result, W_FSTUWT) ) %>%
+    filter(sr_r == max(sr_r) | sr_r == min(sr_r)) %>%
+    arrange(sr_r) %>%
+    ungroup() -> tmp
+  tmp$extreme <- rep(c("min","max"), each = 3)
+  
+  # dla kazdego z wybranych zadan licze sredni wynik w zależnosci od pozycji
+  w <- list(1)
+  i <- 1
+  for(zad in tmp$item_short){
+    dane %>% 
+      filter(item_short == zad & !is.na(position)) %>%
+      select(CNT, item_short, position, result, W_FSTUWT) %>%
+      mutate(result = as.integer(result == "Full credit")) %>%
+      group_by(item_short, position) %>%
+      summarise(sr_r = weighted.mean(result, W_FSTUWT)) -> w[[i]]
+    i <- i+1
+  }
+  w <- do.call("rbind",w)
+  
+  #przygotowanie danych do naniesienia na wykres
+  tmp %>%
+    select(item_short, extreme) %>%
+    right_join(w, by = "item_short") -> w
+  w$position <- as.character(w$position)
+  
+  #zdefiniowanie i wywołanie wykresów
+  p1 <- ggplot(w[w$extreme == "min",], aes(factor(item_short), sr_r, fill = position)) + 
+      geom_bar(stat="identity", position = "dodge") + 
+      scale_fill_brewer(palette = "Set1") +
+    xlab("zadania") +
+    ylab("fr. dobrych odp.") +
+    ggtitle("min")
+  
+  p2 <- ggplot(w[w$extreme == "max",], aes(factor(item_short), sr_r, fill = position)) + 
+    geom_bar(stat="identity", position = "dodge") + 
+    scale_fill_brewer(palette = "Set1")+
+    xlab("zadania") +
+    ylab("fr. dobrych odp.")+
+    ggtitle("max")
+  
+  grid.arrange(p1, p2, nrow=2, top=as.character(dane$CNT[1]))
+}
+
+#przykladowe wyowlanie funkcji zdefiniowanej powyzej
+df <- read.csv(paste0(home_path, dir, kraje[1], "_sq.csv"))
+extreme_question_position_dependence(df)
+```
