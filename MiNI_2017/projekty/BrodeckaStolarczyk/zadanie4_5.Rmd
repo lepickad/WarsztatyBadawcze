@@ -4,7 +4,9 @@ author: "A.Brodecka, M.Stolarczyk"
 date: "18 kwietnia 2017"
 output: 
     html_document:
-        toc: true
+        toc: true   
+        number_sections: true
+        toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -15,18 +17,18 @@ library(dplyr)
 # Podsumowanie 
 
 Na podstawie analizy wariancji możemy stwierdzić, że istnieją istotne różnice
-w proporcji poprawnie rozwiązanych zadań między studentami stosującymi różne strategie.
+w proporcji poprawnie rozwiązanych zadań między studentami stosującymi różne
+strategie (punkt 3).
 W każdej dziedzinie pytań, najlepiej sobie radzą studenci, którzy szybko rozwiązują
 zadania na początku testu, a wolno na końcu testu. Najsłabsze wyniki osiągają osoby,
-które wolno rozwiązują zadania na początku testu, a szybko na końcu.
+które wolno rozwiązują zadania na początku testu, a szybko na końcu (punkt 4).
 
-Na końcu dokumentu prezentujemy rankingi państw po względem poprawności rozwiązywania
-zadań, oczyszczone z wpływu stosowanej strategii rozwiązywania zadań.
+Na końcu dokumentu prezentujemy rankingi państw po względem poprawności
+rozwiązywania zadań, oczyszczone z wpływu stosowanej strategii 
+rozwiązywania zadań (punkt 5).
 
 # Przygotowanie danych
-## Wczytanie danych
-Wczytujemy wyniki zadania 0 i zadania 4 oraz łączymy je w jedną tabelę.
-```{r results="hide", messages=FALSE, warning=FALSE}
+```{r chunk1, echo=FALSE, results="hide", messages=FALSE, warning=FALSE}
 library(dplyr)
 library(stringi)
 library(ggplot2)
@@ -41,9 +43,10 @@ dane %>% left_join(klastry, by="CNTSTUID") %>%
     dane2
 ```
 
-## Frakcje poprawnie rozwiązanych zadań przez studentów
-Dla każdego studenta obliczamy frakcję poprawnie rozwiązanych zadań.
-```{r}
+Na podstawie danych z zadania 0 dla każdego studenta obliczamy frakcję poprawnie
+rozwiązanych zadań. Dodatkowo dołączamy kolumnę mówiącą o strategii stosowanej
+przez studenta.
+```{r chunk2, echo=FALSE}
 dane2 %>%
     mutate(group = stri_sub(item, 2, 2)) %>%
     mutate(result = 0 + (result == "Full credit")) %>%
@@ -54,15 +57,15 @@ dane2 %>%
     ungroup() ->
     student_results
 
-head(student_results)
+knitr::kable(head(student_results))
 ```
 
 # Wpływ strategii na końcowy wynik
 Aby sprawdzić, czy stosowana strategia wpływa na wyniki testów, stosujemy analizę 
-wariancji. Sprawdzamy istotność strategii i państwa oraz interakcji tych dwóch czynników.
+wariancji. Sprawdzamy istotność strategii i państwa oraz interakcji tych dwóch czynników. Poniżej przedstawiamy wyniki testów.
 
 ## Matematyka
-```{r}
+```{r chunk3, echo=FALSE}
 student_results %>%
     filter(group == "M") %>%
     aov(result ~ type_final * CNTRYID, ., weights = W_FSTUWT) ->
@@ -73,7 +76,7 @@ summary(anova_math)
 
 
 ## Czytanie
-```{r}
+```{r chunk4, echo=FALSE}
 student_results %>%
     filter(group == "R") %>%
     aov(result ~ type_final * CNTRYID, ., weights = W_FSTUWT) ->
@@ -83,7 +86,7 @@ summary(anova_read)
 ```
 
 ## Nauki przyrodnicze
-```{r}
+```{r chunk5, echo=FALSE}
 student_results %>%
     filter(group == "S") %>%
     aov(result ~ type_final * CNTRYID, ., weights = W_FSTUWT) ->
@@ -92,17 +95,20 @@ student_results %>%
 summary(anova_sci)
 ```
 
-Dla każdej dziedziny pytań strategia, państwo oraz interakcje
-mają wpływ na wynik.
+## Komentarz
+Wszystkie powyższe testy odrzucają hipotezy zerowe na poziomie istotności 0.05.
+Zatem rodzaj stosowanej strategii, państwo oraz interakcje tych dwóch zmiennych 
+mają wpływ na frakcję poprawnie rozwiązanych zadań.
+
 
 # Oszacowanie wpływu strategii na końcowy wynik
 Aby oszacować wpływ strategii na wyniki testów, oczysczamy wyniki z wpływu państw,
 tj. odejmujemy od wyniku każdego studenta średni wynik w jego kraju i dodajemy 
-średni wynik w całym badaniu. Następnie liczymy średnią z wyników w grupach wyznaczonych 
-przez stosowaną strategię. Każda średnia jest ważona.
+średni wynik w całym badaniu. Następnie liczymy średnią z wyników w grupach
+wyznaczonych przez stosowaną strategię. Średnie są ważone przez zmienną `W_FSTUWT`.
 
 
-```{r}
+```{r chunk6, echo=FALSE}
 student_results %>% 
     mutate(type_final = ordered(type_final, levels=c("01", "11", "00", "10"),
                                 labels=c("wolno-szybko", "wolno-wolno",
@@ -122,13 +128,22 @@ student_results %>%
 
 ```
 
-
+Możemy zaobserwować, że najlepsze wyniki osiągają osoby, które na początku szybko
+rozwiązują zadania, a później zwalniają. Najgorsze wyniki natomiast osiągają osoby,
+które wolno roziązują początkowe zadania, a szybko końcowe zadania. Osoby, które 
+wszystkie zadania rozwiązują szybko albo wszystkie wolno osiągają pośrednie wyniki.
+Reguła ta jest taka sama w każdej grupie tematycznej pytań.
 
 # Ranking państw po usunięciu wpływu strategii
-Analogicznie do poprzedniego punktu, oczyszczamy wyniki z wpływu strategi i
-uśredniamy w grupach.
+Aby usunąć wpływ strategii z rankingu państw od wyniku każdego studenta odejmujemy
+średnią wyników osób stosujących taką samą strategię i dodajemy średnią 
+ogólną. Następnie liczymy średni wynik dla każdego państwa. Każdą średnią 
+ważymy za pomocą zmiennej `W_FSTUWT`.
 
-```{r}
+Poniżej prezentujemy tabelę z wynikami dla każdego państwa w każdej grupie 
+tematycznej zadań.
+
+```{r chunk7, echo=FALSE}
 student_results %>%
     group_by(group, type_final) %>%
     mutate(result_cleaned = result - weighted.mean(result, W_FSTUWT, na.rm = TRUE)) %>%
@@ -147,3 +162,19 @@ ranking %>%
     datatable()
 ```
 
+
+# Kod
+```{r chunk1, eval=FALSE}
+```
+```{r chunk2, eval=FALSE}
+```
+```{r chunk3, eval=FALSE}
+```
+```{r chunk4, eval=FALSE}
+```
+```{r chunk5, eval=FALSE}
+```
+```{r chunk6, eval=FALSE}
+```
+```{r chunk7, eval=FALSE}
+```
