@@ -128,21 +128,29 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
-<li><a href="#efekt-strategii">Efekt strategii</a><ul>
-<li><a href="#gapik">1. Gapik</a></li>
-<li><a href="#spioch">2. Śpioch</a></li>
-<li><a href="#wazniak">3. Ważniak</a></li>
-<li><a href="#zgrywus">4. Zgrywus</a></li>
-<li><a href="#pracus">5. Pracuś</a></li>
-<li><a href="#wnioski">Wnioski</a></li>
+<li><a href="#cel-zadania">1. Cel zadania</a></li>
+<li><a href="#wnioski">2. Wnioski</a></li>
+<li><a href="#efekt-strategii">3. Efekt strategii</a><ul>
+<li><a href="#strategia-i-gapik">3.1 Strategia I (Gapik)</a></li>
+<li><a href="#strategia-ii-spioch">3.2 Strategia II (Śpioch)</a></li>
+<li><a href="#strategia-iii-wazniak">3.3 Strategia III (Ważniak)</a></li>
+<li><a href="#strategia-iv-zgrywus">3.4 Strategia IV (Zgrywus)</a></li>
+<li><a href="#strategia-v-pracus">3.5 Strategia V (Pracuś)</a></li>
 </ul></li>
-<li><a href="#kod">Kod</a></li>
+<li><a href="#kod">5. Kod</a></li>
 </ul>
 </div>
 
-<div id="efekt-strategii" class="section level1">
-<h1>Efekt strategii</h1>
+<div id="cel-zadania" class="section level1">
+<h1>1. Cel zadania</h1>
 <p>W poniższym raporcie postaramy się odpowiedzieć na pytanie, czy różnice w stosowanych strategiach mają wpływ na końcowy wynik osiągnięty w badaniu PISA. Oraz jak wyglądałby końcowy ranking PISA gdyby usunąć wpływ stosowanej strategii.</p>
+</div>
+<div id="wnioski" class="section level1">
+<h1>2. Wnioski</h1>
+<p>Najlepszą dla Polski jest strategia 4 (Zgrywus) oraz 5 (Pracuś). Stosując te metody ranking uczniów byłby wyższy. Bez względu na stosowaną metodę Finlandia i Korea zawsze wypada najlepiej, natomiast Brazylia najgorzej.</p>
+</div>
+<div id="efekt-strategii" class="section level1">
+<h1>3. Efekt strategii</h1>
 <p>Do analizy wybraliśmy kraje:</p>
 <ul>
 <li>Polska</li>
@@ -162,1078 +170,504 @@ $(document).ready(function () {
 <li>Pracuś</li>
 </ul>
 <p>Ważony średni wynik dla wybranych krajów:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-srednia_all
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-15.66
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-24.15
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-RUS
-</td>
-<td style="text-align: center;">
-26.12
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-29.38
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-30.34
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-31.57
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-FIN
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-32.25
-</td>
+<tr class="odd">
+<td>średni ważony wynik</td>
+<td align="right">15.66</td>
+<td align="right">30.34</td>
+<td align="right">32.25</td>
+<td align="right">24.15</td>
+<td align="right">31.57</td>
+<td align="right">29.38</td>
+<td align="right">26.12</td>
 </tr>
 </tbody>
 </table>
 <p>Widzimy różnice w średnich ważonych wynikach dla krajów. Kraje te stosują inne strategie, dlatego zakładamy, że różnice w wynikach spowodowane są stosowanymi strategiami.</p>
+<p>Zwróćmy jeszcze uwagę na średnią liczbę rozwiązanych poprawnie zadań przez ucznia w wybranych krajach.</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>średnia liczba zadań</td>
+<td align="right">15</td>
+<td align="right">30.7</td>
+<td align="right">32.2</td>
+<td align="right">25.2</td>
+<td align="right">31.5</td>
+<td align="right">29.5</td>
+<td align="right">26.3</td>
+</tr>
+</tbody>
+</table>
 <p>Przyjrzyjmy się teraz jak wyglądałyby nasze końcowe wyniki gdybyśmy usunęli stosowane strategie.</p>
-<div id="gapik" class="section level3">
-<h3>1. Gapik</h3>
+<div id="strategia-i-gapik" class="section level2">
+<h2>3.1 Strategia I (Gapik)</h2>
 <p>Procent uczniów stosujących tą metodę w krajach:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-procent
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-31.88
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-8.71
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-5.79
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-19.68
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-3.25
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-10.61
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-RUS
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-21.35
-</td>
+<tr class="odd">
+<td>%</td>
+<td align="right">31.88</td>
+<td align="right">8.71</td>
+<td align="right">5.79</td>
+<td align="right">19.68</td>
+<td align="right">3.25</td>
+<td align="right">10.61</td>
+<td align="right">21.35</td>
 </tr>
 </tbody>
 </table>
 <p>Zakładając, że w każdym kraju uczniowie stosują tylko tą metodę wyniki byłyby następujące:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-srednia
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-14.81
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-20.74
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-RUS
-</td>
-<td style="text-align: center;">
-22.6
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-26.46
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-26.68
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-30.36
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-KOR
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-30.81
-</td>
+<tr class="odd">
+<td>średni ważony wynik</td>
+<td align="right">14.81</td>
+<td align="right">26.68</td>
+<td align="right">30.36</td>
+<td align="right">20.74</td>
+<td align="right">30.81</td>
+<td align="right">26.46</td>
+<td align="right">22.6</td>
 </tr>
 </tbody>
 </table>
-<div id="htmlwidget-44b0270a47625a3e8175" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-44b0270a47625a3e8175">{"x":{"data":[{"x":[15.66],"y":[14.81],"text":"Średnia: 15.66<br>Średnia_new: 14.81<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[26.68],"text":"Średnia: 30.34<br>Średnia_new: 26.68<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[30.36],"text":"Średnia: 32.25<br>Średnia_new: 30.36<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[20.74],"text":"Średnia: 24.15<br>Średnia_new: 20.74<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[30.81],"text":"Średnia: 31.57<br>Średnia_new: 30.81<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[26.46],"text":"Średnia: 29.38<br>Średnia_new: 26.46<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[22.6],"text":"Średnia: 26.12<br>Średnia_new: 22.6<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+<div id="htmlwidget-d13f5f7ba3b9451a20a4" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d13f5f7ba3b9451a20a4">{"x":{"data":[{"x":[15.66],"y":[14.81],"text":"Średnia: 15.66<br>Średnia_new: 14.81<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[26.68],"text":"Średnia: 30.34<br>Średnia_new: 26.68<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[30.36],"text":"Średnia: 32.25<br>Średnia_new: 30.36<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[20.74],"text":"Średnia: 24.15<br>Średnia_new: 20.74<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[30.81],"text":"Średnia: 31.57<br>Średnia_new: 30.81<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[26.46],"text":"Średnia: 29.38<br>Średnia_new: 26.46<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[22.6],"text":"Średnia: 26.12<br>Średnia_new: 22.6<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
 <p>Widzimy, że metoda stosowana przez Brazylię nie sprawdza się i uczniowie z wszystkich krajów uzyskaliby gorsze wyniku. Metoda ta wpłynie na końcowy ranking PISA dla najlepszy krajów. Korea uzyskałaby lepszy wynik od Finlandii.</p>
-</div>
-<div id="spioch" class="section level3">
-<h3>2. Śpioch</h3>
-<p>Procent uczniów stosujących tą metodę w krajach:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<p>Jak ta strategia wpłynie na liczbę rozwiązanych poprawnie zadań ?</p>
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-procent
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-77.36
-</td>
+<tr class="odd">
+<td>średnia liczba zadań</td>
+<td align="right">14.5</td>
+<td align="right">26.8</td>
+<td align="right">30.2</td>
+<td align="right">21.7</td>
+<td align="right">31.1</td>
+<td align="right">26.5</td>
+<td align="right">22.7</td>
 </tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-42.03
-</td>
+</tbody>
+</table>
+<p>Średnia liczba rozwiązanych poprawnie zadań zmniejszyła się w każdym z krajów.</p>
+</div>
+<div id="strategia-ii-spioch" class="section level2">
+<h2>3.2 Strategia II (Śpioch)</h2>
+<p>Procent uczniów stosujących tą metodę w krajach:</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-34.67
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-47.78
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-35.49
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-41.25
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-RUS
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-50.18
-</td>
+</thead>
+<tbody>
+<tr class="odd">
+<td>%</td>
+<td align="right">77.36</td>
+<td align="right">42.03</td>
+<td align="right">34.67</td>
+<td align="right">47.78</td>
+<td align="right">35.49</td>
+<td align="right">41.25</td>
+<td align="right">50.18</td>
 </tr>
 </tbody>
 </table>
 <p>Zakładając, że w każdym kraju uczniowie stosują tylko tą metodę wyniki byłyby następujące:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-srednia
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-14.15
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-20.28
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-RUS
-</td>
-<td style="text-align: center;">
-22.72
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-24.62
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-24.93
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-26.01
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-FIN
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-27.44
-</td>
+<tr class="odd">
+<td>średni ważony wynik</td>
+<td align="right">14.15</td>
+<td align="right">24.93</td>
+<td align="right">27.44</td>
+<td align="right">20.28</td>
+<td align="right">26.01</td>
+<td align="right">24.62</td>
+<td align="right">22.72</td>
 </tr>
 </tbody>
 </table>
-<div id="htmlwidget-b15e80570ed930464144" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-b15e80570ed930464144">{"x":{"data":[{"x":[15.66],"y":[14.15],"text":"Średnia: 15.66<br>Średnia_new: 14.15<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[24.93],"text":"Średnia: 30.34<br>Średnia_new: 24.93<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[27.44],"text":"Średnia: 32.25<br>Średnia_new: 27.44<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[20.28],"text":"Średnia: 24.15<br>Średnia_new: 20.28<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[26.01],"text":"Średnia: 31.57<br>Średnia_new: 26.01<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[24.62],"text":"Średnia: 29.38<br>Średnia_new: 24.62<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[22.72],"text":"Średnia: 26.12<br>Średnia_new: 22.72<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
-<p>Stosując tą metodę Finowie nadal mieliby najlepszy wynik, jednak ten wynik byłby znacząco niższy. Każdy z krajów miałby gorszy wynik stosując metodę Brazyliczyków. Metoda ta nie wpłynie na końcowy ranking PISA.</p>
-</div>
-<div id="wazniak" class="section level3">
-<h3>3. Ważniak</h3>
-<p>Procent uczniów stosujących tą metodę w krajach:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<div id="htmlwidget-97618d876cc7c18d0c3a" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-97618d876cc7c18d0c3a">{"x":{"data":[{"x":[15.66],"y":[14.15],"text":"Średnia: 15.66<br>Średnia_new: 14.15<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[24.93],"text":"Średnia: 30.34<br>Średnia_new: 24.93<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[27.44],"text":"Średnia: 32.25<br>Średnia_new: 27.44<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[20.28],"text":"Średnia: 24.15<br>Średnia_new: 20.28<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[26.01],"text":"Średnia: 31.57<br>Średnia_new: 26.01<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[24.62],"text":"Średnia: 29.38<br>Średnia_new: 24.62<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[22.72],"text":"Średnia: 26.12<br>Średnia_new: 22.72<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+<p>Stosując tą metodę Finowie nadal mieliby najlepszy wynik, jednak ten wynik byłby znacząco niższy. Każdy z krajów miałby gorszy wynik stosując metodę Brazylijczyków. Metoda ta nie wpłynie na końcowy ranking PISA.</p>
+<p>Jak ta strategia wpłynie na liczbę rozwiązanych poprawnie zadań ?</p>
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-procent
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-8.11
-</td>
+<tr class="odd">
+<td>średnia liczba zadań</td>
+<td align="right">13.7</td>
+<td align="right">25.2</td>
+<td align="right">27.4</td>
+<td align="right">21.3</td>
+<td align="right">26</td>
+<td align="right">24.7</td>
+<td align="right">22.7</td>
 </tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-36.85
-</td>
+</tbody>
+</table>
+<p>We wszystkich krajach średnia liczba rozwiązanych poprawnie zadań zmniejszyła się znacząco.</p>
+</div>
+<div id="strategia-iii-wazniak" class="section level2">
+<h2>3.3 Strategia III (Ważniak)</h2>
+<p>Procent uczniów stosujących tą metodę w krajach:</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-39.23
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-22.85
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-27.73
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-30.91
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-RUS
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-26.48
-</td>
+</thead>
+<tbody>
+<tr class="odd">
+<td>%</td>
+<td align="right">8.11</td>
+<td align="right">36.85</td>
+<td align="right">39.23</td>
+<td align="right">22.85</td>
+<td align="right">27.73</td>
+<td align="right">30.91</td>
+<td align="right">26.48</td>
 </tr>
 </tbody>
 </table>
 <p>Zakładając, że w każdym kraju uczniowie stosują tylko tą metodę wyniki byłyby następujące:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-srednia
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-33.76
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-RUS
-</td>
-<td style="text-align: center;">
-37.41
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-38.84
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-41.57
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-41.74
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-42.52
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-KOR
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-43.74
-</td>
+<tr class="odd">
+<td>średni ważony wynik</td>
+<td align="right">33.76</td>
+<td align="right">41.74</td>
+<td align="right">42.52</td>
+<td align="right">38.84</td>
+<td align="right">43.74</td>
+<td align="right">41.57</td>
+<td align="right">37.41</td>
 </tr>
 </tbody>
 </table>
-<div id="htmlwidget-444e8863c7298e068b3c" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-444e8863c7298e068b3c">{"x":{"data":[{"x":[15.66],"y":[33.76],"text":"Średnia: 15.66<br>Średnia_new: 33.76<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[41.74],"text":"Średnia: 30.34<br>Średnia_new: 41.74<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[42.52],"text":"Średnia: 32.25<br>Średnia_new: 42.52<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[38.84],"text":"Średnia: 24.15<br>Średnia_new: 38.84<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[43.74],"text":"Średnia: 31.57<br>Średnia_new: 43.74<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[41.57],"text":"Średnia: 29.38<br>Średnia_new: 41.57<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[37.41],"text":"Średnia: 26.12<br>Średnia_new: 37.41<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+<div id="htmlwidget-0dd9631bee15714da44a" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0dd9631bee15714da44a">{"x":{"data":[{"x":[15.66],"y":[33.76],"text":"Średnia: 15.66<br>Średnia_new: 33.76<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[41.74],"text":"Średnia: 30.34<br>Średnia_new: 41.74<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[42.52],"text":"Średnia: 32.25<br>Średnia_new: 42.52<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[38.84],"text":"Średnia: 24.15<br>Średnia_new: 38.84<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[43.74],"text":"Średnia: 31.57<br>Średnia_new: 43.74<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[41.57],"text":"Średnia: 29.38<br>Średnia_new: 41.57<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[37.41],"text":"Średnia: 26.12<br>Średnia_new: 37.41<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
 <p>Gdyby kraje stosowały tą metodę, to we wszystkich krajach moglibyśmy zaobserwować znaczącą poprawę wyników. Dla Brazylii wynik byłby dwukrotnie lepszy. W końcowym ranking PISA Grecja uzyskałaby lepszy rezultat niż Rosja, oraz Korea lepszy niż Finlandia. Pozycja Polski pozostałaby bez zmian.</p>
-</div>
-<div id="zgrywus" class="section level3">
-<h3>4. Zgrywus</h3>
-<p>Procent uczniów stosujących tą metodę w krajach:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<p>Jak ta strategia wpłynie na liczbę rozwiązanych poprawnie zadań ?</p>
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-procent
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-17.93
-</td>
+<tr class="odd">
+<td>średnia liczba zadań</td>
+<td align="right">33</td>
+<td align="right">41.8</td>
+<td align="right">42.5</td>
+<td align="right">39</td>
+<td align="right">43.7</td>
+<td align="right">41.6</td>
+<td align="right">37.6</td>
 </tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-16.32
-</td>
+</tbody>
+</table>
+<p>Gdyby wszystkie kraje stosowały tylko tą metodę, to średnia liczba rozwiązanych poprawnie zadań byłaby bardzo wysoka. W Korei liczba ta zwiększyłaby się dwukrotnie. Dla Polski średnia zwiększyłaby się o 41%.</p>
+</div>
+<div id="strategia-iv-zgrywus" class="section level2">
+<h2>3.4 Strategia IV (Zgrywus)</h2>
+<p>Procent uczniów stosujących tą metodę w krajach:</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-17.73
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-16.97
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-26.6
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-13.52
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-RUS
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-9.83
-</td>
+</thead>
+<tbody>
+<tr class="odd">
+<td>%</td>
+<td align="right">17.93</td>
+<td align="right">16.32</td>
+<td align="right">17.73</td>
+<td align="right">16.97</td>
+<td align="right">26.6</td>
+<td align="right">13.52</td>
+<td align="right">9.83</td>
 </tr>
 </tbody>
 </table>
 <p>Zakładając, że w każdym kraju uczniowie stosują tylko tą metodę wyniki byłyby następujące:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-srednia
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-8.46
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-12.72
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-RUS
-</td>
-<td style="text-align: center;">
-14.57
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-15.2
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-15.7
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-16.95
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-KOR
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-17.4
-</td>
+<tr class="odd">
+<td>średni ważony wynik</td>
+<td align="right">8.46</td>
+<td align="right">15.2</td>
+<td align="right">16.95</td>
+<td align="right">12.72</td>
+<td align="right">17.4</td>
+<td align="right">15.7</td>
+<td align="right">14.57</td>
 </tr>
 </tbody>
 </table>
-<div id="htmlwidget-45c76ff6c2547a747fec" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-45c76ff6c2547a747fec">{"x":{"data":[{"x":[15.66],"y":[8.46],"text":"Średnia: 15.66<br>Średnia_new: 8.46<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[15.2],"text":"Średnia: 30.34<br>Średnia_new: 15.2<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[16.95],"text":"Średnia: 32.25<br>Średnia_new: 16.95<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[12.72],"text":"Średnia: 24.15<br>Średnia_new: 12.72<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[17.4],"text":"Średnia: 31.57<br>Średnia_new: 17.4<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[15.7],"text":"Średnia: 29.38<br>Średnia_new: 15.7<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[14.57],"text":"Średnia: 26.12<br>Średnia_new: 14.57<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+<div id="htmlwidget-d71bf8e213e8964b8cc5" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d71bf8e213e8964b8cc5">{"x":{"data":[{"x":[15.66],"y":[8.46],"text":"Średnia: 15.66<br>Średnia_new: 8.46<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[15.2],"text":"Średnia: 30.34<br>Średnia_new: 15.2<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[16.95],"text":"Średnia: 32.25<br>Średnia_new: 16.95<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[12.72],"text":"Średnia: 24.15<br>Średnia_new: 12.72<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[17.4],"text":"Średnia: 31.57<br>Średnia_new: 17.4<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[15.7],"text":"Średnia: 29.38<br>Średnia_new: 15.7<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[14.57],"text":"Średnia: 26.12<br>Średnia_new: 14.57<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
 <p>Pośpiech nie popłaca. Uczniowie którzy chcą skończyć jak najszybciej bez względu na wynik uzyskują bardzo słaby rezultat. Polska oraz Korea stosując tą metodę uzyskałyby lepszą pozycję w rankingu badania PISA.</p>
-</div>
-<div id="pracus" class="section level3">
-<h3>5. Pracuś</h3>
-<p>Procent uczniów stosujących tą metodę w krajach:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<p>Jak ta strategia wpłynie na liczbę rozwiązanych poprawnie zadań ?</p>
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-procent
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-11.45
-</td>
+<tr class="odd">
+<td>średnia liczba zadań</td>
+<td align="right">8.3</td>
+<td align="right">15.5</td>
+<td align="right">17</td>
+<td align="right">13.3</td>
+<td align="right">17.4</td>
+<td align="right">15.8</td>
+<td align="right">14.4</td>
 </tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-25.96
-</td>
+</tbody>
+</table>
+<p>Średnia liczba poprawnie rozwiązanych zadań w każdym z krajów zmniejszy się o około 50%.</p>
+</div>
+<div id="strategia-v-pracus" class="section level2">
+<h2>3.5 Strategia V (Pracuś)</h2>
+<p>Procent uczniów stosujących tą metodę w krajach:</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-FIN
-</td>
-<td style="text-align: center;">
-7.82
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-5.9
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-83.25
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-27.17
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-RUS
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-21.37
-</td>
+</thead>
+<tbody>
+<tr class="odd">
+<td>%</td>
+<td align="right">11.45</td>
+<td align="right">25.96</td>
+<td align="right">7.82</td>
+<td align="right">5.9</td>
+<td align="right">83.25</td>
+<td align="right">27.17</td>
+<td align="right">21.37</td>
 </tr>
 </tbody>
 </table>
 <p>Zakładając, że w każdym kraju uczniowie stosują tylko tą metodę wyniki byłyby następujące:</p>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<table>
 <thead>
-<tr>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey;">
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-CNT
-</th>
-<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
-srednia
-</th>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;">
-1
-</td>
-<td style="text-align: center;">
-BRA
-</td>
-<td style="text-align: center;">
-22.49
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-2
-</td>
-<td style="text-align: center;">
-GRC
-</td>
-<td style="text-align: center;">
-30.1
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-3
-</td>
-<td style="text-align: center;">
-DEU
-</td>
-<td style="text-align: center;">
-31.57
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-4
-</td>
-<td style="text-align: center;">
-RUS
-</td>
-<td style="text-align: center;">
-31.73
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-5
-</td>
-<td style="text-align: center;">
-POL
-</td>
-<td style="text-align: center;">
-32.63
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-6
-</td>
-<td style="text-align: center;">
-KOR
-</td>
-<td style="text-align: center;">
-40.81
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-7
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-FIN
-</td>
-<td style="border-bottom: 2px solid grey; text-align: center;">
-45.41
-</td>
+<tr class="odd">
+<td>średni ważony wynik</td>
+<td align="right">22.49</td>
+<td align="right">31.57</td>
+<td align="right">45.41</td>
+<td align="right">30.1</td>
+<td align="right">40.81</td>
+<td align="right">32.63</td>
+<td align="right">31.73</td>
 </tr>
 </tbody>
 </table>
-<div id="htmlwidget-1821206f16f9a0b2af1f" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1821206f16f9a0b2af1f">{"x":{"data":[{"x":[15.66],"y":[22.49],"text":"Średnia: 15.66<br>Średnia_new: 22.49<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[31.57],"text":"Średnia: 30.34<br>Średnia_new: 31.57<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[45.41],"text":"Średnia: 32.25<br>Średnia_new: 45.41<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[30.1],"text":"Średnia: 24.15<br>Średnia_new: 30.1<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[40.81],"text":"Średnia: 31.57<br>Średnia_new: 40.81<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[32.63],"text":"Średnia: 29.38<br>Średnia_new: 32.63<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[31.73],"text":"Średnia: 26.12<br>Średnia_new: 31.73<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+<div id="htmlwidget-052b6ecf1e46ea1b1538" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-052b6ecf1e46ea1b1538">{"x":{"data":[{"x":[15.66],"y":[22.49],"text":"Średnia: 15.66<br>Średnia_new: 22.49<br>Kraj: BRA","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"BRA","legendgroup":"BRA","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[30.34],"y":[31.57],"text":"Średnia: 30.34<br>Średnia_new: 31.57<br>Kraj: DEU","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(196,154,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(196,154,0,1)"}},"hoveron":"points","name":"DEU","legendgroup":"DEU","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[32.25],"y":[45.41],"text":"Średnia: 32.25<br>Średnia_new: 45.41<br>Kraj: FIN","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(83,180,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(83,180,0,1)"}},"hoveron":"points","name":"FIN","legendgroup":"FIN","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[24.15],"y":[30.1],"text":"Średnia: 24.15<br>Średnia_new: 30.1<br>Kraj: GRC","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,148,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,192,148,1)"}},"hoveron":"points","name":"GRC","legendgroup":"GRC","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[31.57],"y":[40.81],"text":"Średnia: 31.57<br>Średnia_new: 40.81<br>Kraj: KOR","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,182,235,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,182,235,1)"}},"hoveron":"points","name":"KOR","legendgroup":"KOR","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[29.38],"y":[32.63],"text":"Średnia: 29.38<br>Średnia_new: 32.63<br>Kraj: POL","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(165,138,255,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(165,138,255,1)"}},"hoveron":"points","name":"POL","legendgroup":"POL","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[26.12],"y":[31.73],"text":"Średnia: 26.12<br>Średnia_new: 31.73<br>Kraj: RUS","key":null,"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,215,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(251,97,215,1)"}},"hoveron":"points","name":"RUS","legendgroup":"RUS","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-2.25,47.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[2.75,52.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"},{"x":[-2.25,47.25],"y":[-7.25,42.25],"text":"","key":null,"type":"scatter","mode":"lines","name":"","line":{"width":1.88976377952756,"color":"rgba(190,190,190,1)","dash":"dash"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text"}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":"Różnica w wynikach po zastosowaniu strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"xaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"Średnia końcowa","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"type":"linear","autorange":false,"tickmode":"array","range":[-2.25,47.25],"ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30,40],"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Średnia dla strategii","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"modeBarButtonsToRemove":["sendDataToCloud"]},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
 <p>Gdyby uczniowie we wszystkich krajach przygotowywały się do testu tak jak Koreańczycy to uzyskaliby lepsze wyniki. Jak widać nauka popłaca. Metoda ta wpłynie na końcowy ranking PISA. Zmienią się pozycje krajów wypadających średnio.</p>
-</div>
-<div id="wnioski" class="section level3">
-<h3>Wnioski</h3>
-<p>Podumowując najlepszą dla Polski okazała się metoda 4 i 5, gdyż stosując te metody ranking uczniów byłby wyższy. Bez względu na stosowaną metodę Finlandia i Korea zawsze wypada najlepiej, natomiast Brazylia najgorzej.</p>
+<p>Jak ta strategia wpłynie na liczbę rozwiązanych poprawnie zadań ?</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BRA</th>
+<th align="right">DEU</th>
+<th align="right">FIN</th>
+<th align="right">GRC</th>
+<th align="right">KOR</th>
+<th align="right">POL</th>
+<th align="right">RUS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>średnia liczba zadań</td>
+<td align="right">20.3</td>
+<td align="right">31.8</td>
+<td align="right">39</td>
+<td align="right">28.8</td>
+<td align="right">34.8</td>
+<td align="right">32.8</td>
+<td align="right">27.7</td>
+</tr>
+</tbody>
+</table>
+<p>Dla każdego z rozważanych krajów średnia liczba rozwiązanych poprawnie zadań zwiększy się.</p>
 </div>
 </div>
 <div id="kod" class="section level1">
-<h1>Kod</h1>
+<h1>5. Kod</h1>
 <pre class="r"><code>load(&quot;dane_kraje.Rda&quot;)
 
 library(dplyr)
