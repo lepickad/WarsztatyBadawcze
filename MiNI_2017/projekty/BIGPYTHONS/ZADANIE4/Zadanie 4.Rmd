@@ -1,40 +1,80 @@
 ---
 title: "Zadanie 4"
-author: "Aliaksandr Panimash, Witold Kocińsku"
+author: "Aliaksandr Panimash, Witold Kociński"
 date: "20 kwietnia 2017"
-output: html_document
+output: 
+  html_document:
+    number_sections: true
+    toc: true 
+    theme: united
 ---
 # Cel
 W tym zadaniu, na podstawie danych opracowaliśmy podział strategii uczniów na 4 segmenty.
 Segmenty: 
 
-* "Szybkie głupie"- uczniowie, którzy mają wszystkie zadanie źle rozwiazane oraz czas rozwiązania poniżej mediany. 
+* "Szybcy i wsciekli"- uczniowie, którzy wszystkie zadania mają źle rozwiązania oraz czas rozwiązania jest poniżej mediany.
 
-* "Wolne głupie"- uczniowie, którzy mają wszystkie zadanie źle rozwiazane oraz czas rozwiązania powyżej mediany.
+* "Mr Bean"- uczniowie, którzy mają wszystkie zadania  źle rozwiązane oraz czas rozwiązania jest powyżej mediany.
 
-* "Szybkie geniuszy"- uczniowie, którzy mają wszystkie zadanie dobrze rozwiazane oraz czas rozwiązania poniżej mediany. 
+* "Teoria wszystkiego"- uczniowie, którzy  wszystkie zadania mają  dobrze rozwiązane oraz czas rozwiązania jest poniżej mediany.
 
-* "Wolne geniuszy"- uczniowie, którzy mają wszystkie zadanie dobrze rozwiazane oraz czas rozwiązania powyżej mediany.
+* "Piękny umysł"- uczniowie, którzy mają wszystkie zadania dobrze rozwiązane oraz czas rozwiązania jest powyżej mediany.
 
-* "Inne" - w innych przypadkach.
+* "Wszyscy ludzie prezydenta" - w innych przypadkach.
+
+# Wnioski 
+Po wprowadzeniu odpowiedniego podziału na strategii rozwiązania uczniów możemy wywnioskować, że kraje Półudniowej Ameryki posiadają najwiekszą ilość uczniów w szkołach, którzy przy rozwiązaniu testu `PISA` stosują strategię szybkich lub wolnych niepoprawnych odpowiedzi. Z kolei kraje z zachodniej częsci Europy posiadają największą liczbę uczniów, którzy poprawnie i szybko rozwiązują zadania. 
 
 
-# Wyniki
+# Analiza
 
-Najwięcej szybkich geniuszy:
-```{r,echo=TRUE}
+W celu policzenia liczności studentów w podziale na segmenty dla każdego kraju zostały policzone mediany czasów rozwiązań zadań dla każdej pozycji. Dla każdego zadania zostały dodane odpowiednie wagi względem pozycji i czasu rozwiązania. Dalej sumując wagi dla każdego  studenta dostajemy odpowiedni segment danego ucznia. 
+
+Kraje, które mają najwiekszą ilość studentów o kategorii "Szybcy i wsciekli".
+ 
+```{r,echo=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
 load("~/pisa/student_question_cntpart/4.RData")
-head(ramka_2_seg[order(ramka_2_seg$g3,decreasing = T),],3)
+library(knitr)
+df <-head(ramka_2_seg[order(ramka_2_seg$g1,decreasing = T),],3)
+rownames(df) <- NULL
+kable(df)
+
+#ggplot(df, aes(x=CNT, fill=cut))+geom_bar(position="fill")
+```
+ 
+ Widzimy, że kraje takie jak Kolumbia, Australia, Peru posiadają najwięcej uczniów o danej strategii wsród innych kraów.
+ 
+Kraje w których występuje najwieksza ilość uczniów  ze stategią "Mr Bean".
+```{r,echo=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+load("~/pisa/student_question_cntpart/4.RData")
+df <- head(ramka_2_seg[order(ramka_2_seg$g2,decreasing = T),],n=3)
+rownames(df) <- NULL
+kable(df)
 ```
 
+Widzimy, że kraje takie jak Argentyna, Australia, Meksyk posiadają najwięcej uczniów o danej strategii wsród innych kraów.
 
-Najwięcej słabych uczniów:
-```{r,echo=TRUE}
+Kraje w których występuje najwieksza ilość uczniów  z segmentu "Teoria wszystkiego".
+```{r,echo=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
 load("~/pisa/student_question_cntpart/4.RData")
-head(ramka_2_seg[order(ramka_2_seg$g1,decreasing = T),],3)
+df <- head(ramka_2_seg[order(ramka_2_seg$g3,decreasing = T),],n=3)
+rownames(df) <- NULL
+kable(df)
 ```
 
+Widzimy, że kraje takie jak Tunezja, Bułgaria, Hiszpania posiadają najwięcej uczniów prawidłowo rozwiązujących test i z dłuższym  zastanawianie się wsród innych krajów.
 
+Kraje w których występuje najwieksza ilość uczniów  ze stategią "Piękny umysł".
+```{r,echo=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+load("~/pisa/student_question_cntpart/4.RData")
+df <- head(ramka_2_seg[order(ramka_2_seg$g4,decreasing = T),],n=3)
+rownames(df) <- NULL
+kable(df)
+```
+
+Widzimy, że kraje takie jak Tunezja, Bułgaria, Portugalia posiadają najwięcej uczniów prawidłowo rozwiązujących test i z dłuższym  zastanawianie się wsród innych krajów.
+
+#Kod
 
 ```{r,eval=FALSE}
 library("dplyr")
@@ -46,20 +86,20 @@ a<-list.files("C:\\Users\\Alex\\Documents\\pisa\\student_question_cntpart")
 ramka_2_seg<- data.frame(matrix(,ncol=3))
 ramka_2_seg<- data.frame(g1=c(NA),g2=c(NA),g3=c(NA),g4=c(NA),g5=c(NA),CNT=as.character(c(NA)))
 
-for( i in 1:length(a))
+for( i in 2:(length(a)-3))
 {
   
   plik <- read.csv(a[i])
   plik <- plik[!is.na(plik$position),]
   wynik <-c()
-  if(nrow(plik)>0)
+  if(!is.null(nrow(plik)) & nrow(plik)>0)
   {
   for(i in seq_along(nrow(plik)))
   {
     pozycja <- plik$position[i]
     kraj <- trimws((as.character(plik$CNT[1])))
     wynikk <- as.character(plik$result[i])
-    wyniki <- ramka_2_pos[ramka_2_pos$position==pozycja & ramka_2_pos$CNT==kraj &       ramka_2_pos$result==wynikk,c(4,5)]
+    wyniki <- ramka_2_pos[ramka_2_pos$position==pozycja & ramka_2_pos$CNT==kraj ,c(3,4)]
     
     if(plik$timing[i]/1000<wyniki[,1] & plik$result[i]=="No credit")
     {
@@ -126,7 +166,7 @@ ramka_2_seg <-ramka_2_seg[-1,]
 ```
 
 
-Liczenie medianu czasu dla każdej pozycji i kraju. 
+Liczenie mediany czasu dla każdej pozycji i kraju. 
 
 ```{r,eval=FALSE}
 library("dplyr")
@@ -134,8 +174,8 @@ setwd("C:\\Users\\Alex\\Documents\\pisa\\student_question_cntpart")
 a<-list.files("C:\\Users\\Alex\\Documents\\pisa\\student_question_cntpart")
 
 ramka_2_pos<- data.frame(matrix(,ncol=3))
-ramka_2_pos<- data.frame(result=as.character(c(NA)),position=c(NA),ramka_2_pos,CNT=as.character(c(NA)))
-colnames(ramka_2_pos)<-c("result","position","TMean_w","TMed","coun","CNT")
+ramka_2_pos<- data.frame(position=c(NA),ramka_2_pos,CNT=as.character(c(NA)))
+colnames(ramka_2_pos)<-c("position","TMean_w","TMed","coun","CNT")
 
 for( i in 1:length(a))
 {
@@ -145,7 +185,7 @@ for( i in 1:length(a))
     # dla kazdego kraju, dla kazdego zadania i uzyskanego wyniku 
     plik %>%
       filter(!is.na(position)) %>%
-      group_by(result,position) %>%
+      group_by(position) %>%
       summarise(
                 TMean_w = round(weighted.mean(timing,W_FSTUWT, na.rm = TRUE)/1000,2),
                 TMed = round(median(timing, na.rm = TRUE)/1000,2),
